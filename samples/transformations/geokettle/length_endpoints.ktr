@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name>length_endpoints</name>
+    <description/>
+    <extended_description/>
+    <trans_version/>
+    <trans_status>0</trans_status>
+    <directory>&#47;</directory>
+    <parameters>
+    </parameters>
+    <log>
+      <read/>
+      <write/>
+      <input/>
+      <output/>
+      <update/>
+      <rejected/>
+      <connection/>
+      <table/>
+      <step_performance_table/>
+      <use_batchid>Y</use_batchid>
+      <use_logfield>N</use_logfield>
+      <size_limit_lines/>
+    </log>
+    <maxdate>
+      <connection/>
+      <table/>
+      <field/>
+      <offset>0.0</offset>
+      <maxdiff>0.0</maxdiff>
+    </maxdate>
+    <size_rowset>10000</size_rowset>
+    <sleep_time_empty>50</sleep_time_empty>
+    <sleep_time_full>50</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>50000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <capture_step_performance>N</capture_step_performance>
+    <step_performance_capturing_delay>1000</step_performance_capturing_delay>
+    <dependencies>
+    </dependencies>
+    <partitionschemas>
+    </partitionschemas>
+    <slaveservers>
+    </slaveservers>
+    <clusterschemas>
+    </clusterschemas>
+  <modified_user>-</modified_user>
+  <modified_date>2009&#47;02&#47;03 15:09:02.657</modified_date>
+  </info>
+  <notepads>
+    <notepad>
+      <note>This example shows how to call various JTS methods for Geometry objects,
+in the Modified Java Script Value step.
+It also shows how to obtain information on the concrete Geometry classes, using
+the reflection mechanisms built in Rhino.
+</note>
+      <xloc>49</xloc>
+      <yloc>27</yloc>
+      <width>409</width>
+      <heigth>63</heigth>
+    </notepad>
+  </notepads>
+  <connection>
+    <name>geosoadb sur geosoa-crg1</name>
+    <server>geosoa-crg1.scg.ulaval.ca</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>geosoadb</database>
+    <port>5432</port>
+    <username>geosoalogin</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb1eab7fcd9dae8b</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>geosoasb sur geosoa-crg1</name>
+    <server>geosoa-crg1.scg.ulaval.ca</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>geosoadb</database>
+    <port>5432</port>
+    <username>geosoalogin</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb1eab7fcd9dae8b</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>ibm db2 test</name>
+    <server>geosoa-crg3.scg.ulaval.ca</server>
+    <type>DB2</type>
+    <access>Native</access>
+    <database>geosoa</database>
+    <port>50000</port>
+    <username>db2geosoa</username>
+    <password>Encrypted 2be98afc86aa79686f91eab7fcd9dae8b</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>50000</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>MS SQL</name>
+    <server>geosoa-crg3</server>
+    <type>MSSQL</type>
+    <access>Native</access>
+    <database>geosoadb</database>
+    <port>1433</port>
+    <username>geosoa</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb1eab7fcd9dae8b</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MSSQL_DOUBLE_DECIMAL_SEPARATOR</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>1433</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>MS SQL test</name>
+    <server>geosoa-crg3</server>
+    <type>MSSQL</type>
+    <access>Native</access>
+    <database>geosoadb</database>
+    <port>1433</port>
+    <username>geosoa</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb1eab7fcd9dae8b</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MSSQL_DOUBLE_DECIMAL_SEPARATOR</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>1433</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>oracle geosoa-crg3</name>
+    <server>geosoa-crg3.scg.ulaval.ca</server>
+    <type>ORACLE</type>
+    <access>Native</access>
+    <database>orcl</database>
+    <port>1521</port>
+    <username>geosoa</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb1eab7fcd9dae8b</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>1521</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>pgsql etdub@localhost</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>minicube_staging</database>
+    <port>5432</port>
+    <username>etdub</username>
+    <password>Encrypted 2be98afc86aa7f2e4bf16bb60dfc4f98c</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>Postgres test@localhost</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>geokettle_test</database>
+    <port>5432</port>
+    <username>test</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb79ba75d382a08b</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>PostgreSQL (w&#47; PostGIS) on localhost</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>geokettle_test</database>
+    <port>5432</port>
+    <username>test</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb79ce64db9fbfd5</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>EXTRA_OPTION_POSTGRESQL.stringtype</code><attribute>unspecified</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>PostgreSQL test minicube_staging@localhost</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>minicube_staging</database>
+    <port>5432</port>
+    <username>test</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb79ba75d382a08b</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <order>
+  <hop> <from>GIS File Input (nrn_quebec_city.shp)</from><to>SRID Transformation (project to UTM zone 19N)</to><enabled>Y</enabled> </hop>  <hop> <from>SRID Transformation (project to UTM zone 19N)</from><to>Modified Java Script Value</to><enabled>Y</enabled> </hop>  </order>
+  <step>
+    <name>GIS File Input (nrn_quebec_city.shp)</name>
+    <type>GISFileInput</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <file_gis>${Internal.Transformation.Filename.Directory}&#47;files&#47;nrn_quebec_city.shp</file_gis>
+    <limit>0</limit>
+    <add_rownr>N</add_rownr>
+    <field_rownr/>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>93</xloc>
+      <yloc>128</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>Modified Java Script Value</name>
+    <type>ScriptValueMod</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+    <compatible>Y</compatible>
+    <jsScripts>      <jsScript>        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>&#47;&#47; get a Geometry (com.vividsolutions.jts.geom.Geometry) object
+var jtsgeom = the_geom.getGeometry();
+
+&#47;&#47; calculate the length of the geometry (road segment); since
+&#47;&#47; it was reprojected in UTM coordinates, the length will be in meters
+var length = jtsgeom.getLength();
+
+&#47;&#47; other values to return:
+var isMultiGeometry = false;
+var point1 = null;
+var point2 = null;
+
+&#47;&#47; do we have MultiLineString geometries (shapefiles always contain MultiLineStrings
+&#47;&#47; instead of LineStrings)?
+&#47;&#47; Note the syntax used to refer to the Java class (Package object, containing
+&#47;&#47; the full hierarchy of Java classes in the CLASSPATH); refer to the
+&#47;&#47; Rhino docs for more details.
+if (getClass(jtsgeom) == Packages.com.vividsolutions.jts.geom.MultiLineString) {
+
+	&#47;&#47; check if we have only one LineString in the MultiLineString
+	if (jtsgeom.getNumGeometries() == 1) {
+		&#47;&#47; Get the start and end points of the road segment.
+		&#47;&#47; Note: getStartPoint() and getEndPoint() are methods of the LineString
+		&#47;&#47; class in JTS. With the Rhino JavaScript engine, we can always call the
+		&#47;&#47; concrete Java class methods, even if getGeometryN() returns a Geometry
+		&#47;&#47; (abstract class) object.
+		point1 = jtsgeom.getGeometryN(0).getStartPoint();
+		point2 = jtsgeom.getGeometryN(0).getEndPoint();
+	}
+	else {
+		&#47;&#47; We have more than one geometry; we won&apos;t handle this case now,
+		&#47;&#47; but a possible solution would be to explode the collection (iterate
+		&#47;&#47; over each geometry in the collection to instanciate new rows) and
+		&#47;&#47; process each one to get the endpoints.
+		isMultiGeometry = true;
+	}
+}
+&#47;&#47; handle the case of a single LineString (no multi geometries; this could be
+&#47;&#47; the case if the input comes from a geo database such as PostGIS or Oracle Spatial).
+else if (getClass(jtsgeom) == Packages.com.vividsolutions.jts.geom.LineString) {
+	point1 = jtsgeom.getGeometryN(0).getStartPoint();
+	point2 = jtsgeom.getGeometryN(0).getEndPoint();
+}
+
+&#47;&#47; At the end we have the following fields to retrieve:
+&#47;&#47; length (Number): the length of the road segment
+&#47;&#47; point1 (Geometry): start point of the segment
+&#47;&#47; point2 (Geometry): end point of the segment
+&#47;&#47; isMultiGeometry (Boolean): true if the MultiLineString really contains more than one road segment
+
+</jsScript_script>
+      </jsScript>    </jsScripts>    <fields>      <field>        <name>length</name>
+        <rename>length</rename>
+        <type>Number</type>
+        <length>16</length>
+        <precision>2</precision>
+        <replace>N</replace>
+      </field>      <field>        <name>point1</name>
+        <rename>point1</rename>
+        <type>Geometry</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        <replace>N</replace>
+      </field>      <field>        <name>point2</name>
+        <rename>point2</rename>
+        <type>Geometry</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        <replace>N</replace>
+      </field>      <field>        <name>isMultiGeometry</name>
+        <rename>isMultiGeometry</rename>
+        <type>Boolean</type>
+        <length>-1</length>
+        <precision>-1</precision>
+        <replace>N</replace>
+      </field>    </fields>     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>527</xloc>
+      <yloc>128</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step>
+    <name>SRID Transformation (project to UTM zone 19N)</name>
+    <type>SRSTransformation</type>
+    <description/>
+    <distribute>Y</distribute>
+    <copies>1</copies>
+         <partitioning>
+           <method>none</method>
+           <schema_name/>
+           </partitioning>
+<field_name>the_geom</field_name>
+<source_gui_status>3</source_gui_status>
+<target_gui_status>1</target_gui_status>
+    <source_srs>
+<authority>Custom Authority</authority>
+<srid>-1</srid>
+<description>Custom SRS from WKT</description>
+<is_custom>Y</is_custom>
+<wkt>GEOGCS[&quot;GCS_WGS_1984&quot;, 
+  DATUM[&quot;D_WGS_1984&quot;, 
+    SPHEROID[&quot;WGS_1984&quot;, 6378137.0, 298.257223563]], 
+  PRIMEM[&quot;Greenwich&quot;, 0.0], 
+  UNIT[&quot;degree&quot;, 0.017453292519943295], 
+  AXIS[&quot;Longitude&quot;, EAST], 
+  AXIS[&quot;Latitude&quot;, NORTH]]</wkt>
+    </source_srs>
+    <target_srs>
+<authority>EPSG</authority>
+<srid>26919</srid>
+<description>NAD83 &#47; UTM zone 19N</description>
+<is_custom>N</is_custom>
+    </target_srs>
+     <cluster_schema/>
+ <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
+      <xloc>310</xloc>
+      <yloc>128</yloc>
+      <draw>Y</draw>
+      </GUI>
+    </step>
+
+  <step_error_handling>
+  </step_error_handling>
+   <slave-step-copy-partition-distribution>
+</slave-step-copy-partition-distribution>
+   <slave_transformation>N</slave_transformation>
+</transformation>
