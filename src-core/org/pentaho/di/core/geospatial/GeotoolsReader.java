@@ -1,6 +1,5 @@
 package org.pentaho.di.core.geospatial;
 
-import java.nio.charset.Charset;
 import java.util.List;
 
 import org.geotools.data.DataStore;
@@ -8,7 +7,6 @@ import org.geotools.data.FeatureSource;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
-
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
