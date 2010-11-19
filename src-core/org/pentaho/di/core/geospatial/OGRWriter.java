@@ -10,7 +10,6 @@ import org.gdal.ogr.Layer;
 import org.gdal.ogr.ogr;
 import org.gdal.ogr.ogrConstants;
 import org.gdal.osr.SpatialReference;
-import org.opengis.metadata.extent.Extent;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.logging.LogWriter;
 import org.pentaho.di.core.row.RowMetaInterface;
