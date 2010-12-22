@@ -1576,5 +1576,16 @@
 		</tooltip>
 		<image-uri>ui/images/TFI.png</image-uri>
 	</step>
-	
+
+	<step id="SpatialAnalysis">
+		<description>
+			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.SpatialAnalysis")
+		</description>
+		<class-name>org.pentaho.di.trans.steps.spatialanalysis.SpatialAnalysisMeta</class-name>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@GEOSPATIAL.getName()</category>
+		<tooltip>
+			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.SpatialAnalysis")
+		</tooltip>
+		<image-uri>ui/images/SA.png</image-uri>
+	</step>	
 </steps>
