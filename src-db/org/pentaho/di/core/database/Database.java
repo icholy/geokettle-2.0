@@ -3355,15 +3355,17 @@ public class Database implements VariableSpace
 		retval.append("(").append(Const.CR);
 		for (int i=0;i<fields.size();i++)
 		{
-			if (i>0) retval.append(", "); else retval.append("  ");
-			
+			// -- Begin GeoKettle modification --			
 			ValueMetaInterface v=fields.getValueMeta(i);
-
-			// -- Begin GeoKettle modification --
+			
 			if ((v.getType()==ValueMetaInterface.TYPE_GEOMETRY) && (databaseMeta.getDatabaseType() == DatabaseMeta.TYPE_DATABASE_POSTGRES)) { 
 				geometryFieldIndex = i;
 				continue;
 			}
+			
+			if (i > 1) retval.append(", "); 
+			else if ((i == 1) && (geometryFieldIndex == -1)) retval.append(", ");  
+			else retval.append("  ");
 			// -- End GeoKettle modification --
 			
 			retval.append(databaseMeta.getFieldDefinition(v, tk, pk, use_autoinc));
