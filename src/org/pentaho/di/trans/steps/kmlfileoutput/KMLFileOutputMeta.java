@@ -5,15 +5,11 @@ import java.util.Map;
 
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
-import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Counter;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleXMLException;
-import org.pentaho.di.core.fileinput.FileInputList;
-import org.pentaho.di.core.geospatial.KMLWriter;
 import org.pentaho.di.core.row.RowMetaInterface;
-import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.repository.Repository;
 import org.pentaho.di.trans.Trans;
@@ -23,58 +19,85 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
-import org.pentaho.di.trans.steps.xbaseinput.Messages;
+import org.pentaho.di.trans.steps.kmlfileinput.Messages;
 import org.w3c.dom.Node;
 
 
 public class KMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 {
-	private String 	kmlFileName;
+	private  String  fileName; 
+	private boolean isFileNameInField;
+	private String fileNameField;
+	private String featureNameField;
+	private String featureDescField;
+	private boolean exportingFeatureName;
+	private boolean exportingFeatureDesc;
 	
-//    /** Are we accepting filenames in Output rows?  */
-//    private boolean acceptingFilenames;
-//    
-//    /** The field in which the filename is placed */
-//    private String  acceptingField;
-//
-//    /** The stepname to accept filenames from */
-//    private String  acceptingStepName;
-//
-//    /** The step to accept filenames from */
-//    private StepMeta acceptingStep;
-//
-//    /** Flag indicating that we should include the filename in the output */
-//    private boolean includeFilename;
-//
-//    /** The name of the field in the output containing the filename */
-//    private String filenameField;
-
-
 	public KMLFileOutputMeta()
 	{
 		super(); // allocate BaseStepMeta
 	}
-	
-	/**
-     * @return Returns the kmlFileName.
-     */
-    public String getKmlFileName()
-    {
-        return kmlFileName;
-    }
-    
-    /**
-     * @param kmlFileName The kmlFileName to set.
-     */
-    public void setKmlFileName(String kmlFileName)
-    {
-        this.kmlFileName = kmlFileName;
-    }
 
     public void loadXML(Node stepnode, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleXMLException {
 		readData(stepnode);
 	}
-
+	
+	public String getFileName(){
+        return fileName;
+    }
+    
+    public void setFileName(String  fileName){
+        this.fileName = fileName;
+    }
+    
+    public String getFileNameField(){
+        return fileNameField;
+    }
+    
+    public void setFileNameField(String fileNameField){
+        this.fileNameField = fileNameField;
+    }
+    
+    public String getFeatureNameField(){
+        return featureNameField;
+    }
+    
+    public void setFeatureNameField(String featureNameField){
+        this.featureNameField = featureNameField;
+    }
+    
+    public String getFeatureDescField(){
+        return featureDescField;
+    }
+    
+    public void setFeatureDescField(String featureDescField){
+        this.featureDescField = featureDescField;
+    }
+    
+    public boolean isFileNameInField(){
+        return isFileNameInField;
+    }
+    
+    public void setFileNameInField(boolean isfileNameInField){
+        this.isFileNameInField = isfileNameInField;
+    }   
+    
+    public boolean isExportingFeatureName(){
+        return exportingFeatureName;
+    }
+    
+    public void setExportingFeatureName(boolean exportingFeatureName){
+        this.exportingFeatureName = exportingFeatureName;
+    }
+    
+    public boolean isExportingFeatureDesc(){
+        return exportingFeatureDesc;
+    }
+    
+    public void setExportingFeatureDesc(boolean exportingFeatureDesc){
+        this.exportingFeatureDesc = exportingFeatureDesc;
+    }
+    
 	public Object clone()
 	{
 		KMLFileOutputMeta retval = (KMLFileOutputMeta)super.clone();
@@ -86,7 +109,13 @@ public class KMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	{
 		try
 		{
-			kmlFileName        = XMLHandler.getTagValue(stepnode, "file_kml"); //$NON-NLS-1$
+			fileNameField     = XMLHandler.getTagValue(stepnode, "filenamefield");
+			isFileNameInField  = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "isfilenameinfield"));			
+			fileName    = XMLHandler.getTagValue(stepnode, "filename");
+			exportingFeatureName  = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "exportingfeaturename"));			
+			featureNameField     = XMLHandler.getTagValue(stepnode, "featurenamefield");
+			exportingFeatureDesc  = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "exportingfeaturedesc"));	
+			featureDescField     = XMLHandler.getTagValue(stepnode, "featuredescfield");
 		}
 		catch(Exception e)
 		{
@@ -96,21 +125,26 @@ public class KMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 
 	public void setDefault()
 	{
-		kmlFileName    = null;
+		fileName    = null;
+		fileNameField = null;
+		featureNameField = null;
+		featureDescField = null;
+		isFileNameInField = false;
+		exportingFeatureName = false;
+		exportingFeatureDesc = false;
 	}
 
 	public String getXML()
 	{
 		StringBuffer retval=new StringBuffer();
 		
-		retval.append("    " + XMLHandler.addTagValue("file_kml",    kmlFileName)); //$NON-NLS-1$ //$NON-NLS-2$
-//		retval.append("    " + XMLHandler.addTagValue("include", includeFilename));
-//		retval.append("    " + XMLHandler.addTagValue("include_field", filenameField));
-//
-//		retval.append("    " + XMLHandler.addTagValue("accept_filenames", acceptingFilenames));
-//		retval.append("    " + XMLHandler.addTagValue("accept_field", acceptingField));
-//		retval.append("    " + XMLHandler.addTagValue("accept_stepname", (acceptingStep!=null?acceptingStep.getName():"") ));
-
+		retval.append("    ").append(XMLHandler.addTagValue("filename", fileName));
+		retval.append("    ").append(XMLHandler.addTagValue("isfilenameinfield", isFileNameInField));
+		retval.append("    ").append(XMLHandler.addTagValue("featurenamefield", featureNameField));  	
+		retval.append("    ").append(XMLHandler.addTagValue("featuredescfield", featureDescField));  			
+		retval.append("    ").append(XMLHandler.addTagValue("filenamefield", fileNameField));  	
+		retval.append("    ").append(XMLHandler.addTagValue("exportingfeaturename", exportingFeatureName));
+		retval.append("    ").append(XMLHandler.addTagValue("exportingfeaturedesc", exportingFeatureDesc));
 		return retval.toString();
 	}
 
@@ -119,15 +153,13 @@ public class KMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	{
 		try
 		{
-			kmlFileName              =      rep.getStepAttributeString (id_step, "file_kml"); //$NON-NLS-1$
-            
-//            includeFilename = rep.getStepAttributeBoolean(id_step, "include");
-//            filenameField = rep.getStepAttributeString(id_step, "include_field");
-//
-//            acceptingFilenames = rep.getStepAttributeBoolean(id_step, "accept_filenames");
-//            acceptingField     = rep.getStepAttributeString (id_step, "accept_field");
-//            acceptingStepName  = rep.getStepAttributeString (id_step, "accept_stepname");
-
+			fileName    = rep.getStepAttributeString (id_step, "filename");
+			isFileNameInField   = rep.getStepAttributeBoolean(id_step, "isfilenameinfield");	
+			fileNameField     = rep.getStepAttributeString (id_step, "filenamefield");
+			featureNameField     = rep.getStepAttributeString (id_step, "featurenamefield");
+			featureDescField     = rep.getStepAttributeString (id_step, "featuredescfield");
+			exportingFeatureName   = rep.getStepAttributeBoolean(id_step, "exportingfeaturename");	
+			exportingFeatureDesc  = rep.getStepAttributeBoolean(id_step, "exportingfeaturedesc");	
 		}
 		catch(Exception e)
 		{
@@ -140,14 +172,13 @@ public class KMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	{
 		try
 		{
-			rep.saveStepAttribute(id_transformation, id_step, "file_kml",        kmlFileName); //$NON-NLS-1$
-            
-//            rep.saveStepAttribute(id_transformation, id_step, "include", includeFilename);
-//            rep.saveStepAttribute(id_transformation, id_step, "include_field", filenameField);
-//
-//            rep.saveStepAttribute(id_transformation, id_step, "accept_filenames", acceptingFilenames); //$NON-NLS-1$
-//            rep.saveStepAttribute(id_transformation, id_step, "accept_field", acceptingField); //$NON-NLS-1$
-//            rep.saveStepAttribute(id_transformation, id_step, "accept_stepname", (acceptingStep!=null?acceptingStep.getName():"") ); //$NON-NLS-1$
+			rep.saveStepAttribute(id_transformation, id_step, "filenamefield", fileNameField);
+			rep.saveStepAttribute(id_transformation, id_step, "featurenamefield", featureNameField);
+			rep.saveStepAttribute(id_transformation, id_step, "featuredescfield", featureDescField);
+			rep.saveStepAttribute(id_transformation, id_step, "filename", fileName);
+			rep.saveStepAttribute(id_transformation, id_step, "isfilenameinfield", isFileNameInField);
+			rep.saveStepAttribute(id_transformation, id_step, "exportingfeaturename", exportingFeatureName);
+			rep.saveStepAttribute(id_transformation, id_step, "exportingfeaturedesc", exportingFeatureDesc);
 		}
 		catch(Exception e)
 		{
@@ -156,74 +187,41 @@ public class KMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	}
 
 	public void check(List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta, RowMetaInterface prev,
-			String[] Output, String[] output, RowMetaInterface info)
+			String[] input, String[] output, RowMetaInterface info)
 	{
 		CheckResult cr;
 		
-		if (kmlFileName==null)
-		{
-            if ( false /* isAcceptingFilenames() */ ) 
-            {
-            	/*
-        	     if ( Const.isEmpty(getAcceptingStepName()) ) 
-           	     {
-        	    	 cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("XBaseOutput.Log.Error.InvalidAcceptingStepName"), stepMeta); //$NON-NLS-1$
-        	    	 remarks.add(cr);
-                 }
-           	
-           	     if ( Const.isEmpty(getAcceptingField()) )
-           	     {
-           	    	cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("XBaseOutput.Log.Error.InvalidAcceptingFieldName"), stepMeta); //$NON-NLS-1$
-           	    	remarks.add(cr);
-                 }
-                 */
-            }
-            else
-            {		
+		if (!isFileNameInField){
+			if (fileName ==null){
 			    cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("KMLFileOutputMeta.Remark.PleaseSelectFileToUse"), stepMeta); //$NON-NLS-1$
 			    remarks.add(cr);
-            }
-		}
-        else
-        {
+			}
+		}else if (fileNameField == null){
+			cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("KMLFileOutputMeta.Remark.PleaseSelectFileField"), stepMeta); //$NON-NLS-1$
+		    remarks.add(cr);
+		}else{	
+			if (featureNameField == null){
+				cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("KMLFileOutputMeta.Remark.PleaseSelectFeatureNameField"), stepMeta); //$NON-NLS-1$
+			    remarks.add(cr);
+			}
+			if (featureDescField == null){
+				cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("KMLFileOutputMeta.Remark.PleaseSelectFeatureDescField"), stepMeta); //$NON-NLS-1$
+			    remarks.add(cr);
+			}
             cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("KMLFileOutputMeta.Remark.FileToUseIsSpecified"), stepMeta); //$NON-NLS-1$
             remarks.add(cr);
-
-            KMLWriter gtr = null;
-            try
+            if (input.length > 0)
             {
-            	gtr = new KMLWriter(getURLfromFileName(transMeta.environmentSubstitute(kmlFileName)));
-            	gtr.open();
-                cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("KMLFileOutputMeta.Remark.FileExistsAndCanBeOpened"), stepMeta); //$NON-NLS-1$
-                remarks.add(cr);
-                
-//                RowMetaInterface r = gtr.getFields();
-//                RowMetaInterface r = null;
-//            
-//                cr = new CheckResult(CheckResult.TYPE_RESULT_OK, r.size()+Messages.getString("KMLFileOutputtMeta.Remark.OutputFieldsCouldBeDetermined"), stepMeta); //$NON-NLS-1$
-//                remarks.add(cr);
-            }
-            catch(KettleException ke)
-            {
-                cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("KMLFileOutputMeta.Remark.NoFieldsCouldBeFoundInFileBecauseOfError")+Const.CR+ke.getMessage(), stepMeta); //$NON-NLS-1$
+                cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("KMLFileOutputMeta.CheckResult.ReceivingInfoFromOtherSteps"), stepMeta); //$NON-NLS-1$
                 remarks.add(cr);
             }
-//            catch (java.net.MalformedURLException urle)
-//            {
-//                cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("KMLFileOutputMeta.Remark.NoFieldsCouldBeFoundInFileBecauseOfError")+Const.CR+urle.getMessage(), stepinfo); //$NON-NLS-1$
-//                remarks.add(cr);
-//            }
-            finally
+            else
             {
-            	if (gtr != null) gtr.close();
+                cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("KMLFileOutputMeta.CheckResult.NoInpuReceived"), stepMeta); //$NON-NLS-1$
+                remarks.add(cr);
             }
         }
 	}
-	
-//	public StepDialogInterface getDialog(Shell shell, StepMetaInterface info, TransMeta transMeta, String name)
-//	{
-//		return new KMLFileOutputDialog(shell, info, transMeta, name);
-//	}
 	
 	public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr, TransMeta tr, Trans trans)
 	{
@@ -234,35 +232,4 @@ public class KMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	{
 		return new KMLFileOutputData();
 	}
-
-    
-//    public String[] getFilePaths()
-//    {
-//        return FileIutputList.createFilePathList(new String[] { dbfFileName}, new String[] { null }, new String[] { "N" });
-//    }
-//    
-
-    public FileInputList getTextFileList(VariableSpace space)
-    {
-        return FileInputList.createFileList(space, new String[] { kmlFileName }, new String[] { null }, new String[] { "Y" });
-    }
-
-//    public String[] getUsedLibraries()
-//    {
-//        return new String[] { "javadbf.jar", };
-//    }
-
-//    public java.net.URL getKmlFileNameURL() {
-//    	return getURLfromFileName(getKmlFileName());
-//    }
-    
-    private java.net.URL getURLfromFileName(String filename) {
-    	try {
-    		return (new java.io.File(filename)).toURI().toURL();
-    	}
-    	catch (java.net.MalformedURLException urle) {
-    		// logError(Messages.getString("KMLFileOutput.Log.Error.MalformedURL"));
-    	}
-    	return null;
-    }   
 }

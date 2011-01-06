@@ -1,8 +1,10 @@
 package org.pentaho.di.trans.steps.gisfileinput;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.vfs.FileObject;
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
 import org.pentaho.di.core.Const;
@@ -18,6 +20,7 @@ import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.variables.VariableSpace;
+import org.pentaho.di.core.vfs.KettleVFS;
 import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.repository.Repository;
 import org.pentaho.di.trans.Trans;
@@ -27,57 +30,48 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
-import org.pentaho.di.trans.steps.xbaseinput.Messages;
+import org.pentaho.di.trans.steps.gisfileinput.Messages;
 import org.w3c.dom.Node;
 
 
 public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 {
-	private String 	gisFileName;
 	private int 	rowLimit;
 	private boolean rowNrAdded;
 	private String  rowNrField;
+	private  String  fileName; 
+	private boolean isFileNameInField;
+	private String fileNameField;
 	
-//    /** Are we accepting filenames in input rows?  */
-//    private boolean acceptingFilenames;
-//    
-//    /** The field in which the filename is placed */
-//    private String  acceptingField;
-//
-//    /** The stepname to accept filenames from */
-//    private String  acceptingStepName;
-//
-//    /** The step to accept filenames from */
-//    private StepMeta acceptingStep;
-//
-//    /** Flag indicating that we should include the filename in the output */
-//    private boolean includeFilename;
-//
-//    /** The name of the field in the output containing the filename */
-//    private String filenameField;
-
-
 	public GISFileInputMeta()
 	{
 		super(); // allocate BaseStepMeta
 	}
-	
-	/**
-     * @return Returns the gisFileName.
-     */
-    public String getGisFileName()
-    {
-        return gisFileName;
+    
+	public String getFileName(){
+        return fileName;
     }
     
-    /**
-     * @param gisFileName The gisFileName to set.
-     */
-    public void setGisFileName(String gisFileName)
-    {
-        this.gisFileName = gisFileName;
+    public void setFileName(String  fileName){
+        this.fileName = fileName;
     }
     
+    public String getFileNameField(){
+        return fileNameField;
+    }
+    
+    public void setFileNameField(String fileNameField){
+        this.fileNameField = fileNameField;
+    }
+    
+    public boolean isFileNameInField(){
+        return isFileNameInField;
+    }
+    
+    public void setFileNameInField(boolean isfileNameInField){
+        this.isFileNameInField = isfileNameInField;
+    }
+
     /**
      * @return Returns the rowLimit.
      */
@@ -142,18 +136,11 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	{
 		try
 		{
-			gisFileName        = XMLHandler.getTagValue(stepnode, "file_gis"); //$NON-NLS-1$
-			rowLimit           = Const.toInt(XMLHandler.getTagValue(stepnode, "limit"), 0); //$NON-NLS-1$
+			fileNameField     = XMLHandler.getTagValue(stepnode, "filenamefield");
+			isFileNameInField  = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "isfilenameinfield"));			
+			fileName    = XMLHandler.getTagValue(stepnode, "filename");rowLimit           = Const.toInt(XMLHandler.getTagValue(stepnode, "limit"), 0); //$NON-NLS-1$
 			rowNrAdded         = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "add_rownr")); //$NON-NLS-1$ //$NON-NLS-2$
 			rowNrField         = XMLHandler.getTagValue(stepnode, "field_rownr"); //$NON-NLS-1$
-            
-//            includeFilename    = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "include"));
-//            filenameField      = XMLHandler.getTagValue(stepnode, "include_field");
-//            
-//            acceptingFilenames = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "accept_filenames")); //$NON-NLS-1$
-//            acceptingField     = XMLHandler.getTagValue(stepnode, "accept_field"); //$NON-NLS-1$
-//            acceptingStepName  = XMLHandler.getTagValue(stepnode, "accept_stepname"); //$NON-NLS-1$
-
 		}
 		catch(Exception e)
 		{
@@ -163,47 +150,38 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 
 	public void setDefault()
 	{
-		gisFileName    = null;
+		fileName    = null;
+		fileNameField = null;
+		isFileNameInField = false;
 		rowLimit    = 0;
 		rowNrAdded   = false;
 		rowNrField = null;
 	}
-	
-//    public String getLookupStepname()
-//    {
-//        if (acceptingFilenames &&
-//            acceptingStep!=null && 
-//            !Const.isEmpty( acceptingStep.getName() )
-//           ) 
-//            return acceptingStep.getName();
-//        return null;
-//    }
-
-//    public void searchInfoAndTargetSteps(ArrayList steps)
-//    {
-//        acceptingStep = StepMeta.findStep(steps, acceptingStepName);
-//    }
-//
-//    public String[] getInfoSteps()
-//    {
-//        if (acceptingFilenames && acceptingStep!=null)
-//        {
-//            return new String[] { acceptingStep.getName() };
-//        }
-//        return super.getInfoSteps();
-//    }
     
-	public RowMetaInterface getOutputFields(FileInputList files, String name)
+    @Override
+    public void getFields(RowMetaInterface row, String name, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) throws KettleStepException {   	
+        FileObject fo;
+        if (!isFileNameInField()){
+			try {
+					fo = KettleVFS.getFileObject(fileName);
+			} catch (IOException e) {
+				throw new KettleStepException(Messages.getString("GISFileInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$
+			}
+	    	if (fo == null)
+	        {
+	            throw new KettleStepException(Messages.getString("GISFileInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$
+	        }
+	
+	        row.addRowMeta( getOutputFields(fo, name) );
+        }
+	}
+    
+	public RowMetaInterface getOutputFields(FileObject fo, String name)
 		throws KettleStepException
 	{
 		RowMetaInterface rowMeta = new RowMeta();
-				
-		// if (r==null) row=new Row(); // give back values
-		// else         row=r;         // add to the existing row of values...
-
-        // FileInputList fileList = getTextFileList();
 		
-        if (files.nrOfFiles()==0)
+        if (fo==null)
         {
             throw new KettleStepException(Messages.getString("GISFileInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$
         }
@@ -213,8 +191,7 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
         GeotoolsReader gtr = null;
 		try
 		{
-			files.getFile(0).getName().getURI();
-			java.net.URL fileURL = files.getFile(0).getURL();
+			java.net.URL fileURL = fo.getURL();
             gtr = new GeotoolsReader(fileURL);
             gtr.open();
 			RowMetaInterface add = gtr.getFields();
@@ -241,46 +218,26 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	    	rowMeta.addValueMeta(rnr);
 	    }
         
-//        if (includeFilename)
-//        {
-//            Value v = new Value(filenameField, Value.VALUE_TYPE_STRING);
-//            v.setLength(100, -1);
-//            v.setOrigin(name);
-//            row.addValue(v);
-//        }
-		
-		return rowMeta;
-	}
-	
-    @Override
-    public void getFields(RowMetaInterface row, String name, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) throws KettleStepException {
-
-    	FileInputList fileList = getTextFileList(space);
-        if (fileList.nrOfFiles()==0)
+        if (isFileNameInField)
         {
-            throw new KettleStepException(Messages.getString("XBaseInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$
+            ValueMetaInterface v = new ValueMeta(fileNameField, ValueMeta.TYPE_STRING);
+            v.setLength(100, -1);
+            v.setOrigin(name);
+            rowMeta.addValueMeta(v);
         }
-
-        row.addRowMeta( getOutputFields(fileList, name) );
-	}
-	
+		return rowMeta;
+	}	
 
 	public String getXML()
 	{
 		StringBuffer retval=new StringBuffer();
 		
-		retval.append("    " + XMLHandler.addTagValue("file_gis",    gisFileName)); //$NON-NLS-1$ //$NON-NLS-2$
+		retval.append("    ").append(XMLHandler.addTagValue("filename", fileName));
+		retval.append("    ").append(XMLHandler.addTagValue("isfilenameinfield", isFileNameInField));
+		retval.append("    ").append(XMLHandler.addTagValue("filenamefield", fileNameField));  	
 		retval.append("    " + XMLHandler.addTagValue("limit",       rowLimit)); //$NON-NLS-1$ //$NON-NLS-2$
 		retval.append("    " + XMLHandler.addTagValue("add_rownr",   rowNrAdded)); //$NON-NLS-1$ //$NON-NLS-2$
 		retval.append("    " + XMLHandler.addTagValue("field_rownr", rowNrField)); //$NON-NLS-1$ //$NON-NLS-2$
-
-//		retval.append("    " + XMLHandler.addTagValue("include", includeFilename));
-//		retval.append("    " + XMLHandler.addTagValue("include_field", filenameField));
-//
-//
-//		retval.append("    " + XMLHandler.addTagValue("accept_filenames", acceptingFilenames));
-//		retval.append("    " + XMLHandler.addTagValue("accept_field", acceptingField));
-//		retval.append("    " + XMLHandler.addTagValue("accept_stepname", (acceptingStep!=null?acceptingStep.getName():"") ));
 
 		return retval.toString();
 	}
@@ -290,18 +247,12 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	{
 		try
 		{
-			gisFileName              =      rep.getStepAttributeString (id_step, "file_gis"); //$NON-NLS-1$
+			fileName    = rep.getStepAttributeString (id_step, "filename");
+			isFileNameInField   = rep.getStepAttributeBoolean(id_step, "isfilenameinfield");	
+			fileNameField     = rep.getStepAttributeString (id_step, "filenamefield");
 			rowLimit              = (int)rep.getStepAttributeInteger(id_step, "limit"); //$NON-NLS-1$
 			rowNrAdded             =      rep.getStepAttributeBoolean(id_step, "add_rownr"); //$NON-NLS-1$
 			rowNrField           =      rep.getStepAttributeString (id_step, "field_rownr"); //$NON-NLS-1$
-            
-//            includeFilename = rep.getStepAttributeBoolean(id_step, "include");
-//            filenameField = rep.getStepAttributeString(id_step, "include_field");
-//
-//            acceptingFilenames = rep.getStepAttributeBoolean(id_step, "accept_filenames");
-//            acceptingField     = rep.getStepAttributeString (id_step, "accept_field");
-//            acceptingStepName  = rep.getStepAttributeString (id_step, "accept_stepname");
-
 		}
 		catch(Exception e)
 		{
@@ -314,18 +265,13 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	{
 		try
 		{
-			rep.saveStepAttribute(id_transformation, id_step, "file_gis",        gisFileName); //$NON-NLS-1$
+			rep.saveStepAttribute(id_transformation, id_step, "filenamefield", fileNameField);
+			rep.saveStepAttribute(id_transformation, id_step, "filename", fileName);
+			rep.saveStepAttribute(id_transformation, id_step, "isfilenameinfield", isFileNameInField);
 			rep.saveStepAttribute(id_transformation, id_step, "limit",           rowLimit); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "add_rownr",       rowNrAdded); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "field_rownr",     rowNrField); //$NON-NLS-1$
-            
-//            rep.saveStepAttribute(id_transformation, id_step, "include", includeFilename);
-//            rep.saveStepAttribute(id_transformation, id_step, "include_field", filenameField);
-//
-//            rep.saveStepAttribute(id_transformation, id_step, "accept_filenames", acceptingFilenames); //$NON-NLS-1$
-//            rep.saveStepAttribute(id_transformation, id_step, "accept_field", acceptingField); //$NON-NLS-1$
-//            rep.saveStepAttribute(id_transformation, id_step, "accept_stepname", (acceptingStep!=null?acceptingStep.getName():"") ); //$NON-NLS-1$
-		}
+        }
 		catch(Exception e)
 		{
 			throw new KettleException(Messages.getString("GISFileInputMeta.Exception.UnableToSaveMetaDataToRepository")+id_step, e); //$NON-NLS-1$
@@ -337,64 +283,56 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	{
 		CheckResult cr;
 		
-		if (gisFileName==null)
-		{
-            if ( false /* isAcceptingFilenames() */ ) 
-            {
-            	/*
-        	     if ( Const.isEmpty(getAcceptingStepName()) ) 
-           	     {
-        	    	 cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("XBaseInput.Log.Error.InvalidAcceptingStepName"), stepMeta); //$NON-NLS-1$
-        	    	 remarks.add(cr);
-                 }
-           	
-           	     if ( Const.isEmpty(getAcceptingField()) )
-           	     {
-           	    	cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("XBaseInput.Log.Error.InvalidAcceptingFieldName"), stepMeta); //$NON-NLS-1$
-           	    	remarks.add(cr);
-                 }
-                 */
-            }
-            else
-            {		
+		if (!isFileNameInField){
+			if (fileName ==null){
 			    cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("GISFileInputMeta.Remark.PleaseSelectFileToUse"), stepMeta); //$NON-NLS-1$
 			    remarks.add(cr);
-            }
-		}
-        else
-        {
+			}else
+	        {
+	            cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("GISFileInputMeta.Remark.FileToUseIsSpecified"), stepMeta); //$NON-NLS-1$
+	            remarks.add(cr);
+
+	            GeotoolsReader gtr = null;
+	            try
+	            {
+	            	gtr = new GeotoolsReader(getURLfromFileName(transMeta.environmentSubstitute(fileName)));
+	            	gtr.open();
+	                cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("GISFileInputMeta.Remark.FileExistsAndCanBeOpened"), stepMeta); //$NON-NLS-1$
+	                remarks.add(cr);
+	                
+	                RowMetaInterface r = gtr.getFields();
+	            
+	                cr = new CheckResult(CheckResult.TYPE_RESULT_OK, r.size()+Messages.getString("GISFileInputMeta.Remark.OutputFieldsCouldBeDetermined"), stepMeta); //$NON-NLS-1$
+	                remarks.add(cr);
+	            }
+	            catch(KettleException ke)
+	            {
+	                cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("GISFileInputMeta.Remark.NoFieldsCouldBeFoundInFileBecauseOfError")+Const.CR+ke.getMessage(), stepMeta); //$NON-NLS-1$
+	                remarks.add(cr);
+	            }
+	            finally
+	            {
+	            	if (gtr != null) gtr.close();
+	            }
+	        }
+		}else if (fileNameField == null){
+			cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("GISFileInputMeta.Remark.PleaseSelectFileField"), stepMeta); //$NON-NLS-1$
+		    remarks.add(cr);
+		}else{	
             cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("GISFileInputMeta.Remark.FileToUseIsSpecified"), stepMeta); //$NON-NLS-1$
             remarks.add(cr);
-
-            GeotoolsReader gtr = null;
-            try
+            if (input.length > 0)
             {
-            	gtr = new GeotoolsReader(getURLfromFileName(transMeta.environmentSubstitute(gisFileName)));
-            	gtr.open();
-                cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("GISFileInputMeta.Remark.FileExistsAndCanBeOpened"), stepMeta); //$NON-NLS-1$
-                remarks.add(cr);
-                
-                RowMetaInterface r = gtr.getFields();
-            
-                cr = new CheckResult(CheckResult.TYPE_RESULT_OK, r.size()+Messages.getString("GISFileInputMeta.Remark.OutputFieldsCouldBeDetermined"), stepMeta); //$NON-NLS-1$
+                cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("GISFileInputMeta.CheckResult.ReceivingInfoFromOtherSteps"), stepMeta); //$NON-NLS-1$
                 remarks.add(cr);
             }
-            catch(KettleException ke)
+            else
             {
-                cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("GISFileInputMeta.Remark.NoFieldsCouldBeFoundInFileBecauseOfError")+Const.CR+ke.getMessage(), stepMeta); //$NON-NLS-1$
+                cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("GISFileInputMeta.CheckResult.NoInpuReceived"), stepMeta); //$NON-NLS-1$
                 remarks.add(cr);
             }
-            finally
-            {
-            	if (gtr != null) gtr.close();
-            }
-        }
+        }	
 	}
-	
-//	public StepDialogInterface getDialog(Shell shell, StepMetaInterface info, TransMeta transMeta, String name)
-//	{
-//		return new GISFileInputDialog(shell, info, transMeta, name);
-//	}
 	
 	public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr, TransMeta tr, Trans trans)
 	{
@@ -406,35 +344,18 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		return new GISFileInputData();
 	}
 
-    
-//    public String[] getFilePaths()
-//    {
-//        return FileInputList.createFilePathList(new String[] { dbfFileName}, new String[] { null }, new String[] { "N" });
-//    }
-//    
-
     public FileInputList getTextFileList(VariableSpace space)
     {
-        return FileInputList.createFileList(space, new String[] { gisFileName }, new String[] { null }, new String[] { "N" });
+        return FileInputList.createFileList(space, new String[] { fileName }, new String[] { null }, new String[] { "N" });
     }
-
-//    public String[] getUsedLibraries()
-//    {
-//        return new String[] { "javadbf.jar", };
-//    }
-
-//    public java.net.URL getGisFileNameURL() {
-//    	return getURLfromFileName(getGisFileName());
-//    }
     
     private java.net.URL getURLfromFileName(String filename) {
     	try {
     		return (new java.io.File(filename)).toURI().toURL();
     	}
     	catch (java.net.MalformedURLException urle) {
-    		// logError(Messages.getString("GISFileInput.Log.Error.MalformedURL"));
+    		//logError(Messages.getString("GISFileInput.Log.Error.MalformedURL"));
     	}
     	return null;
     }
-    
 }

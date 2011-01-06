@@ -27,7 +27,7 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
-import org.pentaho.di.trans.steps.xbaseinput.Messages;
+import org.pentaho.di.trans.steps.ogrfileinput.Messages;
 import org.w3c.dom.Node;
 
 

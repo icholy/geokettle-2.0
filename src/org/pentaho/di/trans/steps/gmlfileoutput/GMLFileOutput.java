@@ -1,10 +1,8 @@
 package org.pentaho.di.trans.steps.gmlfileoutput;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
 
 import org.apache.commons.vfs.FileObject;
-
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.geospatial.GMLWriter;
@@ -16,6 +14,7 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
+import org.pentaho.di.trans.steps.gmlfileoutput.Messages;
 
 /**
  * Writes data into a GML file.
@@ -31,7 +30,17 @@ public class GMLFileOutput extends BaseStep implements StepInterface {
 	{
 		super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
 	}
-
+	
+	public boolean isFileAlreadyCreated(FileObject fo){
+		if (data.file_gml.isEmpty())
+			return false;
+		for (int i=0;i<data.file_gml.size();i++){
+			if (fo.equals(data.file_gml.get(i)))
+				return true;
+		}	
+		return false;
+	}
+	
 	public boolean processRow(StepMetaInterface smi, StepDataInterface sdi)throws KettleException 
 	{
 		meta = (GMLFileOutputMeta) smi;
@@ -39,63 +48,83 @@ public class GMLFileOutput extends BaseStep implements StepInterface {
 
 		Object[] r = getRow(); // this also waits for a previous step to be
 						// finished.
-		if (r == null) // no more input to be expected...
-		{
-			try{
-				data.gmlwriter.write();
+		if (r == null){ // no more input to be expected...
+			try {
+				for (int i=0;i<data.gmlwriter.size();i++){
+					data.gmlwriter.get(i).write();
+				}
 				return false;
-			} 
-			catch (Exception e){
+			}catch (Exception e) {
 				logError("Because of an error, this step can't continue: ", e);
 				setErrors(1);
 				stopAll();
 				setOutputDone(); // signal end to receiver(s)
 				return false;
+			}finally {
+				for (int i=0;i<data.gmlwriter.size();i++){
+					data.gmlwriter.get(i).close();
+				}
 			}
 		}
 
+		int fileIndex = 0;
+		
 		if (first) 
 		{
 			first = false;
-			data.outputRowMeta = getInputRowMeta().clone();
-
-			try 
-			{
-				data.gmlwriter.createFeatureType(data.outputRowMeta, r,
-						data.file_gml.getURL());
-			} 
-			catch (Exception e) 
-			{
+			try{
+				data.outputRowMeta = getInputRowMeta().clone();
+				if(!meta.isFileNameInField())
+					data.gmlwriter.get(fileIndex).createFeatureType(data.outputRowMeta, r, data.file_gml.get(fileIndex).getURL());
+			} catch (Exception e) {
 				logError("Because of an error, this step can't continue: ", e);
+				data.gmlwriter.get(fileIndex).close();
 				setErrors(1);
 				stopAll();
 				setOutputDone(); // signal end to receiver(s)
 				return false;
 			}
-			// meta.getFields(data.outputRowMeta, getStepname(), null, null,
-			// this);
-			// data.insertRowMeta = getInputRowMeta().clone();
 		}
 
-		try 
-		{
-			data.gmlwriter.putRow(r);
-			/*
-			 * Object[] outputRowData = writeToTable(getInputRowMeta(), r); if
-			 * (outputRowData!=null) { putRow(data.outputRowMeta,
-			 * outputRowData); // in case we want it go further...
-			 * incrementLinesOutput(); } if (checkFeedback(getLinesRead())) {
-			 * if(log.isBasic()) logBasic("linenr "+getLinesRead()); }
-			 */
-		} 
-		catch (Exception e) 
-		{
-			logError("Because of an error, this step can't continue: ", e);
+		try {
+			if(meta.isFileNameInField()){	
+				String fileName = (String) r[getInputRowMeta().indexOfValue(meta.getFileNameField())];
+				FileObject fo = KettleVFS.getFileObject(fileName);
+				if(!isFileAlreadyCreated(fo)){
+					data.file_gml.add(fo); 
+					fileIndex = data.file_gml.indexOf(fo);
+					// Create file if it does not exist
+					if (!data.file_gml.get(fileIndex).exists()) {
+						data.file_gml.get(fileIndex).createFile();
+					}
+					openNextFile(fileIndex);
+					data.outputRowMeta = getInputRowMeta().clone();
+					data.gmlwriter.get(fileIndex).createFeatureType(data.outputRowMeta, r, data.file_gml.get(fileIndex).getURL());
+				}
+				fileIndex = data.file_gml.indexOf(fo);			
+				data.gmlwriter.get(fileIndex).putRow(r);
+				incrementLinesOutput();	
+			}else{//if only one file, simply put row to the only gml writer
+				try {
+					data.gmlwriter.get(fileIndex).putRow(r);
+					incrementLinesOutput();	
+				}catch (Exception e) {
+					logError("Because of an error, this step can't continue: ", e);
+					data.gmlwriter.get(fileIndex).close();
+					setErrors(1);
+					stopAll();
+					setOutputDone(); // signal end to receiver(s)
+					return false;
+				}
+			}
+		}catch (Exception e) {
+			logError("Error creating gml file from field value", e);
+			data.gmlwriter.get(fileIndex).close();
 			setErrors(1);
 			stopAll();
 			setOutputDone(); // signal end to receiver(s)
 			return false;
-		}
+		} 
 		return true;
 	}
 
@@ -104,93 +133,52 @@ public class GMLFileOutput extends BaseStep implements StepInterface {
 		data = (GMLFileOutputData) sdi;
 
 		if (super.init(smi, sdi)) {
-			data.files = meta.getTextFileList(this);
-			data.fileNr = 0;
-
-			if (data.files.nrOfFiles() != 0 /* && !meta.isAcceptingFilenames() */) {
-				data.file_gml = data.files.getFile(0);
-
-				// TODO: do you want to overwrite??
-			}else{
-				try{
-					File file = new File(meta.getGmlFileName());
-
+			try {
+				data.file_gml = new ArrayList <FileObject>();
+				data.gmlwriter = new ArrayList <GMLWriter>();
+				if(!meta.isFileNameInField()){
+					String fileName = meta.getFileName();
+					data.file_gml.add(KettleVFS.getFileObject(fileName)); 
+				
 					// Create file if it does not exist
-					boolean success = file.createNewFile();
-					if (success) {
-						// File did not exist and was created
-					} else {
-						// File already exists
+					if (!data.file_gml.get(0).exists()) {// 0 -> only one file
+						data.file_gml.get(0).createFile();
 					}
-					FileObject fileObj = KettleVFS.getFileObject(meta
-							.getGmlFileName());
-					data.files.addFile(fileObj);
-					data.file_gml = fileObj;
-				} 			
-				catch (IOException e) 
-				{
+					openNextFile(0);
 				}
-			}
-			// try {
-			// // java.net.URL fileURL = (new
-			// java.io.File(meta.getGisFileName())).toURI().toURL();
-			// }
-			// catch(java.net.MalformedURLException urle) {
-			// catch(Exception e) {
-			// // TODO: change for another error message
-			// logError(Messages.getString("GISFileOutput.Log.Error.MalformedURL"));
-			// }
+			}catch (Exception e) {
+				logError("Cannot open/create file " + data.file_gml.get(0).getName().toString(), e);
+				return false;
+			} 
 			return true;
 		}
 		return false;
 	}
 
-	private void openNextFile() throws KettleException {
-		// Close the last file before opening the next...
-		/*
-		 * if (data.xbi!=null) {
-		 * logBasic(Messages.getString("XBaseOutput.Log.FinishedReadingRecords"
-		 * )); //$NON-NLS-1$ data.xbi.close(); }
-		 */
+	private void openNextFile(int fileIndex) throws KettleException {
+		try {
+			data.gmlwriter.add(new GMLWriter(data.file_gml.get(fileIndex).getURL()));
+			data.gmlwriter.get(fileIndex).open();
 
-		// Replace possible environment variables...
-		// data.file_dbf = data.files.getFile(data.fileNr);
-		// data.fileNr++;
-		try 
-		{
-			// data.gtreader = new
-			// be.ibridge.kettle.core.GeotoolsReader(data.file_gis.getURL());
-			data.gmlwriter = new GMLWriter(data.file_gml.getURL());
-			data.gmlwriter.open();
-
-			logBasic(Messages.getString("GMLFileOutput.Log.OpenedGMLFile") + " : [" + data.gmlwriter + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$	     		        	
-			/*
-			 * // Add this to the result file names... ResultFile resultFile =
-			 * new ResultFile(ResultFile.FILE_TYPE_GENERAL, data.file_dbf,
-			 * getTransMeta().getName(), getStepname());
-			 * resultFile.setComment(Messages
-			 * .getString("XBaseOutput.ResultFile.Comment"));
-			 * addResultFile(resultFile);
-			 */
-		} 
-		catch (Exception e) 
-		{
-			logError(Messages.getString("GMLFileOutput.Log.Error.CouldNotOpenGMLFile1") + data.file_gml + Messages.getString("XBaseOutput.Log.Error.CouldNotOpenXBaseFile2") + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
+			logBasic(Messages.getString("GMLFileOutput.Log.OpenedGMLFile") + " : [" + data.gmlwriter.get(fileIndex) + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$	     			
+		}catch (Exception e) {
+			logError(Messages.getString("GMLFileOutput.Log.Error.CouldNotOpenGMLFile1") + data.file_gml.get(fileIndex) + Messages.getString("GMLFileOutput.Log.Error.CouldNotOpenGMLFile2") + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
 			throw new KettleException(e);
 		}
 	}
 
 	public void dispose(StepMetaInterface smi, StepDataInterface sdi)
 	{
-		closeLastFile();
+		closeFiles();
 		super.dispose(smi, sdi);
 	}
 
-	private void closeLastFile() 
+	private void closeFiles() 
 	{
 		logBasic(Messages.getString("GMLFileOutput.Log.FinishedReadingRecords")); //$NON-NLS-1$
-		// data.xbi.close();
-		data.gmlwriter.close();
+		for (int i=0;i<data.gmlwriter.size();i++){
+			data.gmlwriter.get(i).close();
+		}
 	}
 
 	// Run is were the action happens!
@@ -200,7 +188,6 @@ public class GMLFileOutput extends BaseStep implements StepInterface {
 		try 
 		{
 			logBasic(Messages.getString("GMLFileOutput.Log.StartingToRun")); //$NON-NLS-1$
-			openNextFile();
 			while (!isStopped() && processRow(meta, data));
 		} 
 		catch (Exception e) 

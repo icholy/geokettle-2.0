@@ -1,72 +1,80 @@
-/**********************************************************************
- **                                                                   **
- **               This code belongs to the KETTLE project.            **
- **                                                                   **
- ** Kettle, from version 2.2 on, is released into the public domain   **
- ** under the Lesser GNU Public License (LGPL).                       **
- **                                                                   **
- ** For more details, please read the document LICENSE.txt, included  **
- ** in this project                                                   **
- **                                                                   **
- ** http://www.kettle.be                                              **
- ** info@kettle.be                                                    **
- **                                                                   **
- **********************************************************************/
-
-/*
- * Created on 2008-01-27
- * jmathieu, edube
- *
- */
-
 package org.pentaho.di.ui.trans.steps.kmlfileoutput;
 
-import org.eclipse.swt.SWT; // import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.FileDialog; // import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.pentaho.di.core.Const;
+import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleStepException;
+import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
 import org.pentaho.di.trans.steps.kmlfileoutput.KMLFileOutputMeta;
 import org.pentaho.di.trans.steps.kmlfileoutput.Messages;
+import org.pentaho.di.ui.core.dialog.ErrorDialog;
 import org.pentaho.di.ui.core.widget.TextVar;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
-public class KMLFileOutputDialog extends BaseStepDialog implements
-		StepDialogInterface {
-	final static private String[] KMLFILE_FILTER_EXT = new String[] {
-			"*.kml.;*.KML", "*" };
+public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInterface {
 
-	private Label wlFilename;
-	private Button wbFilename;
-	private TextVar wFilename;
-	private FormData fdlFilename, fdbFilename, fdFilename;
-
-	private KMLFileOutputMeta Output;
+	final static private String[] KMLFILE_FILTER_EXT = new String[] {"*.kml;*.KML", "*"};
+	
+	private Label        wlFileName;
+	private Button       wbFileName;
+	private TextVar      wFileName;
+	private FormData     fdlFileName, fdbFileName, fdFileName;
+	
+	private Label wlFileField;
+	private Button wFileField;
+	private FormData fdlFileField,fdFileField;
+	
+	private Label wlExportingFeatureName;
+	private Button wExportingFeatureName;
+	private FormData fdlExportingFeatureName,fdExportingFeatureName;
+	
+	private Label wlExportingFeatureDesc;
+	private Button wExportingFeatureDesc;
+	private FormData fdlExportingFeatureDesc,fdExportingFeatureDesc;
+      
+    private Label wlFileNameField;
+    private CCombo wFileNameField;
+    private FormData fdFileNameField,fdlFileNameField;
+    
+    private Label wlFeatureNameField;
+    private CCombo wFeatureNameField;
+    private FormData fdFeatureNameField,fdlFeatureNameField;
+    
+    private Label wlFeatureDescField;
+    private CCombo wFeatureDescField;
+    private FormData fdFeatureDescField,fdlFeatureDescField;
+    
+	private KMLFileOutputMeta input;
 	private boolean backupChanged;
 
 	public KMLFileOutputDialog(Shell parent, Object out, TransMeta tr,
 			String sname) {
 		super(parent, (BaseStepMeta) out, tr, sname);
-		Output = (KMLFileOutputMeta) out;
+		input = (KMLFileOutputMeta) out;
 	}
 
 	public String open() {
@@ -76,15 +84,15 @@ public class KMLFileOutputDialog extends BaseStepDialog implements
 		shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX
 				| SWT.MIN);
 		props.setLook(shell);
-		setShellImage(shell, Output);
+		setShellImage(shell, input);
 
 		ModifyListener lsMod = new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
-				Output.setChanged();
+				input.setChanged();
 			}
 		};
-		backupChanged = Output.hasChanged();
-
+		backupChanged = input.hasChanged();
+		
 		FormLayout formLayout = new FormLayout();
 		formLayout.marginWidth = Const.FORM_MARGIN;
 		formLayout.marginHeight = Const.FORM_MARGIN;
@@ -115,38 +123,224 @@ public class KMLFileOutputDialog extends BaseStepDialog implements
 		wStepname.setLayoutData(fdStepname);
 
 		// Filename line
-		wlFilename = new Label(shell, SWT.RIGHT);
-		wlFilename.setText(Messages.getString("System.Label.Filename")); //$NON-NLS-1$
-		props.setLook(wlFilename);
-		fdlFilename = new FormData();
-		fdlFilename.left = new FormAttachment(0, 0);
-		fdlFilename.top = new FormAttachment(wStepname, margin);
-		fdlFilename.right = new FormAttachment(middle, -margin);
-		wlFilename.setLayoutData(fdlFilename);
+		wlFileName = new Label(shell, SWT.RIGHT);
+		wlFileName.setText(Messages.getString("System.Label.Filename")); //$NON-NLS-1$
+		props.setLook(wlFileName);
+		fdlFileName = new FormData();
+		fdlFileName.left = new FormAttachment(0, 0);
+		fdlFileName.top = new FormAttachment(wStepname, margin);
+		fdlFileName.right = new FormAttachment(middle, -margin);
+		wlFileName.setLayoutData(fdlFileName);
 
-		wbFilename = new Button(shell, SWT.PUSH | SWT.CENTER);
-		props.setLook(wbFilename);
-		wbFilename.setText(Messages.getString("System.Button.Browse")); //$NON-NLS-1$
-		fdbFilename = new FormData();
-		fdbFilename.right = new FormAttachment(100, 0);
-		fdbFilename.top = new FormAttachment(wStepname, margin);
-		wbFilename.setLayoutData(fdbFilename);
+		wbFileName=new Button(shell, SWT.PUSH| SWT.CENTER);
+ 		props.setLook(wbFileName);
+		wbFileName.setText(Messages.getString("System.Button.Browse")); //$NON-NLS-1$
+		fdbFileName=new FormData();
+		fdbFileName.right= new FormAttachment(100, 0);
+		fdbFileName.top  = new FormAttachment(wStepname, margin);
+		wbFileName.setLayoutData(fdbFileName);
 
-		wFilename = new TextVar(transMeta, shell, SWT.SINGLE | SWT.LEFT
-				| SWT.BORDER);
-		props.setLook(wFilename);
-		wFilename.addModifyListener(lsMod);
-		fdFilename = new FormData();
-		fdFilename.left = new FormAttachment(middle, 0);
-		fdFilename.right = new FormAttachment(wbFilename, -margin);
-		fdFilename.top = new FormAttachment(wStepname, margin);
-		wFilename.setLayoutData(fdFilename);
-
+		wFileName=new TextVar(transMeta, shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+ 		props.setLook(wFileName);
+		wFileName.addModifyListener(lsMod);
+		fdFileName=new FormData();
+		fdFileName.left = new FormAttachment(middle, 0);
+		fdFileName.right= new FormAttachment(wbFileName, -margin);
+		fdFileName.top  = new FormAttachment(wStepname, margin);
+		wFileName.setLayoutData(fdFileName);
+				        
+		//Is FileName defined in a Field				        
+	    wlFileField=new Label(shell, SWT.RIGHT);
+	    wlFileField.setText(Messages.getString("KMLFileOutputDialog.FileNameInField.Label"));
+        props.setLook(wlFileField);
+        fdlFileField=new FormData();
+        fdlFileField.left = new FormAttachment(0, 0);
+        fdlFileField.right = new FormAttachment(middle, -margin);
+        fdlFileField.top  = new FormAttachment(wFileName, margin*2);
+        wlFileField.setLayoutData(fdlFileField);
+        
+        wFileField=new Button(shell, SWT.CHECK);
+        wFileField.setToolTipText(Messages.getString("KMLFileOutputDialog.FileNameInField.Tooltip"));
+	    props.setLook(wFileField);
+	    fdFileField=new FormData();
+	    fdFileField.right  = new FormAttachment(100, 0);
+	    fdFileField.top   = new FormAttachment(wFileName, margin);
+	    fdFileField.left   = new FormAttachment(middle, 0);
+	    wFileField.setLayoutData(fdFileField);
+	    wFileField.addSelectionListener(new SelectionAdapter()
+        {
+            public void widgetSelected(SelectionEvent arg0)
+            {
+            	activeFileField();
+            	input.setChanged();
+            }
+        }
+        );
+        
+		// FileName field
+		wlFileNameField=new Label(shell, SWT.RIGHT);
+        wlFileNameField.setText(Messages.getString("KMLFileOutputDialog.FileNameField.Label"));
+        props.setLook(wlFileNameField);
+        fdlFileNameField=new FormData();
+        fdlFileNameField.left = new FormAttachment(0, 0);
+        fdlFileNameField.top  = new FormAttachment(wFileField,2* margin);
+        fdlFileNameField.right= new FormAttachment(middle, -margin);
+        wlFileNameField.setLayoutData(fdlFileNameField);
+              
+        wFileNameField=new CCombo(shell, SWT.BORDER | SWT.READ_ONLY);
+        wFileNameField.setToolTipText(Messages.getString("KMLFileOutputDialog.FileNameField.Tooltip"));
+        wFileNameField.setEditable(true);
+        props.setLook(wFileNameField);
+        wFileNameField.addModifyListener(lsMod);
+        fdFileNameField=new FormData();
+        fdFileNameField.left = new FormAttachment(middle, 0);
+        fdFileNameField.top  = new FormAttachment(wFileField, margin);
+        fdFileNameField.right= new FormAttachment(100, -margin);
+        wFileNameField.setLayoutData(fdFileNameField);
+        wFileNameField.addFocusListener(new FocusListener()
+            {
+                public void focusLost(org.eclipse.swt.events.FocusEvent e){
+                }
+            
+                public void focusGained(org.eclipse.swt.events.FocusEvent e){
+                    Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
+                    shell.setCursor(busy);
+                    setPrevField(wFileNameField);
+                    shell.setCursor(null);
+                    busy.dispose();
+                }
+            }
+        );  
+        
+        //Exporting feature name?		        
+	    wlExportingFeatureName=new Label(shell, SWT.RIGHT);
+	    wlExportingFeatureName.setText(Messages.getString("KMLFileOutputDialog.ExportingFeatureName.Label"));
+        props.setLook(wlExportingFeatureName);
+        fdlExportingFeatureName=new FormData();
+        fdlExportingFeatureName.left = new FormAttachment(0, 0);
+        fdlExportingFeatureName.right = new FormAttachment(middle, -margin);
+        fdlExportingFeatureName.top  = new FormAttachment(wFileNameField, margin*2);
+        wlExportingFeatureName.setLayoutData(fdlExportingFeatureName);
+        
+        wExportingFeatureName=new Button(shell, SWT.CHECK);
+        wExportingFeatureName.setToolTipText(Messages.getString("KMLFileOutputDialog.ExportingFeatureName.Tooltip"));
+	    props.setLook(wExportingFeatureName);
+	    fdExportingFeatureName=new FormData();
+	    fdExportingFeatureName.right  = new FormAttachment(100, 0);
+	    fdExportingFeatureName.top   = new FormAttachment(wFileNameField, margin);
+	    fdExportingFeatureName.left   = new FormAttachment(middle, 0);
+	    wExportingFeatureName.setLayoutData(fdExportingFeatureName);
+	    wExportingFeatureName.addSelectionListener(new SelectionAdapter()
+        {
+            public void widgetSelected(SelectionEvent arg0)
+            {
+            	activeFeatureNameField();
+            	input.setChanged();
+            }
+        }
+        );
+	    
+        // Feature Name field
+		wlFeatureNameField=new Label(shell, SWT.RIGHT);
+        wlFeatureNameField.setText(Messages.getString("KMLFileOutputDialog.FeatureNameField.Label"));
+        props.setLook(wlFeatureNameField);
+        fdlFeatureNameField=new FormData();
+        fdlFeatureNameField.left = new FormAttachment(0, 0);
+        fdlFeatureNameField.top  = new FormAttachment(wExportingFeatureName,2* margin);
+        fdlFeatureNameField.right= new FormAttachment(middle, -margin);
+        wlFeatureNameField.setLayoutData(fdlFeatureNameField);
+              
+        wFeatureNameField=new CCombo(shell, SWT.BORDER | SWT.READ_ONLY);
+        wFeatureNameField.setToolTipText(Messages.getString("KMLFileOutputDialog.FeatureNameField.Tooltip"));
+        wFeatureNameField.setEditable(true);
+        props.setLook(wFeatureNameField);
+        wFeatureNameField.addModifyListener(lsMod);
+        fdFeatureNameField=new FormData();
+        fdFeatureNameField.left = new FormAttachment(middle, 0);
+        fdFeatureNameField.top  = new FormAttachment(wExportingFeatureName, margin);
+        fdFeatureNameField.right= new FormAttachment(100, -margin);
+        wFeatureNameField.setLayoutData(fdFeatureNameField);
+        wFeatureNameField.addFocusListener(new FocusListener()
+            {
+                public void focusLost(org.eclipse.swt.events.FocusEvent e){
+                }
+            
+                public void focusGained(org.eclipse.swt.events.FocusEvent e){
+                    Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
+                    shell.setCursor(busy);
+                    setPrevField(wFeatureNameField);
+                    shell.setCursor(null);
+                    busy.dispose();
+                }
+            }
+        ); 
+        
+        //Exporting feature name?		        
+	    wlExportingFeatureDesc=new Label(shell, SWT.RIGHT);
+	    wlExportingFeatureDesc.setText(Messages.getString("KMLFileOutputDialog.ExportingFeatureDesc.Label"));
+        props.setLook(wlExportingFeatureDesc);
+        fdlExportingFeatureDesc=new FormData();
+        fdlExportingFeatureDesc.left = new FormAttachment(0, 0);
+        fdlExportingFeatureDesc.right = new FormAttachment(middle, -margin);
+        fdlExportingFeatureDesc.top  = new FormAttachment(wFeatureNameField, margin*2);
+        wlExportingFeatureDesc.setLayoutData(fdlExportingFeatureDesc);
+        
+        wExportingFeatureDesc=new Button(shell, SWT.CHECK);
+        wExportingFeatureDesc.setToolTipText(Messages.getString("KMLFileOutputDialog.ExportingFeatureDesc.Tooltip"));
+	    props.setLook(wExportingFeatureDesc);
+	    fdExportingFeatureDesc=new FormData();
+	    fdExportingFeatureDesc.right  = new FormAttachment(100, 0);
+	    fdExportingFeatureDesc.top   = new FormAttachment(wFeatureNameField, margin);
+	    fdExportingFeatureDesc.left   = new FormAttachment(middle, 0);
+	    wExportingFeatureDesc.setLayoutData(fdExportingFeatureDesc);
+	    wExportingFeatureDesc.addSelectionListener(new SelectionAdapter()
+        {
+            public void widgetSelected(SelectionEvent arg0)
+            {
+            	activeFeatureDescField();
+            	input.setChanged();
+            }
+        }
+        );
+       
+        // Feature Name field
+		wlFeatureDescField=new Label(shell, SWT.RIGHT);
+        wlFeatureDescField.setText(Messages.getString("KMLFileOutputDialog.FeatureDescField.Label"));
+        props.setLook(wlFeatureDescField);
+        fdlFeatureDescField=new FormData();
+        fdlFeatureDescField.left = new FormAttachment(0, 0);
+        fdlFeatureDescField.top  = new FormAttachment(wExportingFeatureDesc,2* margin);
+        fdlFeatureDescField.right= new FormAttachment(middle, -margin);
+        wlFeatureDescField.setLayoutData(fdlFeatureDescField);
+              
+        wFeatureDescField=new CCombo(shell, SWT.BORDER | SWT.READ_ONLY);
+        wFeatureDescField.setToolTipText(Messages.getString("KMLFileOutputDialog.FeatureDescField.Tooltip"));
+        wFeatureDescField.setEditable(true);
+        props.setLook(wFeatureDescField);
+        wFeatureDescField.addModifyListener(lsMod);
+        fdFeatureDescField=new FormData();
+        fdFeatureDescField.left = new FormAttachment(middle, 0);
+        fdFeatureDescField.top  = new FormAttachment(wExportingFeatureDesc, margin);
+        fdFeatureDescField.right= new FormAttachment(100, -margin);
+        wFeatureDescField.setLayoutData(fdFeatureDescField);
+        wFeatureDescField.addFocusListener(new FocusListener()
+            {
+                public void focusLost(org.eclipse.swt.events.FocusEvent e){
+                }
+            
+                public void focusGained(org.eclipse.swt.events.FocusEvent e){
+                    Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
+                    shell.setCursor(busy);
+                    setPrevField(wFeatureDescField);
+                    shell.setCursor(null);
+                    busy.dispose();
+                }
+            }
+        ); 
+        
 		// Some buttons
 		wOK = new Button(shell, SWT.PUSH);
 		wOK.setText(Messages.getString("System.Button.OK")); //$NON-NLS-1$
-		// wPreview=new Button(shell, SWT.PUSH);
-		// wPreview.setText(Messages.getString("System.Button.Preview")); //$NON-NLS-1$
 		wCancel = new Button(shell, SWT.PUSH);
 		wCancel.setText(Messages.getString("System.Button.Cancel")); //$NON-NLS-1$
 
@@ -158,8 +352,6 @@ public class KMLFileOutputDialog extends BaseStepDialog implements
 				cancel();
 			}
 		};
-		// lsPreview = new Listener() { public void handleEvent(Event e) {
-		// preview(); } };
 		lsOK = new Listener() {
 			public void handleEvent(Event e) {
 				ok();
@@ -167,7 +359,6 @@ public class KMLFileOutputDialog extends BaseStepDialog implements
 		};
 
 		wCancel.addListener(SWT.Selection, lsCancel);
-		// wPreview.addListener (SWT.Selection, lsPreview);
 		wOK.addListener(SWT.Selection, lsOK);
 
 		lsDef = new SelectionAdapter() {
@@ -178,34 +369,37 @@ public class KMLFileOutputDialog extends BaseStepDialog implements
 
 		wStepname.addSelectionListener(lsDef);
 
-		wFilename.addModifyListener(new ModifyListener() {
+		wFileName.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent arg0) {
-				wFilename.setToolTipText(transMeta
-						.environmentSubstitute(wFilename.getText()));
+				wFileName.setToolTipText(transMeta
+						.environmentSubstitute(wFileName.getText()));
 			}
 		});
 
-		wbFilename.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				FileDialog dialog = new FileDialog(shell, SWT.OPEN);
-				dialog.setFilterExtensions(KMLFILE_FILTER_EXT); //$NON-NLS-1$ //$NON-NLS-2$
-				if (wFilename.getText() != null) {
-					dialog.setFileName(wFilename.getText());
-				}
-
-				dialog
-						.setFilterNames(new String[] {
-								Messages
-										.getString("KMLFileOutputDialog.Filter.KMLFiles"), Messages.getString("System.FileType.AllFiles") }); //$NON-NLS-1$ //$NON-NLS-2$
-
-				if (dialog.open() != null) {
-					String str = dialog.getFilterPath() + Const.FILE_SEPARATOR
-							+ dialog.getFileName();
-					wFilename.setText(str);
+		wbFileName.addSelectionListener
+		(
+			new SelectionAdapter()
+			{
+				public void widgetSelected(SelectionEvent e) 
+				{
+					FileDialog dialog = new FileDialog(shell, SWT.OPEN);
+					dialog.setFilterExtensions(KMLFILE_FILTER_EXT); //$NON-NLS-1$ //$NON-NLS-2$
+					if (wFileName.getText()!=null)
+					{
+						dialog.setFileName(wFileName.getText());
+					}
+						
+					dialog.setFilterNames(new String[] {Messages.getString("KMLFileOutputDialog.Filter.KMLFiles"), Messages.getString("System.FileType.AllFiles")}); //$NON-NLS-1$ //$NON-NLS-2$
+					
+					if (dialog.open()!=null)
+					{
+						String str = dialog.getFilterPath()+Const.FILE_SEPARATOR+dialog.getFileName();
+						wFileName.setText(str);
+					}
 				}
 			}
-		});
-
+		);
+		
 		// Detect X or ALT-F4 or something that kills this window...
 		shell.addShellListener(new ShellAdapter() {
 			public void shellClosed(ShellEvent e) {
@@ -214,11 +408,13 @@ public class KMLFileOutputDialog extends BaseStepDialog implements
 		});
 
 		getData();
-		Output.setChanged(changed);
+		input.setChanged(changed);
 
 		// Set the shell size, based upon previous time...
 		setSize();
-
+		activeFileField();
+		activeFeatureNameField();
+		activeFeatureDescField();
 		shell.open();
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch())
@@ -227,58 +423,109 @@ public class KMLFileOutputDialog extends BaseStepDialog implements
 		return stepname;
 	}
 
-	protected void setFlags() {
-	}
+	private void setPrevField(CCombo combo){
+		try{
+	        String field=  combo.getText();
+	        combo.removeAll();
+				
+			RowMetaInterface r = transMeta.getPrevStepFields(stepname);
+			if (combo.equals(wFeatureNameField) || combo.equals(wFeatureDescField))
+				combo.add(Messages.getString("KMLFileOutputDialog.NoField.Text"));
+			if (r!=null){
+		    	r.getFieldNames();
+			    for (int i=0;i<r.getFieldNames().length;i++){	
+			    	combo.add(r.getFieldNames()[i]);									
+				}
+			}
+			if(field!=null) combo.setText(field);
 
+		}catch(KettleException ke){
+			new ErrorDialog(shell, Messages.getString("KMLFileOutputDialog.FailedToGetFields.DialogTitle"), Messages.getString("KMLFileOutputDialog.FailedToGetFields.DialogMessage"), ke); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+	}
+	
+	private void activeFileField(){
+		wlFileNameField.setEnabled(wFileField.getSelection());
+		wFileNameField.setEnabled(wFileField.getSelection());	
+		wlFileName.setEnabled(!wFileField.getSelection());		
+		wFileName.setEnabled(!wFileField.getSelection());
+		wbFileName.setEnabled(!wFileField.getSelection());
+	}
+	
+	private void activeFeatureNameField(){
+		wlFeatureNameField.setEnabled(wExportingFeatureName.getSelection());
+		wFeatureNameField.setEnabled(wExportingFeatureName.getSelection());	
+	}
+	
+	private void activeFeatureDescField(){
+		wlFeatureDescField.setEnabled(wExportingFeatureDesc.getSelection());
+		wFeatureDescField.setEnabled(wExportingFeatureDesc.getSelection());	
+	}	
+	
 	/**
 	 * Copy information from the meta-data Output to the dialog fields.
-	 */
-	public void getData() {
-		if (Output.getKmlFileName() != null) {
-			wFilename.setText(Output.getKmlFileName());
-			wFilename.setToolTipText(transMeta.environmentSubstitute(Output
-					.getKmlFileName()));
+	 */ 
+	public void getData()
+	{
+		if (!input.isFileNameInField() ) {
+			if (input.getFileName() != null){
+				wFileName.setText(input.getFileName());
+				wFileName.setToolTipText(transMeta.environmentSubstitute(input.getFileName()));
+			}
+		}else {
+			wFileField.setSelection(true);
+			if(input.getFileNameField() !=null)
+				wFileNameField.setText(input.getFileNameField());		
 		}
-
-		setFlags();
+		wExportingFeatureName.setSelection(input.isExportingFeatureName());
+		if(input.isExportingFeatureName())
+			if(input.getFeatureNameField() !=null)
+				wFeatureNameField.setText(input.getFeatureNameField());
+		
+		wExportingFeatureDesc.setSelection(input.isExportingFeatureDesc());
+		if(input.isExportingFeatureDesc())
+			if(input.getFeatureNameField() !=null)
+				wFeatureDescField.setText(input.getFeatureDescField());
 
 		wStepname.selectAll();
 	}
-
-	private void cancel() {
-		stepname = null;
-		Output.setChanged(backupChanged);
+	
+	private void cancel()
+	{
+		stepname=null;
+		input.setChanged(backupChanged);
 		dispose();
 	}
-
-	public void getInfo(KMLFileOutputMeta meta) throws KettleStepException {
-		// copy info to Meta class (Output)
-		meta.setKmlFileName(wFilename.getText());
-
-		if (Const.isEmpty(meta.getKmlFileName()) /*
-												 * &&
-												 * !meta.isAcceptingFilenames()
-												 */) {
-			throw new KettleStepException(
-					Messages
-							.getString("KMLFileOutputDialog.Exception.SpecifyAFileToUse")); //$NON-NLS-1$
-		}
-	}
-
-	private void ok() {
-		try {
+	
+	public void getInfo(KMLFileOutputMeta oneMeta) throws KettleStepException
+	{
+		// copy info to Meta class (input)
+		oneMeta.setFileName( wFileName.getText() );
+		oneMeta.setFileNameInField(wFileField.getSelection());
+		oneMeta.setFileNameField(wFileNameField.getText());	
+		oneMeta.setExportingFeatureName(wExportingFeatureName.getSelection());
+		oneMeta.setFeatureNameField(wFeatureNameField.getText());
+		oneMeta.setExportingFeatureDesc(wExportingFeatureDesc.getSelection());
+		oneMeta.setFeatureDescField(wFeatureDescField.getText());	
+	}	
+	
+	private void ok()
+	{
+		try
+		{
 			stepname = wStepname.getText(); // return value
-			getInfo(Output);
+			getInfo(input);
 			dispose();
-		} catch (KettleStepException e) {
-			MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_ERROR);
+		}
+		catch(KettleStepException e)
+		{
+			MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_ERROR );
 			mb.setMessage(e.toString());
 			mb.setText(Messages.getString("System.Warning")); //$NON-NLS-1$
 			mb.open();
-
+			
 			// Close anyway!
 			dispose();
 		}
 	}
-
 }
