@@ -1,7 +1,7 @@
-<project name="Kettle" default="default" basedir=".">
+<project name="GeoKettle" default="default" basedir=".">
 
 	  <description>
-	      Kettle build file
+	      GeoKettle build file
 	  </description>
 
 	  <tstamp prefix="start"/>
@@ -63,7 +63,7 @@
 	  -->
 	
 	  <target name="compile-core" depends="init" description="compile the core source code " >
-	  	<echo>Compiling Kettle CORE...</echo>
+	  	<echo>Compiling GeoKettle CORE...</echo>
         <javac fork="true"
             destdir="${classes-core}"
             target="5"
@@ -82,7 +82,7 @@
 	  </target>
 	
 	  <target name="compile-db" depends="compile-core" description="compile the db source code " >
-	  	<echo>Compiling Kettle DB...</echo>
+	  	<echo>Compiling GeoKettle DB...</echo>
       <javac fork="true"
           destdir="${classes-db}"
           target="5"
@@ -104,7 +104,7 @@
 
 
 	  <target name="compile" depends="compile-db" description="compile the source " >
-	  	<echo>Compiling Kettle...</echo>
+	  	<echo>Compiling GeoKettle...</echo>
         <javac fork="true"
             destdir="${classes}"
             target="5"
@@ -125,7 +125,7 @@
 	  </target>
 	  
 	  <target name="compile-ui" depends="compile-db, compile" description="compile the UI source " >
-	  	<echo>Compiling Kettle UI...</echo>
+	  	<echo>Compiling GeoKettle UI...</echo>
 	    <javac 
 	    	   destdir="${classes-ui}"
 	    	   target="5"
@@ -165,7 +165,7 @@
 		  -->
 
 		  <target name="compileTests" depends="kettle-core,kettle" description="compile the tests" >
-		  	<echo>Compiling Kettle tests...</echo>
+		  	<echo>Compiling GeoKettle tests...</echo>
 		    <javac srcdir="${test}" 
 		    	   destdir="${testClasses}"
 		    	   target="5"
@@ -228,7 +228,7 @@
 	  -->
 
 	  <target name="javadoc" depends="compile" description="compile the javadoc api" >
-	  	<echo>Compiling the Kettle core API javadocs...</echo>
+	  	<echo>Compiling the GeoKettle core API javadocs...</echo>
         <javadoc 
       	destdir="${api-core}" 
       	access="public" 
@@ -245,7 +245,7 @@
       	nodeprecated="false" 
       	packagenames ="org.pentaho.di.*" 
       	sourcepath="${src-core}" 
-      	doctitle="Kettle core API documentation">
+      	doctitle="GeoKettle core API documentation">
               <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
       	<classpath refid="cp-kettle"/>
       </javadoc>
@@ -266,15 +266,15 @@
 	      	nodeprecated="false" 
 	      	packagenames ="org.pentaho.di.*" 
 	      	sourcepath="${src}" 
-	      	doctitle="Kettle API documentation">
+	      	doctitle="GeoKettle API documentation">
 	              <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
 	      	<classpath refid="cp-kettle"/>
 	      </javadoc>
 
 	  </target>
 	
-	  <target name="javadoc_zip" depends="javadoc" description="generate a zip file containing the Kettle javadoc">
-	  	<echo>Generating the Kettle javadoc zip file ...</echo>
+	  <target name="javadoc_zip" depends="javadoc" description="generate a zip file containing the GeoKettle javadoc">
+	  	<echo>Generating the GeoKettle javadoc zip file ...</echo>
 	  	<jar jarfile="${dist.dir}/${product.name}-${product.release.type}-javadoc-${release.version}${release.status.token}.zip" 
 	    	 basedir="${docs}" 
 	    	 includes="api/**/* api-core/**/*"
@@ -284,12 +284,12 @@
 	
 	  <!--
 	       ==========================
-	             Kettle library
+	             GeoKettle library
 	       ==========================
 	  -->
 	
 	  <target name="kettle-core" depends="compile-core, copy-core" description="generate the kettle core library kettle-core.jar">
-	  	<echo>Generating the Kettle core library kettle-core.jar ...</echo>
+	  	<echo>Generating the GeoKettle core library kettle-core.jar ...</echo>
 	  	<jar jarfile="${lib}/kettle-core.jar" 
 	    	 basedir="${classes-core}" 
 	    	 includes="**/* ${version.file.path}"
@@ -308,7 +308,7 @@
 	  </target>
 		
 	  <target name="kettle-db" depends="compile-db, copy-db" description="generate the kettle db library kettle-db.jar">
-	  	<echo>Generating the Kettle DB library kettle-db.jar ...</echo>
+	  	<echo>Generating the GeoKettle DB library kettle-db.jar ...</echo>
 	  	<jar jarfile="${lib}/kettle-db.jar" 
 	    	 basedir="${classes-db}" 
 	    	 includes="**/* ${version.file.path}"
@@ -327,7 +327,7 @@
 	  </target>
 	
 	  <target name="kettle" depends="compile, copy" description="generate the kettle library kettle-engine.jar">
-	  	<echo>Generating the Kettle library kettle-engine.jar ...</echo>
+	  	<echo>Generating the GeoKettle library kettle-engine.jar ...</echo>
 	  	<jar jarfile="${lib}/kettle-engine.jar" 
 	    	 basedir="${classes}" 
 	    	 includes="**/* ${version.file.path}"
@@ -346,7 +346,7 @@
 	  </target>	
 
 	  <target name="kettle-ui" depends="compile-ui" description="generate the kettle library kettle-ui-swt.jar">
-	  	<echo>Generating the Kettle library kettle-ui-swt.jar ...</echo>
+	  	<echo>Generating the GeoKettle library kettle-ui-swt.jar ...</echo>
 	  	<jar jarfile="${lib}/kettle-ui-swt.jar" 
 	    	 basedir="${classes-ui}" 
 	    	 includes="**/* ${version.file.path}"
@@ -461,6 +461,14 @@
 	  			<fileset dir="${extra}" includes="**/*"/>
 	  			</copy>
 
+	        <!-- xsd stuff for JAK lib. -->
+  			<mkdir dir="${distrib}/src"/>
+	  		<mkdir dir="${distrib}/src/main"/>
+  			<copy todir="${distrib}/src/main">
+  				<fileset dir="${src}/main" includes="**/*"/>
+  			</copy>
+
+	  	
 	  </target>
 
 	  <!--
@@ -470,7 +478,7 @@
 	  -->
 		
 	  <target name="zip" depends="distrib" description="generate the ${impl.productID}-${version}-r${revision}.zip file">
-	  	<echo>Generating the Kettle distribution package ${impl.productID}-${version}-r${revision}.zip ...</echo>
+	  	<echo>Generating the GeoKettle distribution package ${impl.productID}-${version}-r${revision}.zip ...</echo>
 	  	<jar jarfile="${dist.dir}/${impl.productID}-${version}-r${revision}.zip" 
 	    	 basedir="${distrib}" 
 	    	 includes="**/*"
@@ -484,8 +492,8 @@
 	       ==========================
 	  -->
 		
-	  <target name="sourcezip" depends="init" description="generate the Kettle-src-${version}-${release.build.number}-r${revision}.zip file">
-	  	<echo>Generating the Kettle source packge zip file (${impl.productID}-src-${version}-r${revision}.zip) ...</echo>
+	  <target name="sourcezip" depends="init" description="generate the GeoKettle-src-${version}-${release.build.number}-r${revision}.zip file">
+	  	<echo>Generating the GeoKettle source packge zip file (${impl.productID}-src-${version}-r${revision}.zip) ...</echo>
 	  	<jar jarfile="${dist.dir}/${impl.productID}-src-${version}-r${revision}.zip" 
 	  		 basedir="."
 	    	 includes="**/*"
@@ -572,9 +580,9 @@
 	   translator.sh
 	--> 
 	
-	<target name="i18n" depends="kettle-ui" description="generate the Kettle-i18n-${version}-r${revision}.zip file">
-		  	<echo>Generating the Kettle i18n distribution package Kettle-i18n-${version}-r${revision}.zip ...</echo>
-		  	<jar jarfile="${dist.dir}/Kettle-i18n-${version}-r${revision}.zip" 
+	<target name="i18n" depends="kettle-ui" description="generate the GeoKettle-i18n-${version}-r${revision}.zip file">
+		  	<echo>Generating the GeoKettle i18n distribution package GeoKettle-i18n-${version}-r${revision}.zip ...</echo>
+		  	<jar jarfile="${dist.dir}/GeoKettle-i18n-${version}-r${revision}.zip" 
 		    	 basedir="." 
 		    	 includes="src/**/*.java src/**/*.properties src-ui/**/*.java src-ui/**/*.properties lib/*.jar libswt/win32/*.jar libswt/linux/x86/*.jar libswt/*.jar libext/log4j-1.2.8.jar libext/spring/spring-core.jar libext/commons/commons-vfs*.jar libext/commons/commons-logging*.jar ui/*.xul Translator.bat translator.sh translator.xml"
 		  	     excludes="**/Thumbs.db **/.svn"
