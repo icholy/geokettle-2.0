@@ -62,36 +62,7 @@ public class GISFileOutput extends BaseStep implements StepInterface {
 				}
 			}
 		}
-		
 		int fileIndex = 0;
-
-		try {
-			if(meta.isFileNameInField()){	
-				String fileName = meta.getDirectory()+"/"+(String) r[getInputRowMeta().indexOfValue(meta.getFileNameField())];
-				FileObject fo = KettleVFS.getFileObject(fileName);
-				if(!isFileAlreadyCreated(fo)){
-					data.file_gis.add(fo); 
-					fileIndex = data.file_gis.indexOf(fo);
-					// Create file if it does not exist
-					if (!data.file_gis.get(fileIndex).exists()) {
-						data.file_gis.get(fileIndex).createFile();
-					}
-					openNextFile(fileIndex);
-					data.outputRowMeta = getInputRowMeta().clone();
-					data.gtwriter.get(fileIndex).createSimpleFeatureType(data.outputRowMeta, r, data.file_gis.get(fileIndex).getURL());
-				}
-				fileIndex = data.file_gis.indexOf(fo);			
-				data.gtwriter.get(fileIndex).putRow(r);
-				incrementLinesOutput();		
-			}
-		}catch (Exception e) {
-			logError("Error creating gis file from field value", e);
-			data.gtwriter.get(fileIndex).close();
-			setErrors(1);
-			stopAll();
-			setOutputDone(); // signal end to receiver(s)
-			return false;
-		} 
 		
 		if (first) {
 			first = false;
@@ -108,19 +79,47 @@ public class GISFileOutput extends BaseStep implements StepInterface {
 				return false;
 			}
 		}
-		if (!meta.isFileNameInField()){//if only one file, simply put row to the only geotools writer
-			try {
+
+		try {
+			if(meta.isFileNameInField()){	
+				String fileName = (String) r[getInputRowMeta().indexOfValue(meta.getFileNameField())];
+				FileObject fo = KettleVFS.getFileObject(fileName);
+				if(!isFileAlreadyCreated(fo)){
+					data.file_gis.add(fo); 
+					fileIndex = data.file_gis.indexOf(fo);
+					// Create file if it does not exist
+					if (!data.file_gis.get(fileIndex).exists()) {
+						data.file_gis.get(fileIndex).createFile();
+					}
+					openNextFile(fileIndex);
+					data.outputRowMeta = getInputRowMeta().clone();
+					data.gtwriter.get(fileIndex).createSimpleFeatureType(data.outputRowMeta, r, data.file_gis.get(fileIndex).getURL());
+				}
+				
+				fileIndex = data.file_gis.indexOf(fo);			
 				data.gtwriter.get(fileIndex).putRow(r);
-				incrementLinesOutput();
-			}catch (Exception e) {
-				logError("Because of an error, this step can't continue: ", e);
-				data.gtwriter.get(fileIndex).close();
-				setErrors(1);
-				stopAll();
-				setOutputDone(); // signal end to receiver(s)
-				return false;
+				incrementLinesOutput();						
+			}else{//if only one file, simply put row to the only geotools writer
+				try {
+					data.gtwriter.get(fileIndex).putRow(r);
+					incrementLinesOutput();	
+				}catch (Exception e) {
+					logError("Because of an error, this step can't continue: ", e);
+					data.gtwriter.get(fileIndex).close();
+					setErrors(1);
+					stopAll();
+					setOutputDone(); // signal end to receiver(s)
+					return false;
+				}
 			}
-		}
+		}catch (Exception e) {
+			logError("Error creating gis file from field value", e);
+			data.gtwriter.get(fileIndex).close();
+			setErrors(1);
+			stopAll();
+			setOutputDone(); // signal end to receiver(s)
+			return false;
+		} 
 		return true;
 	}
 
@@ -133,8 +132,7 @@ public class GISFileOutput extends BaseStep implements StepInterface {
 				data.file_gis = new ArrayList <FileObject>();
 				data.gtwriter = new ArrayList <GeotoolsWriter>();
 				if(!meta.isFileNameInField()){
-					String fileName = meta.getDirectory()+"/"+meta.getFileName();
-					FileObject fo = KettleVFS.getFileObject(fileName);
+					String fileName = meta.getFileName();
 					data.file_gis.add(KettleVFS.getFileObject(fileName)); 
 				
 					// Create file if it does not exist
@@ -157,9 +155,9 @@ public class GISFileOutput extends BaseStep implements StepInterface {
 			data.gtwriter.add(new GeotoolsWriter(data.file_gis.get(fileIndex).getURL()));
 			data.gtwriter.get(fileIndex).open();
 
-			logBasic(Messages.getString("GISFileOutput.Log.OpenedGISFile") + " : [" + data.gtwriter + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$	     			
+			logBasic(Messages.getString("GISFileOutput.Log.OpenedGISFile") + " : [" + data.gtwriter.get(fileIndex) + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$	     			
 		}catch (Exception e) {
-			logError(Messages.getString("GISFileOutput.Log.Error.CouldNotOpenGISFile1") + data.file_gis + Messages.getString("GISFileOutput.Log.Error.CouldNotOpenGISFile2") + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
+			logError(Messages.getString("GISFileOutput.Log.Error.CouldNotOpenGISFile1") + data.file_gis.get(fileIndex) + Messages.getString("GISFileOutput.Log.Error.CouldNotOpenGISFile2") + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
 			throw new KettleException(e);
 		}
 	}

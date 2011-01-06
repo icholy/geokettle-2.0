@@ -3,17 +3,13 @@ package org.pentaho.di.trans.steps.gisfileoutput;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.vfs.FileName;
-import org.apache.commons.vfs.FileObject;
 import org.eclipse.swt.widgets.Shell;
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
-import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Counter;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleXMLException;
-import org.pentaho.di.core.geospatial.GeotoolsWriter;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.repository.Repository;
@@ -35,19 +31,10 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	private  String  fileName; 
 	private boolean isFileNameInField;
 	private String fileNameField;
-	private String directory;
 
 	public GISFileOutputMeta(){
 		super(); // allocate BaseStepMeta
 	}
-	
-	public void setDirectory(String dir){
-		this.directory=dir;
-	}
-	
-	public String getDirectory(){
-        return directory;
-    }
 	
     public String getFileName(){
         return fileName;
@@ -72,7 +59,7 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
     public void setFileNameInField(boolean isfileNameInField){
         this.isFileNameInField = isfileNameInField;
     }
-
+    
     public void loadXML(Node stepnode, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleXMLException {
 		readData(stepnode);
 	}
@@ -84,11 +71,10 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	
 	private void readData(Node stepnode)
 		throws KettleXMLException{
-		try{	
-			directory     = XMLHandler.getTagValue(stepnode, "directory");
+		try{				
 			fileNameField     = XMLHandler.getTagValue(stepnode, "filenamefield");
 			isFileNameInField  = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "isfilenameinfield"));			
-			fileName    = XMLHandler.getTagValue(stepnode, "filename");
+			fileName    = XMLHandler.getTagValue(stepnode, "filename");			
 		}
 		catch(Exception e){
 			throw new KettleXMLException(Messages.getString("GISFileOutputMeta.Exception.UnableToReadStepInformationFromXML"), e); //$NON-NLS-1$
@@ -98,17 +84,16 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	public void setDefault(){
 		fileName    = null;
 		fileNameField = null;
-		directory=null;
 		isFileNameInField = false;
 	}
 
 	public String getXML(){
 		StringBuffer retval=new StringBuffer();	
-		retval.append("    ").append(XMLHandler.addTagValue("filename", fileName));
-		retval.append("    ").append(XMLHandler.addTagValue("isfilenameinfield", isFileNameInField));
-		retval.append("    ").append(XMLHandler.addTagValue("filenamefield", fileNameField));  	
-		retval.append("    ").append(XMLHandler.addTagValue("directory", directory)); 
-        return retval.toString();
+		retval.append("    " + XMLHandler.addTagValue("filename", fileName));
+		retval.append("    " + XMLHandler.addTagValue("isfilenameinfield", isFileNameInField));
+		retval.append("    " + XMLHandler.addTagValue("filenamefield", fileNameField));  	
+		
+		return retval.toString();
 	}
 
 	public void readRep(Repository rep, long id_step, List<DatabaseMeta> databases, Map<String, Counter> counters)
@@ -117,7 +102,6 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 			fileName    = rep.getStepAttributeString (id_step, "filename");
 			isFileNameInField   = rep.getStepAttributeBoolean(id_step, "isfilenameinfield");	
 			fileNameField     = rep.getStepAttributeString (id_step, "filenamefield");
-			directory     = rep.getStepAttributeString (id_step, "directory");
 		}
 		catch(Exception e){
 			throw new KettleException(Messages.getString("GISFileOutputMeta.Exception.UnexpectedErrorReadingMetaDataFromRepository"), e); //$NON-NLS-1$
@@ -127,7 +111,6 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	public void saveRep(Repository rep, long id_transformation, long id_step)
 		throws KettleException{
 		try{
-			rep.saveStepAttribute(id_transformation, id_step, "directory", directory);
 			rep.saveStepAttribute(id_transformation, id_step, "filenamefield", fileNameField);
 			rep.saveStepAttribute(id_transformation, id_step, "filename", fileName);
 			rep.saveStepAttribute(id_transformation, id_step, "isfilenameinfield", isFileNameInField);
@@ -138,13 +121,10 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	}
 
 	public void check(List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta, RowMetaInterface prev,
-			String[] Output, String[] output, RowMetaInterface info){
+			String[] input, String[] output, RowMetaInterface info){
 		CheckResult cr;
 		
-		if (directory == null){
-			cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("GISFileOutputMeta.Remark.PleaseSelectOutputDirectory"), stepMeta); //$NON-NLS-1$
-		    remarks.add(cr);	
-		}else if (!isFileNameInField){
+		if (!isFileNameInField){
 			if (fileName ==null){
 			    cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("GISFileOutputMeta.Remark.PleaseSelectFileToUse"), stepMeta); //$NON-NLS-1$
 			    remarks.add(cr);
@@ -155,20 +135,15 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 		}else{	
             cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("GISFileOutputMeta.Remark.FileToUseIsSpecified"), stepMeta); //$NON-NLS-1$
             remarks.add(cr);
-
-            GeotoolsWriter gtr = null;
-            try{       	
-            	gtr = new GeotoolsWriter(getURLfromfileName(transMeta.environmentSubstitute(fileName)));
-            	gtr.open();
-                cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("GISFileOutputMeta.Remark.FileExistsAndCanBeOpened"), stepMeta); //$NON-NLS-1$
-                remarks.add(cr);          	
-            }
-            catch(KettleException ke){
-                cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("GISFileOutputMeta.Remark.NoFieldsCouldBeFoundInFileBecauseOfError")+Const.CR+ke.getMessage(), stepMeta); //$NON-NLS-1$
+            if (input.length > 0)
+            {
+                cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("GISFileOutputMeta.CheckResult.ReceivingInfoFromOtherSteps"), stepMeta); //$NON-NLS-1$
                 remarks.add(cr);
             }
-            finally{
-            	if (gtr != null) gtr.close();
+            else
+            {
+                cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("GISFileOutputMeta.CheckResult.NoInpuReceived"), stepMeta); //$NON-NLS-1$
+                remarks.add(cr);
             }
         }
 	}
@@ -184,27 +159,4 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	public StepDataInterface getStepData(){
 		return new GISFileOutputData();
 	} 
-    
-    public static String getFilename(FileObject fileObject)
-    {
-        FileName fileName = fileObject.getName();
-        String root = fileName.getRootURI();
-        if(!root.startsWith("file:")) return fileName.getURI();
-        if(root.endsWith(":/"))
-            root = root.substring(8, 10);
-        else
-            root = root.substring(7, root.length() - 1);
-        String fileString = root + fileName.getPath();
-        if(!"/".equals(Const.FILE_SEPARATOR)) fileString = Const.replace(fileString, "/", Const.FILE_SEPARATOR);
-        return fileString;
-    }
-    
-    private java.net.URL getURLfromfileName(String fileName) throws KettleException {
-    	try {
-    		return (new java.io.File(fileName)).toURI().toURL();
-    	}
-    	catch (java.net.MalformedURLException urle) {
-    		throw new KettleException(Messages.getString("GISFileOutput.Log.Error.MalformedURL"), urle); //$NON-NLS-1$
-    	}
-    }   
 }

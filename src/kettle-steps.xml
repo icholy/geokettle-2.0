@@ -1588,4 +1588,16 @@
 		</tooltip>
 		<image-uri>ui/images/SA.png</image-uri>
 	</step>	
+	
+	<step id="SOSInput">
+		<description>
+			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.SOSInput")
+		</description>
+		<class-name>org.pentaho.di.trans.steps.sosinput.SOSInputMeta</class-name>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@GEOSPATIAL.getName()</category>
+		<tooltip>
+			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.SOSInput")
+		</tooltip>
+		<image-uri>ui/images/WEB.png</image-uri>
+	</step>	
 </steps>

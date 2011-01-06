@@ -36,7 +36,6 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.FileDialog;
@@ -59,6 +58,7 @@ import org.pentaho.di.ui.core.widget.TextVar;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
 public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInterface{
+
 	final static private String[] GISFILE_FILTER_EXT = new String[] {"*.shp;*.SHP", "*"};
 	
 	private Label        wlFileName;
@@ -73,12 +73,7 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
     private Label wlFileNameField;
     private CCombo wFileNameField;
     private FormData fdFileNameField,fdlFileNameField;
-    
-    private Label wlDirectory;
-    private Button wbbDirectory;
-    private FormData fdDirectory,fdbDirectory,fdlDirectory;
-    private TextVar wDirectory;
-
+	
 	private GISFileOutputMeta input;
 	private boolean backupChanged;
 
@@ -101,7 +96,7 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 			}
 		};
 		backupChanged = input.hasChanged();
-
+		
 		FormLayout formLayout = new FormLayout();
 		formLayout.marginWidth = Const.FORM_MARGIN;
 		formLayout.marginHeight = Const.FORM_MARGIN;
@@ -133,14 +128,14 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 
 		// FileName line
 		wlFileName = new Label(shell, SWT.RIGHT);
-		wlFileName.setText(Messages.getString("GISFileOutputDialog.Filename.Label")); //$NON-NLS-1$
+		wlFileName.setText(Messages.getString("System.Label.Filename")); //$NON-NLS-1$
  		props.setLook(wlFileName);
 		fdlFileName=new FormData();
 		fdlFileName.left = new FormAttachment(0, 0);
 		fdlFileName.top  = new FormAttachment(wStepname, margin);
 		fdlFileName.right= new FormAttachment(middle, -margin);
 		wlFileName.setLayoutData(fdlFileName);
-		
+
 		wbFileName=new Button(shell, SWT.PUSH| SWT.CENTER);
  		props.setLook(wbFileName);
 		wbFileName.setText(Messages.getString("System.Button.Browse")); //$NON-NLS-1$
@@ -148,7 +143,7 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		fdbFileName.right= new FormAttachment(100, 0);
 		fdbFileName.top  = new FormAttachment(wStepname, margin);
 		wbFileName.setLayoutData(fdbFileName);
-
+		
 		wFileName=new TextVar(transMeta, shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
  		props.setLook(wFileName);
 		wFileName.addModifyListener(lsMod);
@@ -159,29 +154,32 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		wFileName.setLayoutData(fdFileName);
 		
 		//Is FileName defined in a Field				        
+	    wlFileField=new Label(shell, SWT.RIGHT);
+	    wlFileField.setText(Messages.getString("GISFileOutputDialog.FilenameInField.Label"));
+        props.setLook(wlFileField);
+        fdlFileField=new FormData();
+        fdlFileField.left = new FormAttachment(0, 0);
+        fdlFileField.right = new FormAttachment(middle, -margin);
+        fdlFileField.top  = new FormAttachment(wFileName, margin*2);
+        wlFileField.setLayoutData(fdlFileField);
+        
         wFileField=new Button(shell, SWT.CHECK);
         wFileField.setToolTipText(Messages.getString("GISFileOutputDialog.FilenameInField.Tooltip"));
 	    props.setLook(wFileField);
 	    fdFileField=new FormData();
 	    fdFileField.right  = new FormAttachment(100, 0);
 	    fdFileField.top   = new FormAttachment(wFileName, margin);
+	    fdFileField.left   = new FormAttachment(middle, 0);
 	    wFileField.setLayoutData(fdFileField);
-	    wlFileField=new Label(shell, SWT.RIGHT);
-	    wlFileField.setText(Messages.getString("GISFileOutputDialog.FilenameInField.Label"));
-        props.setLook(wlFileField);
-        fdlFileField=new FormData();
-        fdlFileField.right = new FormAttachment(wFileField, -margin);
-        fdlFileField.top  = new FormAttachment(wFileName, margin*2);
-        wlFileField.setLayoutData(fdlFileField);
-        SelectionAdapter lfilefield = new SelectionAdapter()
+	    wFileField.addSelectionListener(new SelectionAdapter()
         {
             public void widgetSelected(SelectionEvent arg0)
             {
             	activeFileField();
             	input.setChanged();
             }
-        };
-        wFileField.addSelectionListener(lfilefield);
+        }
+        );
         
 		// FileName field
 		wlFileNameField=new Label(shell, SWT.RIGHT);
@@ -189,7 +187,7 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
         props.setLook(wlFileNameField);
         fdlFileNameField=new FormData();
         fdlFileNameField.left = new FormAttachment(0, 0);
-        fdlFileNameField.top  = new FormAttachment(wFileField, margin);
+        fdlFileNameField.top  = new FormAttachment(wFileField,2* margin);
         fdlFileNameField.right= new FormAttachment(middle, -margin);
         wlFileNameField.setLayoutData(fdlFileNameField);
         
@@ -216,61 +214,11 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
                     busy.dispose();
                 }
             }
-        );      
-        
-        
-        //directory
-
-		wlDirectory = new Label(shell, SWT.RIGHT);
-		wlDirectory.setText(Messages.getString("GISFileOutputDialog.Directory.Label"));
-		props.setLook(wlDirectory);
-		fdlDirectory = new FormData();
-		fdlDirectory.left = new FormAttachment(0, 0);
-		fdlDirectory.top = new FormAttachment(wFileNameField, margin);
-		fdlDirectory.right = new FormAttachment(middle, -margin);
-		wlDirectory.setLayoutData(fdlDirectory);
-
-		wbbDirectory = new Button(shell, SWT.PUSH | SWT.CENTER);
-		props.setLook(wbbDirectory);
-		wbbDirectory.setText(Messages.getString("System.Button.Browse"));
-		wbbDirectory.setToolTipText(Messages.getString("System.Tooltip.BrowseForFileOrDirAndAdd"));
-		fdbDirectory = new FormData();
-		fdbDirectory.right = new FormAttachment(100, 0);
-		fdbDirectory.top = new FormAttachment(wFileNameField, margin);
-		wbbDirectory.setLayoutData(fdbDirectory);
-        
-		wDirectory = new TextVar(transMeta, shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-		props.setLook(wDirectory);
-		wDirectory.addModifyListener(lsMod);
-		fdDirectory = new FormData();
-		fdDirectory.left = new FormAttachment(middle, 0);
-		fdDirectory.right = new FormAttachment(wbbDirectory, -margin);
-		fdDirectory.top = new FormAttachment(wFileNameField, margin);
-		wDirectory.setLayoutData(fdDirectory);
-		
-		wbbDirectory.addSelectionListener(new SelectionAdapter(){
-			public void widgetSelected(SelectionEvent e){
-				
-					DirectoryDialog dialog = new DirectoryDialog(shell, SWT.OPEN);
-					if (wDirectory.getText() != null){
-						String fpath = transMeta.environmentSubstitute(wDirectory.getText());
-						dialog.setFilterPath(fpath);
-					}
-
-					if (dialog.open() != null){
-						String str = dialog.getFilterPath();
-						wDirectory.setText(str);
-					}
-				
-			}
-		});
-
+        );                       
 		
 		// Some buttons
 		wOK=new Button(shell, SWT.PUSH);
 		wOK.setText(Messages.getString("System.Button.OK")); //$NON-NLS-1$
-        // wPreview=new Button(shell, SWT.PUSH);
-        // wPreview.setText(Messages.getString("System.Button.Preview")); //$NON-NLS-1$
 		wCancel=new Button(shell, SWT.PUSH);
 		wCancel.setText(Messages.getString("System.Button.Cancel")); //$NON-NLS-1$
 		
@@ -278,12 +226,10 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 
 		// Add listeners
 		lsCancel   = new Listener() { public void handleEvent(Event e) { cancel(); } };
-        // lsPreview  = new Listener() { public void handleEvent(Event e) { preview(); } };
 		lsOK       = new Listener() { public void handleEvent(Event e) { ok();     } };
 		
 		wCancel.addListener(SWT.Selection, lsCancel);
-        // wPreview.addListener (SWT.Selection, lsPreview);
-		wOK.addListener    (SWT.Selection, lsOK    );
+        wOK.addListener    (SWT.Selection, lsOK    );
 		
 		lsDef=new SelectionAdapter() { public void widgetDefaultSelected(SelectionEvent e) { ok(); } };
 		
@@ -293,26 +239,32 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 			public void modifyText(ModifyEvent arg0){
 				wFileName.setToolTipText(transMeta.environmentSubstitute(wFileName.getText()));
 			}
-		});
-		
-		wbFileName.addSelectionListener(new SelectionAdapter(){
-				public void widgetSelected(SelectionEvent e) {
+		});	
+
+		wbFileName.addSelectionListener
+		(
+			new SelectionAdapter()
+			{
+				public void widgetSelected(SelectionEvent e) 
+				{
 					FileDialog dialog = new FileDialog(shell, SWT.OPEN);
 					dialog.setFilterExtensions(GISFILE_FILTER_EXT); //$NON-NLS-1$ //$NON-NLS-2$
-					if (wFileName.getText()!=null){
+					if (wFileName.getText()!=null)
+					{
 						dialog.setFileName(wFileName.getText());
 					}
 						
 					dialog.setFilterNames(new String[] {Messages.getString("GISFileOutputDialog.Filter.SHPFiles"), Messages.getString("System.FileType.AllFiles")}); //$NON-NLS-1$ //$NON-NLS-2$
 					
-					if (dialog.open()!=null){
+					if (dialog.open()!=null)
+					{
 						String str = dialog.getFilterPath()+Const.FILE_SEPARATOR+dialog.getFileName();
 						wFileName.setText(str);
 					}
 				}
 			}
 		);
-
+		
 		// Detect X or ALT-F4 or something that kills this window...
 		shell.addShellListener(	new ShellAdapter() { public void shellClosed(ShellEvent e) { cancel(); } } );
 		
@@ -338,12 +290,12 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 				wFileName.setText(input.getFileName());
 				wFileName.setToolTipText(transMeta.environmentSubstitute(input.getFileName()));
 			}
-		}else {
+		}else{
 			wFileField.setSelection(true);
 			if(input.getFileNameField() !=null)
-				wFileNameField.setText(input.getFileNameField());
-			wDirectory.setText(input.getDirectory());
+				wFileNameField.setText(input.getFileNameField());		
 		}
+
 		wStepname.selectAll();
 	}
 	
@@ -362,7 +314,7 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 			}
 			if(field!=null) wFileNameField.setText(field);		
 		}catch(KettleException ke){
-			new ErrorDialog(shell, Messages.getString("AccessInputDialog.FailedToGetFields.DialogTitle"), Messages.getString("AccessInputDialog.FailedToGetFields.DialogMessage"), ke); //$NON-NLS-1$ //$NON-NLS-2$
+			new ErrorDialog(shell, Messages.getString("GISFileOutputDialog.FailedToGetFields.DialogTitle"), Messages.getString("GISFileOutputDialog.FailedToGetFields.DialogMessage"), ke); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 	
@@ -370,7 +322,8 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		wlFileNameField.setEnabled(wFileField.getSelection());
 		wFileNameField.setEnabled(wFileField.getSelection());	
 		wlFileName.setEnabled(!wFileField.getSelection());		
-		wFileName.setEnabled(!wFileField.getSelection());						
+		wFileName.setEnabled(!wFileField.getSelection());
+		wbFileName.setEnabled(!wFileField.getSelection());
 	}
 	
 	private void cancel(){
@@ -379,12 +332,11 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		dispose();
 	}
 	
-	public void getInfo(GISFileOutputMeta meta) throws KettleStepException{
+	public void getInfo(GISFileOutputMeta oneMeta) throws KettleStepException{
 		// copy info to Meta class (input)
-		meta.setFileName( wFileName.getText() );
-		meta.setFileNameInField(wFileField.getSelection());
-		meta.setFileNameField(wFileNameField.getText());	
-		meta.setDirectory(wDirectory.getText());
+		oneMeta.setFileName( wFileName.getText() );
+		oneMeta.setFileNameInField(wFileField.getSelection());
+		oneMeta.setFileNameField(wFileNameField.getText());	
 	}
 	
 	private void ok(){
