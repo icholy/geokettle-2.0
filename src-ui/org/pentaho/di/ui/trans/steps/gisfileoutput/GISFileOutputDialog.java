@@ -1,26 +1,8 @@
-/**********************************************************************
- **                                                                   **
- **               This code belongs to the KETTLE project.            **
- **                                                                   **
- ** Kettle, from version 2.2 on, is released into the public domain   **
- ** under the Lesser GNU Public License (LGPL).                       **
- **                                                                   **
- ** For more details, please read the document LICENSE.txt, included  **
- ** in this project                                                   **
- **                                                                   **
- ** http://www.kettle.be                                              **
- ** info@kettle.be                                                    **
- **                                                                   **
- **********************************************************************/
-
- 
-/*
- * Created on 2008-01-27
- * jmathieu, edube
- *
- */
-
 package org.pentaho.di.ui.trans.steps.gisfileoutput;
+
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
@@ -57,6 +39,12 @@ import org.pentaho.di.ui.core.dialog.ErrorDialog;
 import org.pentaho.di.ui.core.widget.TextVar;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
+/**
+ * Provides dialog box and components for the GISFileOutput step.
+ * 
+ * @author etdub, jmathieu, tbadard
+ * @since 27-jan-2008
+ */
 public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInterface{
 
 	final static private String[] GISFILE_FILTER_EXT = new String[] {"*.shp;*.SHP", "*"};
@@ -74,8 +62,13 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
     private CCombo wFileNameField;
     private FormData fdFileNameField,fdlFileNameField;
 	
+//    private Label        wlEncoding;
+//    private CCombo       wEncoding;
+//    private FormData     fdlEncoding, fdEncoding;
+    
 	private GISFileOutputMeta input;
 	private boolean backupChanged;
+//	private boolean gotEncodings = false;
 
 	public GISFileOutputDialog(Shell parent, Object out, TransMeta tr, String sname){
 		super(parent, (BaseStepMeta)out, tr, sname);
@@ -216,6 +209,43 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
             }
         );                       
 		
+//        // Encoding
+//        wlEncoding=new Label(shell, SWT.RIGHT);
+//        //TODO: Change the label in the messages file!!!
+//        wlEncoding.setText(Messages.getString("GISFileOutputDialog.Encoding.Label"));
+//        props.setLook(wlEncoding);
+//        fdlEncoding=new FormData();
+//        fdlEncoding.left = new FormAttachment(0, 0);
+//        fdlEncoding.top  = new FormAttachment(wFileNameField, margin);
+//        fdlEncoding.right= new FormAttachment(middle, -margin);
+//        wlEncoding.setLayoutData(fdlEncoding);
+//        wEncoding=new CCombo(shell, SWT.BORDER | SWT.READ_ONLY);
+//        wEncoding.setEditable(true);
+//        props.setLook(wEncoding);
+//        wEncoding.addModifyListener(lsMod);
+//        fdEncoding=new FormData();
+//        fdEncoding.left = new FormAttachment(middle, 0);
+//        fdEncoding.top  = new FormAttachment(wFileNameField, margin);
+//        fdEncoding.right= new FormAttachment(100, 0);
+//        wEncoding.setLayoutData(fdEncoding);
+//        wEncoding.addFocusListener(new FocusListener()
+//            {
+//                public void focusLost(org.eclipse.swt.events.FocusEvent e)
+//                {
+//                }
+//            
+//                public void focusGained(org.eclipse.swt.events.FocusEvent e)
+//                {
+//                    Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
+//                    shell.setCursor(busy);
+//                    setEncodings();
+//                    shell.setCursor(null);
+//                    busy.dispose();
+//                }
+//            }
+//        );
+
+        
 		// Some buttons
 		wOK=new Button(shell, SWT.PUSH);
 		wOK.setText(Messages.getString("System.Button.OK")); //$NON-NLS-1$
@@ -325,6 +355,29 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		wFileName.setEnabled(!wFileField.getSelection());
 		wbFileName.setEnabled(!wFileField.getSelection());
 	}
+	
+//	private void setEncodings()
+//    {
+//        // Encoding of the shapefile:
+//        if (!gotEncodings)
+//        {
+//            gotEncodings = true;
+//            
+//            wEncoding.removeAll();
+//            List<Charset> values = new ArrayList<Charset>(Charset.availableCharsets().values());
+//            for (int i=0;i<values.size();i++)
+//            {
+//                Charset charSet = (Charset)values.get(i);
+//                wEncoding.add( charSet.displayName() );
+//            }
+//            
+//            // Now select the default!
+//            String defEncoding = Const.getEnvironmentVariable("file.encoding", "UTF-8");
+//            int idx = Const.indexOfString(defEncoding, wEncoding.getItems() );
+//            if (idx>=0) wEncoding.select( idx );
+//        }
+//    }
+
 	
 	private void cancel(){
 		stepname=null;

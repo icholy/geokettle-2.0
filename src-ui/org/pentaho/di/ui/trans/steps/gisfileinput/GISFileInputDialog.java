@@ -1,5 +1,9 @@
 package org.pentaho.di.ui.trans.steps.gisfileinput;
 
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.FocusListener;
@@ -41,6 +45,12 @@ import org.pentaho.di.ui.core.widget.TextVar;
 import org.pentaho.di.ui.trans.dialog.TransPreviewProgressDialog;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
+/**
+ * Provides dialog box and components for the GISFileInput step.
+ * 
+ * @author etdub, jmathieu, tbadard
+ * @since 27-jan-2008
+ */
 public class GISFileInputDialog extends BaseStepDialog implements StepDialogInterface
 {
 	final static private String[] GISFILE_FILTER_EXT = new String[] {"*.shp;*.SHP", "*"};
@@ -58,6 +68,10 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
     private CCombo wFileNameField;
     private FormData fdFileNameField,fdlFileNameField;
     
+    private Label        wlEncoding;
+    private CCombo       wEncoding;
+    private FormData     fdlEncoding, fdEncoding;
+    
 	private Label        wlLimit;
 	private Text         wLimit;
 	private FormData     fdlLimit, fdLimit;
@@ -72,6 +86,7 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 
 	private GISFileInputMeta input;
 	private boolean backupChanged, backupAddRownr;
+	private boolean gotEncodings = false;
 
 	public GISFileInputDialog(Shell parent, Object in, TransMeta tr, String sname)
 	{
@@ -202,7 +217,7 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
         fdFileNameField.right= new FormAttachment(100, -margin);
         wFileNameField.setLayoutData(fdFileNameField);
         wFileNameField.addFocusListener(new FocusListener()
-            {
+        {
                 public void focusLost(org.eclipse.swt.events.FocusEvent e){
                 }
             
@@ -214,7 +229,42 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
                     busy.dispose();
                 }
             }
-        );   
+        );
+        
+        // Encoding
+	    wlEncoding=new Label(shell, SWT.RIGHT);
+	    wlEncoding.setText(Messages.getString("GISFileInputDialog.Encoding.Label"));
+	    props.setLook(wlEncoding);
+	    fdlEncoding=new FormData();
+	    fdlEncoding.left = new FormAttachment(0, 0);
+	    fdlEncoding.top  = new FormAttachment(wFileNameField, margin);
+	    fdlEncoding.right= new FormAttachment(middle, -margin);
+	    wlEncoding.setLayoutData(fdlEncoding);
+	    wEncoding=new CCombo(shell, SWT.BORDER | SWT.READ_ONLY);
+	    wEncoding.setEditable(true);
+	    props.setLook(wEncoding);
+	    wEncoding.addModifyListener(lsMod);
+	    fdEncoding=new FormData();
+	    fdEncoding.left = new FormAttachment(middle, 0);
+	    fdEncoding.top  = new FormAttachment(wFileNameField, margin);
+	    fdEncoding.right= new FormAttachment(100, 0);
+	    wEncoding.setLayoutData(fdEncoding);
+	    wEncoding.addFocusListener(new FocusListener()
+	    {
+	    	public void focusLost(org.eclipse.swt.events.FocusEvent e)
+	    	{
+	    	}
+
+	    	public void focusGained(org.eclipse.swt.events.FocusEvent e)
+	    	{
+	    		Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
+	    		shell.setCursor(busy);
+	    		setEncodings();
+	    		shell.setCursor(null);
+	    		busy.dispose();
+	    	}
+	    });
+        
 		// Limit input ...
 		wlLimit=new Label(shell, SWT.RIGHT);
 		wlLimit.setText(Messages.getString("GISFileInputDialog.LimitSize.Label")); //$NON-NLS-1$
@@ -222,14 +272,14 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdlLimit=new FormData();
 		fdlLimit.left = new FormAttachment(0, 0);
 		fdlLimit.right= new FormAttachment(middle, -margin);
-		fdlLimit.top  = new FormAttachment(wFileNameField, margin*2);
+		fdlLimit.top  = new FormAttachment(wEncoding, margin*2);
 		wlLimit.setLayoutData(fdlLimit);
 		wLimit=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
  		props.setLook(wLimit);
 		wLimit.addModifyListener(lsMod);
 		fdLimit=new FormData();
 		fdLimit.left = new FormAttachment(middle, 0);
-		fdLimit.top  = new FormAttachment(wFileNameField, margin*2);
+		fdLimit.top  = new FormAttachment(wEncoding, margin*2);
 		fdLimit.right= new FormAttachment(100, 0);
 		wLimit.setLayoutData(fdLimit);
 
@@ -373,6 +423,28 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 		wStepname.selectAll();
 	}
 	
+	private void setEncodings()
+    {
+	      // Encoding of the shapefile:
+	      if (!gotEncodings)
+	      {
+	          gotEncodings = true;
+	          
+	          wEncoding.removeAll();
+	          List<Charset> values = new ArrayList<Charset>(Charset.availableCharsets().values());
+	          for (int i=0;i<values.size();i++)
+	          {
+	              Charset charSet = (Charset)values.get(i);
+	              wEncoding.add( charSet.displayName() );
+	          }
+	          
+	          // Now select the default!
+	          String defEncoding = Const.getEnvironmentVariable("file.encoding", "UTF-8");
+	          int idx = Const.indexOfString(defEncoding, wEncoding.getItems() );
+	          if (idx>=0) wEncoding.select( idx );
+	      }
+	}
+	
 	private void cancel()
 	{
 		stepname=null;
@@ -416,6 +488,7 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 		oneMeta.setRowLimit( Const.toInt(wLimit.getText(), 0 ) );
         oneMeta.setRowNrAdded( wAddRownr.getSelection() );
 		oneMeta.setRowNrField( wFieldRownr.getText() );
+		oneMeta.setGisFileCharset(wEncoding.getText());
 	}
 	
 	private void ok()
@@ -441,7 +514,6 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
     // Preview the data
     private void preview()
     {
-        // Create the XML input step
     	try
     	{
 	        GISFileInputMeta oneMeta = new GISFileInputMeta();

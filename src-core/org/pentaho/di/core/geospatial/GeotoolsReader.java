@@ -1,5 +1,6 @@
 package org.pentaho.di.core.geospatial;
 
+import java.nio.charset.Charset;
 import java.util.List;
 
 import org.geotools.data.DataStore;
@@ -23,9 +24,9 @@ import org.pentaho.di.core.row.ValueMetaInterface;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * Handles file reading from GeoTools datastores
+ * Handles shapefile reading from GeoTools datastores
  * 
- *  @author etdub
+ *  @author etdub, tbadard
  *  @since 21-03-2007
  *
  */
@@ -33,6 +34,7 @@ public class GeotoolsReader
 {
     private LogWriter   log;
     private java.net.URL gisURL;
+    private String charset;
     private boolean     error;
     
     private DataStore gtDataStore;
@@ -40,10 +42,11 @@ public class GeotoolsReader
     private FeatureCollection<SimpleFeatureType, SimpleFeature> featColl;
     private FeatureIterator<SimpleFeature> featIter;
 
-    public GeotoolsReader(java.net.URL fileURL)
+    public GeotoolsReader(java.net.URL fileURL, String charset)
     {
         this.log      = LogWriter.getInstance();
         this.gisURL = fileURL;
+        this.charset = charset;
         error         = false;
         gtDataStore = null;
         featSrc = null;
@@ -57,20 +60,13 @@ public class GeotoolsReader
  			
  			// try closing first
  			close();
- 			
- 			// TODO: detect file type and instanciate the right type of DataStore
- 			// implementation (to support file formats other than Shapefile)
- 			
-			// Don't use a memory-mapped file reader (3rd arg) because this
+ 			 			
+			// TODO: Don't use a memory-mapped file reader (3rd arg) because this
  			// causes out of memory errors with large files (~500mb).
- 			// 4th argument is the charset.
- 			// TODO: make charset configurable (in the step dialog box?)
- 			// gtDataStore = new ShapefileDataStore(gisURL, null, false, Charset.defaultCharset());
- 			
- 			// ShapefileDataStore defaults to ISO-8859-1 charset (not always the same as Charset.defaultCharset()
- 			// which is often UTF-8 on linux!)
- 			gtDataStore = new ShapefileDataStore(gisURL, null, false);
-
+ 			 			
+ 			//gtDataStore = new ShapefileDataStore(gisURL, null, false);
+ 			Charset charsetToBeUsed = Charset.forName(this.charset);
+ 			gtDataStore = new ShapefileDataStore(gisURL, null, false,charsetToBeUsed);
  			/*
  			if(gisURL.toString().substring(gisURL.toString().length()-3,gisURL.toString().length()).equalsIgnoreCase("SHP"))
  	    	{

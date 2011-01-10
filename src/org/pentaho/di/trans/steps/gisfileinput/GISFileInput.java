@@ -23,7 +23,7 @@ import org.pentaho.di.trans.steps.gisfileinput.Messages;
 /**
  * Reads data from an GIS file.
  * 
- * @author etdub
+ * @author etdub, tbadard
  * @since 29-sep-2008
  */
 public class GISFileInput extends BaseStep implements StepInterface
@@ -157,6 +157,7 @@ public class GISFileInput extends BaseStep implements StepInterface
 			try {
 				data.file_gis = new ArrayList <FileObject>();
 				data.gtreader = new ArrayList <GeotoolsReader>();
+				data.charset = new ArrayList <String>();
 				if(!meta.isFileNameInField()){
 					String fileName = meta.getFileName();
 					data.file_gis.add(KettleVFS.getFileObject(fileName)); 
@@ -165,9 +166,16 @@ public class GISFileInput extends BaseStep implements StepInterface
 					if (!data.file_gis.get(0).exists()) {// 0 -> only one file
 						data.file_gis.get(0).createFile();
 					}
+					
+					// Set default value for shapefile encoding to ISO-8859-1.
+					// This is the default value used in Geotools
+					if (meta.getGisFileCharset() == null)
+						meta.setGisFileCharset("ISO-8859-1");
+					
+					data.charset.add(meta.getGisFileCharset());
 					createReader(0);
 				}
-			}catch (Exception e) {
+			} catch (Exception e) {
 				logError("Cannot open/create file " + data.file_gis.get(0).getName().toString(), e);
 				return false;
 			} 
@@ -180,10 +188,10 @@ public class GISFileInput extends BaseStep implements StepInterface
     {                
         try
         {
-        	data.gtreader.add(new GeotoolsReader(data.file_gis.get(fileIndex).getURL()));
+        	data.gtreader.add(new GeotoolsReader(data.file_gis.get(fileIndex).getURL(),data.charset.get(fileIndex)));
         	data.gtreader.get(fileIndex).open();
 
-        	logBasic(Messages.getString("GISFileInput.Log.OpenedGISFile")+" : ["+data.gtreader.get(fileIndex)+"]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        	logBasic(Messages.getString("GISFileInput.Log.OpenedGISFile")+" : ["+data.gtreader.get(fileIndex)+" ("+data.charset.get(fileIndex)+")]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         	data.fields = data.gtreader.get(fileIndex).getFields();
         }
         catch(Exception e)

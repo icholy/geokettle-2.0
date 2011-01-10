@@ -11,7 +11,7 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * Provides data for the GISFileInput step.
  * 
- * @author etdub,jmathieu
+ * @author etdub, jmathieu, tbadard
  * @since 29-sep-2008
  */
 public class GISFileInputData extends BaseStepData implements StepDataInterface
@@ -19,6 +19,7 @@ public class GISFileInputData extends BaseStepData implements StepDataInterface
 	public ArrayList <GeotoolsReader>  gtreader;
 	public RowMetaInterface fields;
     public ArrayList <FileObject> file_gis;
+    public ArrayList <String> charset;
     public RowMetaInterface outputRowMeta;
 
 	public GISFileInputData()
@@ -27,5 +28,6 @@ public class GISFileInputData extends BaseStepData implements StepDataInterface
 		gtreader=null;
 		fields=null;
 		file_gis=null;
+		charset=null;
 	}
 }

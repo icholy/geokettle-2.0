@@ -39,9 +39,10 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	private int 	rowLimit;
 	private boolean rowNrAdded;
 	private String  rowNrField;
-	private  String  fileName; 
+	private String  fileName;
+	private String  gisFileCharset;
 	private boolean isFileNameInField;
-	private String fileNameField;
+	private String  fileNameField;
 	
 	public GISFileInputMeta()
 	{
@@ -136,11 +137,13 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	{
 		try
 		{
-			fileNameField     = XMLHandler.getTagValue(stepnode, "filenamefield");
+			fileNameField      = XMLHandler.getTagValue(stepnode, "filenamefield");
 			isFileNameInField  = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "isfilenameinfield"));			
-			fileName    = XMLHandler.getTagValue(stepnode, "filename");rowLimit           = Const.toInt(XMLHandler.getTagValue(stepnode, "limit"), 0); //$NON-NLS-1$
+			fileName           = XMLHandler.getTagValue(stepnode, "filename");
+			rowLimit           = Const.toInt(XMLHandler.getTagValue(stepnode, "limit"), 0); //$NON-NLS-1$
 			rowNrAdded         = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "add_rownr")); //$NON-NLS-1$ //$NON-NLS-2$
 			rowNrField         = XMLHandler.getTagValue(stepnode, "field_rownr"); //$NON-NLS-1$
+			gisFileCharset     = XMLHandler.getTagValue(stepnode, "gis_file_charset"); //$NON-NLS-1$
 		}
 		catch(Exception e)
 		{
@@ -156,6 +159,7 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		rowLimit    = 0;
 		rowNrAdded   = false;
 		rowNrField = null;
+		gisFileCharset = null;
 	}
     
     @Override
@@ -192,7 +196,8 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		try
 		{
 			java.net.URL fileURL = fo.getURL();
-            gtr = new GeotoolsReader(fileURL);
+            //gtr = new GeotoolsReader(fileURL);
+			gtr = new GeotoolsReader(fileURL,gisFileCharset);
             gtr.open();
 			RowMetaInterface add = gtr.getFields();
 			for (int i=0;i<add.size();i++)
@@ -238,7 +243,8 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		retval.append("    " + XMLHandler.addTagValue("limit",       rowLimit)); //$NON-NLS-1$ //$NON-NLS-2$
 		retval.append("    " + XMLHandler.addTagValue("add_rownr",   rowNrAdded)); //$NON-NLS-1$ //$NON-NLS-2$
 		retval.append("    " + XMLHandler.addTagValue("field_rownr", rowNrField)); //$NON-NLS-1$ //$NON-NLS-2$
-
+		retval.append("    " + XMLHandler.addTagValue("gis_file_charset", gisFileCharset)); //$NON-NLS-1$ //$NON-NLS-2$
+		
 		return retval.toString();
 	}
 
@@ -247,12 +253,13 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	{
 		try
 		{
-			fileName    = rep.getStepAttributeString (id_step, "filename");
-			isFileNameInField   = rep.getStepAttributeBoolean(id_step, "isfilenameinfield");	
-			fileNameField     = rep.getStepAttributeString (id_step, "filenamefield");
-			rowLimit              = (int)rep.getStepAttributeInteger(id_step, "limit"); //$NON-NLS-1$
-			rowNrAdded             =      rep.getStepAttributeBoolean(id_step, "add_rownr"); //$NON-NLS-1$
-			rowNrField           =      rep.getStepAttributeString (id_step, "field_rownr"); //$NON-NLS-1$
+			fileName           = rep.getStepAttributeString (id_step, "filename");
+			isFileNameInField  = rep.getStepAttributeBoolean(id_step, "isfilenameinfield");	
+			fileNameField      = rep.getStepAttributeString (id_step, "filenamefield");
+			rowLimit           = (int)rep.getStepAttributeInteger(id_step, "limit"); //$NON-NLS-1$
+			rowNrAdded         = rep.getStepAttributeBoolean(id_step, "add_rownr"); //$NON-NLS-1$
+			rowNrField         = rep.getStepAttributeString (id_step, "field_rownr"); //$NON-NLS-1$
+			gisFileCharset     = rep.getStepAttributeString (id_step, "gis_file_charset"); //$NON-NLS-1$
 		}
 		catch(Exception e)
 		{
@@ -271,6 +278,7 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 			rep.saveStepAttribute(id_transformation, id_step, "limit",           rowLimit); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "add_rownr",       rowNrAdded); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "field_rownr",     rowNrField); //$NON-NLS-1$
+			rep.saveStepAttribute(id_transformation, id_step, "gis_file_charset", gisFileCharset); //$NON-NLS-1$
         }
 		catch(Exception e)
 		{
@@ -295,7 +303,7 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	            GeotoolsReader gtr = null;
 	            try
 	            {
-	            	gtr = new GeotoolsReader(getURLfromFileName(transMeta.environmentSubstitute(fileName)));
+	            	gtr = new GeotoolsReader(getURLfromFileName(transMeta.environmentSubstitute(fileName)), gisFileCharset);
 	            	gtr.open();
 	                cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("GISFileInputMeta.Remark.FileExistsAndCanBeOpened"), stepMeta); //$NON-NLS-1$
 	                remarks.add(cr);
@@ -358,4 +366,12 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
     	}
     	return null;
     }
+
+	public String getGisFileCharset() {
+		return gisFileCharset;
+	}
+
+	public void setGisFileCharset(String gisFileCharset) {
+		this.gisFileCharset = gisFileCharset;
+	}
 }
