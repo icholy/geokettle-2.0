@@ -374,31 +374,67 @@ public class SOSReader{
         		String observedProperty = getAttributeValue(findElement(measurementEl,"observedProperty").get(0), "href", "http://www.w3.org/1999/xlink");
         		
         		//////////////////////Feature of interest//////////////////////
-        		Element featureOfInterestEl = findElement(measurementEl,"featureOfInterest").get(0);
+        		ArrayList<Element> featureOfInterestElements = findElement(measurementEl,"featureOfInterest");
         		
-        		boolean hasGeometry = featureOfInterestEl==null?false:true;
+        		boolean hasGeometry = featureOfInterestElements.isEmpty()?false:true;
         		
-        		String featureID;
-        		String featureName;
-        		Geometry featureGeom;
+        		String featureID = null;
+        		String featureName = null;
+        		Geometry featureGeom = null;
         		
-        		if (hasGeometry){       			
-	        		//Currently supports sampling points (gml) only
-	        		Element samplingPointEl = findElement(featureOfInterestEl,"SamplingPoint").get(0);
-	        		featureID = getAttributeValue(samplingPointEl,"id","http://www.opengis.net/gml");
-	        		featureName = findElement(samplingPointEl,"name").get(0).getValue();
-	        		
-	        		Element posEl = findElement(samplingPointEl,"pos").get(0);
-					String position = posEl.getValue();
-					String srs = getAttributeValue(posEl, "srsName", null);
-					int srsInt = Integer.parseInt(srs.substring(srs.lastIndexOf(":")+1, srs.length()));							
-					featureGeom = (Geometry) reader.read("POINT (" + position + ")");
-					featureGeom.setSRID(srsInt);   								        	
-        		}else{
-	        		featureID = null;
-	        		featureName = null;
-	        		featureGeom = null;
-	        	}
+        		if (hasGeometry){ 
+        			Element featureOfInterestEl = featureOfInterestElements.get(0);
+        			
+        			Element samplingEl;
+        			String geomPrimitive;
+        			String geomWKT;
+        			String srs;
+        			int srsInt;
+        			
+	        		//Currently supports sampling points and sampling surface (gml) only
+        			if(!findElement(featureOfInterestEl,"SamplingPoint").isEmpty()){
+        				geomPrimitive = "POINT";
+        				samplingEl = findElement(featureOfInterestEl,"SamplingPoint").get(0);
+		        		featureID = getAttributeValue(samplingEl,"id","http://www.opengis.net/gml");
+		        		featureName = findElement(samplingEl,"name").get(0).getValue();	
+		        		
+		        		geomWKT = geomPrimitive + " (";
+		        		geomWKT += findElement(samplingEl,"pos").get(0).getValue();
+		        		geomWKT += ")";
+		        		
+						srs = getAttributeValue(findElement(samplingEl,"pos").get(0), "srsName", null);
+						srsInt = Integer.parseInt(srs.substring(srs.lastIndexOf(":")+1, srs.length()));							
+						featureGeom = (Geometry) reader.read(geomWKT);
+						featureGeom.setSRID(srsInt);
+        			}else if(!findElement(featureOfInterestEl,"SamplingSurface").isEmpty()){
+        				geomPrimitive = "MULTIPOLYGON";
+        				samplingEl = findElement(featureOfInterestEl,"SamplingSurface").get(0);
+		        		featureID = getAttributeValue(samplingEl,"id","http://www.opengis.net/gml");
+		        		featureName = findElement(samplingEl,"name").get(0).getValue();	
+		        		
+		        		ArrayList<Element> polygonElements = findElement(samplingEl,"Polygon");
+		        		geomWKT = geomPrimitive + " (((";
+		        		for(Element polygonEl:polygonElements){		        				        	
+		        			Element exteriorRingEl = findElement(polygonEl,"exterior").get(0);	        			
+		        			geomWKT += findElement(exteriorRingEl,"coordinates").get(0).getValue();
+		        			geomWKT += ")";
+		        			if (!findElement(polygonEl,"interior").isEmpty()){
+		        				ArrayList<Element> interiorRingElements = findElement(polygonEl,"interior");
+		        				for(Element interiorRingEl:interiorRingElements){
+		        					geomWKT += ",(";
+		        					geomWKT += findElement(interiorRingEl,"coordinates").get(0).getValue();
+		        					geomWKT += ")";
+		        				}
+		        			}
+		        			geomWKT += ")";
+		        		}		        
+		        		geomWKT += ")";
+		        		srs = getAttributeValue(findElement(samplingEl,"Polygon").get(0), "srsName", null);
+	        			srsInt = Integer.parseInt(srs.substring(srs.lastIndexOf(":")+1, srs.length()));		
+	        			featureGeom = (Geometry) reader.read(geomWKT);
+						featureGeom.setSRID(srsInt);
+        			}        			  
+        		}
         		//////////////////////////////////////////////////////////////////
         		
 				Element resultEl = findElement(measurementEl,"result").get(0);
@@ -412,7 +448,7 @@ public class SOSReader{
 				r[3]= time;
 				r[4]= featureID;
 				r[5]= featureName;
-				r[6]= (Geometry) featureGeom;			
+				r[6]= featureGeom;			
 				r[7]= measure;	
 				r[8]= uom;		
 				
