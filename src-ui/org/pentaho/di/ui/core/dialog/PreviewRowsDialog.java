@@ -12,23 +12,25 @@
 package org.pentaho.di.ui.core.dialog;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabFolderAdapter;
-import org.eclipse.swt.custom.CTabFolderEvent;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.events.DragDetectEvent;
-import org.eclipse.swt.events.DragDetectListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
-import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Cursor;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Dialog;
 import org.eclipse.swt.widgets.Display;
@@ -48,27 +50,21 @@ import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.ui.core.PropsUI;
-import org.pentaho.di.ui.core.dialog.geopreview.Layer;
+import org.pentaho.di.ui.core.dialog.geopreview.GeoFeaturesManager;
 import org.pentaho.di.ui.core.dialog.geopreview.LayerCollection;
-import org.pentaho.di.ui.core.dialog.geopreview.MapMediator;
-import org.pentaho.di.ui.core.dialog.geopreview.canvas.CanvasResizeListener;
-import org.pentaho.di.ui.core.dialog.geopreview.canvas.CanvasViewer;
-import org.pentaho.di.ui.core.dialog.geopreview.canvas.GeoMouseListener;
-import org.pentaho.di.ui.core.dialog.geopreview.canvas.GeoPreviewPaintListener;
+import org.pentaho.di.ui.core.dialog.geopreview.canvas.GeoCanvas;
 import org.pentaho.di.ui.core.dialog.geopreview.layercontrol.LayerControl;
-import org.pentaho.di.ui.core.dialog.geopreview.toolbar.ToolbarListener;
-import org.pentaho.di.ui.core.dialog.geopreview.toolbar.ToolbarStates;
 import org.pentaho.di.ui.core.gui.GUIResource;
 import org.pentaho.di.ui.core.gui.WindowProperty;
+import org.pentaho.di.ui.core.util.geo.renderer.swt.SWTMapRenderer;
 import org.pentaho.di.ui.core.widget.ColumnInfo;
 import org.pentaho.di.ui.core.widget.TableView;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
-
 /**
  * Displays an ArrayList of rows in a TableView.
  * 
- * @author Matt, mouattara & tbadard
+ * @author Matt, mouattara, jmathieu & tbadard
  * @since 19-06-2003
  */
 public class PreviewRowsDialog extends Dialog
@@ -80,9 +76,6 @@ public class PreviewRowsDialog extends Dialog
     private Label wlFields;
     private TableView wFields;
     private FormData fdlFields, fdFields;
-    // -- Begin GeoKettle modification --
-    private FormData fdCanvas;
-    // -- End GeoKettle modification --
 
     private Button wClose;
     private Button wStop;
@@ -110,37 +103,52 @@ public class PreviewRowsDialog extends Dialog
     
     private VariableSpace variables;
 
-    // -- Begin GeoKettle modification --
     private CTabFolder tabFolder;
-    private Composite composite;
-    private Composite compositeB;
-    private ToolBar toolBar;
-    private LayerCollection layers;
     
-    private final String FILENAME_NOSELECTION_ICON = "ui/images/no_selection.png";
-    private final String FILENAME_PAN_ICON = "ui/images/pan_16x16.png";
-    private final String FILENAME_ZOOMIN_ICON = "ui/images/zoom_in_16x16.png";
-    private final String FILENAME_ZOOMOUT_ICON = "ui/images/zoom_out_16x16.png";
-    private final String FILENAME_GETINFOS_ICON = "ui/images/getInfos_16x16.png";
+    private Composite standardTab;
+    private Composite geoTab;
     
-    //TODO Require i18n support here!
-    private final String TOOLTIP_PAN = "Pan";
-    private final String TOOLTIP_ZOOMIN = "Zoom In";
-    private final String TOOLTIP_ZOOMOUT = "Zoom Out";
-    private final String TOOLTIP_GETINFOS = "Information";
-    // -- End GeoKettle modification --
+    private ToolBar  wGeoToolBar;
+    private ToolItem wToolItemPan; 
+    private ToolItem wToolItemZoomIn;
+    private ToolItem wToolItemZoomOut;
+    private ToolItem wToolItemGetInfos;
+    private ToolItem wToolItemZoomToLayersExtent;
+    
+    private Label wlX;
+    private FormData fdlX;
+    private Label wlCoordX;
+    private FormData fdlCoordX;
+    private Label wlY;
+    private FormData fdlY;
+    private Label wlCoordY;
+    private FormData fdlCoordY;
+    
+    private LayerControl wLayerControl;
+    
+    private GeoCanvas wGeoCanvas;
+    private FormData fdGeoCanvas;
+    
+    private Table wInfoTable;
+    private FormData fdInfoTable;
+    
+    private GeoFeaturesManager geoFeaturesManager;
+    
+    private ArrayList<LayerCollection> layers;
+    
+    private final String PAN_ICON = "ui/images/pan.png";
+    private final String ZOOMIN_ICON = "ui/images/zoomIn.png";
+    private final String ZOOMOUT_ICON = "ui/images/zoomOut.png";
+    private final String GETINFOS_ICON = "ui/images/getInfos.png";
+    private final String GETINFOSCURSOR_ICON = "ui/images/getInfosCursor.png";
+    private final String ZOOMTOLAYERSEXTENT_ICON = "ui/images/zoomToLayersExtent.png";
 
-    
-    public PreviewRowsDialog(Shell parent, VariableSpace space, int style, String stepName, RowMetaInterface rowMeta, List<Object[]> rowBuffer)
-    {
+    public PreviewRowsDialog(Shell parent, VariableSpace space, int style, String stepName, RowMetaInterface rowMeta, List<Object[]> rowBuffer){
         this(parent, space, style, stepName, rowMeta, rowBuffer, null);
-        // -- Begin GeoKettle modification --
-        this.layers = new LayerCollection();
-        // -- End GeoKettle modification --
+        layers = new ArrayList<LayerCollection>();
     }
 
-    public PreviewRowsDialog(Shell parent, VariableSpace space, int style, String stepName, RowMetaInterface rowMeta, List<Object[]> rowBuffer, String loggingText)
-    {
+    public PreviewRowsDialog(Shell parent, VariableSpace space, int style, String stepName, RowMetaInterface rowMeta, List<Object[]> rowBuffer, String loggingText){
         super(parent, style);
         this.stepname = stepName;
         this.buffer = rowBuffer;
@@ -154,19 +162,16 @@ public class PreviewRowsDialog extends Dialog
         vscroll = -1;
         title = null;
         message = null;
-        // -- Begin GeoKettle modification --
-        this.layers = new LayerCollection();
-        // -- End GeoKettle modification --
+        
+        layers = new ArrayList<LayerCollection>();
     }
 
-    public void setTitleMessage(String title, String message)
-    {
+    public void setTitleMessage(String title, String message){
         this.title = title;
         this.message = message;
     }
 
-    public void open()
-    {
+    public void open(){
         Shell parent = getParent();
         Display display = parent.getDisplay();
 
@@ -178,39 +183,6 @@ public class PreviewRowsDialog extends Dialog
         formLayout.marginWidth = Const.FORM_MARGIN;
         formLayout.marginHeight = Const.FORM_MARGIN;
         
-        // -- Begin GeoKettle modification --
-        tabFolder = new CTabFolder(shell, SWT.BORDER);
-        tabFolder.setBorderVisible(true);
-        tabFolder.addCTabFolderListener(new CTabFolderAdapter() {
-            public void itemClosed(CTabFolderEvent event) {}
-          });
-       
-        
-        FormData fdTab = new FormData();
-        fdTab.left = new FormAttachment(0, 0);
-        fdTab.top = new FormAttachment(0, Const.MARGIN);
-        fdTab.right = new FormAttachment(100, 0);
-        fdTab.bottom = new FormAttachment(100, -50);
-        tabFolder.setLayoutData(fdTab);
-
-        // A standard tab and a geographic view tab
-        CTabItem standardItem = new CTabItem(tabFolder, SWT.NULL);
-        standardItem.setText("Standard view");
-        CTabItem geographicTab = new CTabItem(tabFolder, SWT.NULL);
-        geographicTab.setText("Geographic view");
-        
-        composite = new Composite(tabFolder, SWT.NONE);
-		composite.setLayout(formLayout);
-		standardItem.setControl(composite);        
-
-        compositeB = new Composite(tabFolder, SWT.NONE);
-		compositeB.setLayout(formLayout);
-		geographicTab.setControl(compositeB);        
-
-		Composite compositeToolbar = new Composite(compositeB, SWT.BORDER);
-		compositeToolbar.setLayout(formLayout);        
-        // -- End GeoKettle modification --
-
         if (title == null)
             title = Messages.getString("PreviewRowsDialog.Title");
         if (message == null)
@@ -219,15 +191,29 @@ public class PreviewRowsDialog extends Dialog
         if(buffer!=null)   	message+=" "+Messages.getString("PreviewRowsDialog.NrRows",""+buffer.size());
         
         shell.setLayout(formLayout);
-        shell.setText(title);
-
-        // int middle = props.getMiddlePct();
+        shell.setText(title);      
+        
         int margin = Const.MARGIN;
+        
+        tabFolder = new CTabFolder(shell, SWT.BORDER);
+        tabFolder.setBorderVisible(true);      
+        
+        FormData fdTab = new FormData();
+        fdTab.left = new FormAttachment(0, 0);
+        fdTab.top = new FormAttachment(0, Const.MARGIN);
+        fdTab.right = new FormAttachment(100, 0);
+        fdTab.bottom = new FormAttachment(100, -50);
+        tabFolder.setLayoutData(fdTab);
 
-        // -- Begin GeoKettle modification --
-        //wlFields = new Label(shell, SWT.LEFT);
-        wlFields = new Label(composite, SWT.LEFT);
-        // -- End GeoKettle modification --
+        //Standard Tab
+        CTabItem standardItem = new CTabItem(tabFolder, SWT.NULL);
+        standardItem.setText("Standard view");
+        
+        standardTab = new Composite(tabFolder, SWT.NONE);
+        standardTab.setLayout(formLayout);
+		standardItem.setControl(standardTab); 
+		
+		wlFields = new Label(standardTab, SWT.LEFT);
         wlFields.setText(message);
         props.setLook(wlFields);
         fdlFields = new FormData();
@@ -235,114 +221,9 @@ public class PreviewRowsDialog extends Dialog
         fdlFields.right = new FormAttachment(100, 0);
         fdlFields.top = new FormAttachment(0, margin);
         wlFields.setLayoutData(fdlFields);
-        
-        // -- Begin GeoKettle modification --
-        if (buffer.size() > 0)
-		{
-			//row = (Row) buffer.get(0);
-
-	        for (int i = 0; i < rowMeta.size(); i++)
-	        {
-	        	ValueMetaInterface v = rowMeta.getValueMeta(i);
-	            
-	            if (v.isGeometry() == true)
-	            {
-	            	Layer layer = new Layer(v.getName());
-	            	this.layers.addLayer(i, layer);
-	            }
-	        }
-		}
-		LayerControl layerControl = new LayerControl(compositeB, this.layers, compositeToolbar);
-		
-		final CanvasViewer canvas = new CanvasViewer(compositeB, SWT.NO_REDRAW_RESIZE | SWT.BORDER);
-        fdCanvas = new FormData();
-        fdCanvas.left = new FormAttachment(layerControl.getControl(), 5);
-        fdCanvas.top = new FormAttachment(compositeToolbar, 0);
-        fdCanvas.right = new FormAttachment(100, 0);
-        fdCanvas.bottom = new FormAttachment(87, -50);
-        canvas.setLayoutData(fdCanvas);
-        MapMediator mapContext = new MapMediator(this.layers, canvas);
-        mapContext.addObserver(canvas);
-        //this.layers.addObserver(mapContext);
-        canvas.addPaintListener(new GeoPreviewPaintListener(canvas, canvas.getDisplay(), mapContext));
-        canvas.addListener(SWT.Resize, new CanvasResizeListener(mapContext));
-        
-        canvas.addMouseListener(new GeoMouseListener(mapContext));
-        
-        canvas.addDragDetectListener(new DragDetectListener(){
-        	public void dragDetected(DragDetectEvent event) 
-        	{
-        		// TODO Here is the place to add code in order to have the image visible during drag operations
-        	}
-        	
-        });
-        this.layers.addLayerListViewer(mapContext);
-        
-        
-
-        //Toolbar for the geographic pan
-		toolBar = new ToolBar(compositeToolbar, SWT.HORIZONTAL | SWT.WRAP | SWT.RIGHT);
-		toolBar.setSize(300, 65);
-
-		final ToolItem radioItem1 = new ToolItem(toolBar, SWT.RADIO);
-		//Image iconPan = new Image(shell.getDisplay(), getClass().getResourceAsStream(Const.IMAGE_DIRECTORY + this.FILENAME_PAN_ICON));
-		Image iconPan = GUIResource.getInstance().getImage(this.FILENAME_PAN_ICON);
-	    radioItem1.setImage(iconPan);
-	    radioItem1.setData("id", ToolbarStates.PAN);
-	    radioItem1.setToolTipText(this.TOOLTIP_PAN);
-	    
-	    new ToolItem(toolBar, SWT.SEPARATOR);
-		
-		final ToolItem radioItem2 = new ToolItem(toolBar, SWT.RADIO);
-	    //Image iconZoomIn = new Image(shell.getDisplay(), getClass().getResourceAsStream(Const.IMAGE_DIRECTORY + this.FILENAME_ZOOMIN_ICON));
-		Image iconZoomIn = GUIResource.getInstance().getImage(this.FILENAME_ZOOMIN_ICON);
-		radioItem2.setImage(iconZoomIn);
-	    radioItem2.setData("id", ToolbarStates.ZOOMIN);
-	    radioItem2.setToolTipText(this.TOOLTIP_ZOOMIN);
-	    
-	    new ToolItem(toolBar, SWT.SEPARATOR);
-	    
-	    final ToolItem radioItem3 = new ToolItem(toolBar, SWT.RADIO);
-	    //Image iconZoomOut = new Image(shell.getDisplay(), getClass().getResourceAsStream(Const.IMAGE_DIRECTORY +  this.FILENAME_ZOOMOUT_ICON));
-	    Image iconZoomOut = GUIResource.getInstance().getImage(this.FILENAME_ZOOMOUT_ICON);
-	    radioItem3.setImage(iconZoomOut);
-	    radioItem3.setData("id", ToolbarStates.ZOOMOUT);
-	    radioItem3.setToolTipText(this.TOOLTIP_ZOOMOUT);
-	    
-	    new ToolItem(toolBar, SWT.SEPARATOR);
-	    // Add a GetInfo button
-	    final ToolItem radioItem4 = new ToolItem(toolBar, SWT.RADIO);
-	    //Image iconInfos = new Image(shell.getDisplay(), getClass().getResourceAsStream(Const.IMAGE_DIRECTORY +  this.FILENAME_GETINFOS_ICON));
-	    Image iconInfos = GUIResource.getInstance().getImage(this.FILENAME_GETINFOS_ICON);
-	    radioItem4.setImage(iconInfos);
-	    radioItem4.setData("id", ToolbarStates.GETINFOS);
-	    radioItem4.setToolTipText(this.TOOLTIP_GETINFOS);
-	    
-	    new ToolItem(toolBar, SWT.SEPARATOR);
-	    
-	    final ToolItem radioItem5 = new ToolItem(toolBar, SWT.RADIO);
-	    //Image iconNoselect = new Image(shell.getDisplay(), getClass().getResourceAsStream(Const.IMAGE_DIRECTORY +  this.FILENAME_NOSELECTION_ICON));
-	    Image iconNoselect = GUIResource.getInstance().getImage(this.FILENAME_NOSELECTION_ICON);
-	    radioItem5.setImage(iconNoselect);
-	    radioItem5.setData("id", ToolbarStates.NOSELECTION);
-	    radioItem5.setToolTipText(this.TOOLTIP_GETINFOS);
-
-	    
-	    ToolbarListener listener = new ToolbarListener();
-	    listener.addObserver(mapContext);
-	    
-	    radioItem5.addListener(SWT.Selection, listener);
-	    radioItem1.addListener(SWT.Selection, listener);
-	    radioItem2.addListener(SWT.Selection, listener);
-	    radioItem3.addListener(SWT.Selection, listener);
-	    radioItem4.addListener(SWT.Selection, listener);
-	    
-	    toolBar.pack();
-        // -- End GeoKettle modification --
-        
+	      
         // Mmm, if we don't get any rows in the buffer: show a dialog box.
-        if (buffer == null || buffer.size() == 0)
-        {
+        if (buffer == null || buffer.size() == 0){
             ShowMessageDialog dialog = new ShowMessageDialog(shell, SWT.OK | SWT.ICON_WARNING, Messages.getString("PreviewRowsDialog.NoRows.Text"), Messages.getString("PreviewRowsDialog.NoRows.Message"));
             dialog.open();
             shell.dispose();
@@ -350,26 +231,270 @@ public class PreviewRowsDialog extends Dialog
         }
 
         ColumnInfo[] colinf = new ColumnInfo[rowMeta.size()];
-        for (int i = 0; i < rowMeta.size(); i++)
-        {
+        for (int i = 0; i < rowMeta.size(); i++){
             ValueMetaInterface v = rowMeta.getValueMeta(i);
             colinf[i] = new ColumnInfo(v.getName(), ColumnInfo.COLUMN_TYPE_TEXT, v.isNumeric());
             colinf[i].setToolTip(v.toStringMeta());
             colinf[i].setValueMeta(v);
         }
 
-        // -- Begin GeoKettle modification --
-        //wFields = new TableView(variables, shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI, colinf, 0, null, props);
-        wFields = new TableView(variables, composite, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI, colinf, 0, null, props);
-        // -- End GeoKettle modification --
-        
+        wFields = new TableView(variables, standardTab, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI, colinf, 0, null, props);
         fdFields = new FormData();
         fdFields.left = new FormAttachment(0, 0);
         fdFields.top = new FormAttachment(wlFields, margin);
         fdFields.right = new FormAttachment(100, 0);
         fdFields.bottom = new FormAttachment(100, -50);
         wFields.setLayoutData(fdFields);
+               
+        ///////////////
+        //Geographic tab
+        //////////////////
+        geoTab = new Composite(tabFolder, SWT.NONE);
+		geoTab.setLayout(formLayout);
+		
+        CTabItem geographicTab = new CTabItem(tabFolder, SWT.NULL);
+        geographicTab.setText("Geographic view");                     		
+		geographicTab.setControl(geoTab);        
+
+        //ToolBar the geographic tools
+		wGeoToolBar = new ToolBar(geoTab, SWT.HORIZONTAL | SWT.WRAP | SWT.RIGHT);
+
+		SelectionAdapter lsToolbarItemSelect = new SelectionAdapter(){
+			public void widgetSelected(SelectionEvent event) {
+				deselectGeoToolBarItems();
+				((ToolItem)event.widget).setSelection(true);
+			}
+		};
+		
+		SelectionAdapter lsZoomToLayersExtent = new SelectionAdapter(){
+			public void widgetSelected(SelectionEvent event) {
+				deselectGeoToolBarItems();
+				geoFeaturesManager.zoomToLayersExtent();
+			}
+		};
+		
+		wToolItemPan = new ToolItem(wGeoToolBar, SWT.RADIO);
+		wToolItemPan.setImage(GUIResource.getInstance().getImage(PAN_ICON));		
+		wToolItemPan.setData("id", "PAN");
+		wToolItemPan.setToolTipText(Messages.getString("PreviewRowsDialog.Pan.Tooltip"));	    
+		wToolItemPan.addSelectionListener(lsToolbarItemSelect);
+		wToolItemPan.setSelection(true);
+		
+		wToolItemZoomIn = new ToolItem(wGeoToolBar, SWT.RADIO);
+		wToolItemZoomIn.setImage(GUIResource.getInstance().getImage(ZOOMIN_ICON));
+		wToolItemZoomIn.setData("id", "ZOOMIN");
+		wToolItemZoomIn.setToolTipText(Messages.getString("PreviewRowsDialog.ZoomIn.Tooltip"));
+		wToolItemZoomIn.addSelectionListener(lsToolbarItemSelect);
+		
+		wToolItemZoomOut = new ToolItem(wGeoToolBar, SWT.RADIO);
+		wToolItemZoomOut.setImage(GUIResource.getInstance().getImage(ZOOMOUT_ICON));
+		wToolItemZoomOut.setData("id", "ZOOMOUT");
+		wToolItemZoomOut.setToolTipText(Messages.getString("PreviewRowsDialog.ZoomOut.Tooltip"));
+	    wToolItemZoomOut.addSelectionListener(lsToolbarItemSelect);
+	    
+	    wToolItemZoomToLayersExtent = new ToolItem(wGeoToolBar, SWT.RADIO);
+	    wToolItemZoomToLayersExtent.setImage(GUIResource.getInstance().getImage(ZOOMTOLAYERSEXTENT_ICON));
+	    wToolItemZoomToLayersExtent.setData("id", "ZOOMTOLAYERSEXTENT");
+	    wToolItemZoomToLayersExtent.setToolTipText(Messages.getString("PreviewRowsDialog.ZoomToLayersExtent.Tooltip"));
+	    wToolItemZoomToLayersExtent.addSelectionListener(lsZoomToLayersExtent);
+	    
+	    wToolItemGetInfos = new ToolItem(wGeoToolBar, SWT.RADIO);
+	    wToolItemGetInfos.setImage(GUIResource.getInstance().getImage(GETINFOS_ICON));
+	    wToolItemGetInfos.setData("id", "GETINFOS");
+	    wToolItemGetInfos.setToolTipText(Messages.getString("PreviewRowsDialog.GetInfos.Tooltip"));
+	    wToolItemGetInfos.addSelectionListener(lsToolbarItemSelect);	    	
+	    	    
+	    wGeoToolBar.pack();
+	    
+        if (buffer.size() > 0){
+	        for (int i = 0; i < rowMeta.size(); i++){
+	        	ValueMetaInterface v = rowMeta.getValueMeta(i);            
+	            if (v.isGeometry())
+	            	layers.add(new LayerCollection(v.getName()));	            
+	        }
+			for (int i = 0; i < buffer.size(); i++){                       
+			    Object[] row = (Object[]) buffer.get(i);
+			    for (int c = 0; c < rowMeta.size(); c++){			    	
+			        ValueMetaInterface v = rowMeta.getValueMeta(c);                        
+		            if (v.isGeometry()){
+		             	try {
+		             		Iterator<LayerCollection> it = layers.iterator();
+		                    while(it.hasNext()){
+		                    	LayerCollection lc = it.next();
+		                    	if(lc.getName().equals(v.getName()))
+		                    		lc.addGeometryToCollection(v.getGeometry(row[c]), true, i);		                    	
+		                    }                    		
+		             	}catch (Exception exception){
+		             		exception.printStackTrace();
+		             		return;
+		             	}                             	
+		            }		        
+			    }
+			}
+		}               
+         
+        FormData fd = new FormData();
+        fd.left = new FormAttachment(0, 0);
+        fd.top = new FormAttachment(wGeoToolBar, margin);
+        fd.right = new FormAttachment(30, 0);
+        fd.bottom = new FormAttachment(100, -margin);
+        wLayerControl = new LayerControl(geoTab, layers, fd);             
         
+		wGeoCanvas = new GeoCanvas(geoTab, SWT.BORDER);
+        fdGeoCanvas = new FormData();
+        fdGeoCanvas.left = new FormAttachment(wLayerControl.getControl(), margin);
+        fdGeoCanvas.top = new FormAttachment(wGeoToolBar, margin);
+        fdGeoCanvas.right = new FormAttachment(100, 0);
+        fdGeoCanvas.bottom = new FormAttachment(87, -30);
+        wGeoCanvas.setLayoutData(fdGeoCanvas);
+        
+        geoFeaturesManager = new GeoFeaturesManager(layers);
+        geoFeaturesManager.addObserver(wGeoCanvas);
+        
+        Listener lsMouseListener = new Listener(){  
+        	private Point startingPoint;
+        	private boolean pan = false;
+			public void handleEvent(Event event) {
+		        switch (event.type) {
+		            case SWT.MouseDown: 
+		            	if(event.button ==1){
+			        		if (wToolItemPan.getSelection()){
+			        			pan = true;
+			        			startingPoint = new Point(event.x, event.y);
+			        		}else if (wToolItemZoomIn.getSelection())
+			        			geoFeaturesManager.zoomInOnPoint(event.x, event.y);
+			        		else if (wToolItemZoomOut.getSelection())
+			        			geoFeaturesManager.zoomOutOnPoint(event.x, event.y);
+			        		else if (wToolItemGetInfos.getSelection()){   
+			        			int rowIndex = geoFeaturesManager.getFeatureIndex(event.x, event.y);
+		        				wInfoTable.removeAll();
+		        				TableItem tbItem = new TableItem(wInfoTable, SWT.NONE);
+			        			if(rowIndex>=0)tbItem.setText(wFields.getItem(rowIndex));  	        						                    		            					                    				                    	
+			        		}
+		            	}
+		            	break;
+		            case SWT.MouseUp:
+		            	if(pan){
+		            		pan = false;
+		            		startingPoint = null;
+		            	}
+		            	break;
+		            case SWT.MouseMove:	            	
+		            	if(pan){
+		            		geoFeaturesManager.move(event.x - startingPoint.x, event.y - startingPoint.y);
+		            		startingPoint = new Point(event.x, event.y);
+		            	}
+		            	String x = Double.toString(geoFeaturesManager.getX(event.x));
+		            	wlCoordX.setText(x.substring(0,x.length()>10?10:x.length()));
+		            	String y = Double.toString(geoFeaturesManager.getY(event.y));
+		            	wlCoordY.setText(y.substring(0,y.length()>10?10:y.length()));
+		            	break;
+		            case SWT.MouseDoubleClick:
+		            	if(wToolItemPan.getSelection())geoFeaturesManager.recenter(event.x, event.y);
+		            	break;
+		            case SWT.MouseEnter:
+		            	if(wToolItemPan.getSelection()){
+		            		ImageData icon = GUIResource.getInstance().getImage(PAN_ICON).getImageData();
+		            		wGeoCanvas.setCursor(new Cursor(wGeoCanvas.getDisplay(), icon, icon.width/2, icon.height/2));
+		            	}else if(wToolItemZoomIn.getSelection()){
+		            		ImageData icon = GUIResource.getInstance().getImage(ZOOMIN_ICON).getImageData();
+		            		wGeoCanvas.setCursor(new Cursor(wGeoCanvas.getDisplay(), icon, icon.width/3, icon.height/3));
+		            	}else if(wToolItemZoomOut.getSelection()){
+		            		ImageData icon = GUIResource.getInstance().getImage(ZOOMOUT_ICON).getImageData();
+		            		wGeoCanvas.setCursor(new Cursor(wGeoCanvas.getDisplay(), icon, icon.width/3, icon.height/3));
+		            	}else if(wToolItemGetInfos.getSelection()){
+		            		ImageData icon = GUIResource.getInstance().getImage(GETINFOSCURSOR_ICON).getImageData();
+		            		wGeoCanvas.setCursor(new Cursor(wGeoCanvas.getDisplay(), icon, 0, 0));
+		            	}
+		            	break;
+		            case SWT.MouseExit:
+		            	wlCoordX.setText("                              ");  
+		            	wlCoordY.setText("                              ");  
+		            	pan = false;
+		            	startingPoint = null;
+		            	wGeoCanvas.setCursor(new Cursor(wGeoCanvas.getDisplay(), SWT.CURSOR_ARROW));
+		            	break;
+		        }			     
+			}        	         
+        };
+        
+        wGeoCanvas.addListener(SWT.MouseDown, lsMouseListener);
+        wGeoCanvas.addListener(SWT.MouseUp, lsMouseListener);
+        wGeoCanvas.addListener(SWT.MouseDoubleClick, lsMouseListener);
+        wGeoCanvas.addListener(SWT.MouseEnter, lsMouseListener);
+        wGeoCanvas.addListener(SWT.MouseExit, lsMouseListener);
+        wGeoCanvas.addListener(SWT.MouseMove, lsMouseListener);
+        		
+        wGeoCanvas.addListener(SWT.Paint, new Listener(){   	
+			public void handleEvent(Event event) {
+	        	if (geoFeaturesManager.getGeometryCount() <= 0)return;
+	        	Rectangle clientArea = event.display.getClientArea();
+	        	event.gc.setClipping(clientArea);	            
+	        	SWTMapRenderer mapRenderer = new SWTMapRenderer(event.gc);
+	            mapRenderer.render(geoFeaturesManager.getMapContext(), geoFeaturesManager.getEnvelope());
+			}        	
+        });
+        
+        wGeoCanvas.addListener(SWT.Resize, new Listener(){   	
+			public void handleEvent(Event event) {
+				geoFeaturesManager.setCanvasSize(((Canvas)event.widget).getSize().x, ((Canvas)event.widget).getSize().y);
+			}        	
+        });    
+        
+        Iterator<LayerCollection> it = layers.iterator();
+        while(it.hasNext())it.next().addLayerListViewer(geoFeaturesManager);
+                 
+        wlX = new Label(geoTab, SWT.NONE);
+        wlX.setText("X:");      
+        props.setLook(wlX);
+        fdlX = new FormData();
+        fdlX.left = new FormAttachment(wLayerControl.getControl(), margin);
+        fdlX.top = new FormAttachment(wGeoCanvas, margin);
+        wlX.setLayoutData(fdlX);
+        
+        wlCoordX = new Label(geoTab, SWT.LEFT);
+        wlCoordX.setText("                              ");      
+        props.setLook(wlCoordX);
+        fdlCoordX = new FormData();
+        fdlCoordX.left = new FormAttachment(wlX, margin);
+        fdlCoordX.top = new FormAttachment(wGeoCanvas, margin);
+        wlCoordX.setLayoutData(fdlCoordX);
+        
+        wlY = new Label(geoTab, SWT.NONE);
+        wlY.setText("Y:");      
+        props.setLook(wlY);
+        fdlY = new FormData();
+        fdlY.left = new FormAttachment(wlCoordX, 20);
+        fdlY.top = new FormAttachment(wGeoCanvas, margin);
+        wlY.setLayoutData(fdlY);
+        
+        wlCoordY = new Label(geoTab, SWT.LEFT);
+        wlCoordY.setText("                              ");      
+        props.setLook(wlCoordY);
+        fdlCoordY = new FormData();
+        fdlCoordY.left = new FormAttachment(wlY, margin);
+        fdlCoordY.top = new FormAttachment(wGeoCanvas, margin);
+        wlCoordY.setLayoutData(fdlCoordY);     
+        
+        wInfoTable = new Table(geoTab,SWT.BORDER);
+        wInfoTable.setHeaderVisible(true);
+        fdInfoTable =new FormData();
+        fdInfoTable.left = new FormAttachment(30,margin);
+        fdInfoTable.top = new FormAttachment(wlX,margin);
+        fdInfoTable.right = new FormAttachment(100, 0);
+        fdInfoTable.bottom = new FormAttachment(100, -margin);       
+        wInfoTable.setLayoutData(fdInfoTable);
+               
+        for (int i = 0; i < rowMeta.size(); i++){       	
+        	TableColumn col = new TableColumn(wInfoTable,SWT.BORDER);
+        	ValueMetaInterface v = rowMeta.getValueMeta(i);
+        	col.setText(v.getName());
+        	col.setWidth(100);
+        }
+        /////////////////
+	    // End of geographic Tab
+	    ////////////////////
+	    
         List<Button> buttons = new ArrayList<Button>();
         
         wClose = new Button(shell, SWT.PUSH);
@@ -412,59 +537,23 @@ public class PreviewRowsDialog extends Dialog
         // Detect X or ALT-F4 or something that kills this window...
         shell.addShellListener( new ShellAdapter() { public void shellClosed(ShellEvent e) { close(); } } );
 
-        getData();
-        
-        // -- Begin GeoKettle modification --
-
-        FormData frmData=new FormData();
-        frmData.left = new FormAttachment(layerControl.getControl(),5);
-        //frmData.top = new FormAttachment(compositeToolbar,400);
-        frmData.top = new FormAttachment(canvas,5);
-        frmData.right = new FormAttachment(100, 0);
-        frmData.bottom = new FormAttachment(100, -50);
-        
-        Table infoTable= new Table(compositeB,SWT.BORDER);
-        infoTable.setHeaderVisible(true);
-        infoTable.setLayoutData(frmData);
-               
-        for (int i = 0; i < rowMeta.size(); i++){
-        	
-        	TableColumn col=new TableColumn(infoTable,SWT.BORDER);
-        	ValueMetaInterface v = rowMeta.getValueMeta(i);
-        	col.setText(v.getName());
-        	col.setWidth(100);
-        }
-        //bt.setLayoutData(frmData);
-
-        // -- End GeoKettle modification --
-
+        getData();        
+		
         BaseStepDialog.setSize(shell);
 
         shell.open();
-
-        // -- Begin GeoKettle modification --
-        boolean stopAffiche=false;
-        // -- End GeoKettle modification --        
-        while (!shell.isDisposed())
-        {
+     
+        while (!shell.isDisposed()){
             if (!display.readAndDispatch()) display.sleep();
-            
-            // -- Begin GeoKettle modification --            
-            if ((stopAffiche==false)&&!(wFields.isDisposed())){
-            	
-            	//System.out.println("#######"+mapContext.getFeaturePosition());
-            	if (mapContext.getFeaturePosition()!=0){            	
-            		//stopAffiche=true;
-            		String[] chaineInfos=wFields.getItem(mapContext.getFeaturePosition()-1);
-            		TableItem tbItem=new TableItem(infoTable,SWT.NONE);            		
-            		tbItem=infoTable.getItem(0);
-            		tbItem.setText(chaineInfos);            		
-            	}
-            }
-            // -- End GeoKettle modification --
         }
     }
 
+    public void deselectGeoToolBarItems(){
+    	for (int i=0;i<wGeoToolBar.getItemCount();i++){
+    		wGeoToolBar.getItem(i).setSelection(false);
+    	}
+    }
+    
     public void dispose()
     {
         props.setScreen(new WindowProperty(shell));
@@ -509,27 +598,7 @@ public class PreviewRowsDialog extends Dialog
                         try
                         {
                             show = v.getString(row[c]);
-                            
-                            // -- Begin GeoKettle modification --
-                            
-                            // byte[] valeur=v.getBinary(row[c]);
-                            // Geometry p=convertBinaryToGeometry(valeur);
-                             if (v.isGeometry())
-                             {
-                             	try {
-                             		layers.addGeometryToLayer(v.getGeometry(row[c]), v.getName(), c, true);
-                             		
-                             	}
-                             	catch (Exception exception)
-                             	{
-                             		exception.printStackTrace();
-                             		return;
-                             	}
-                             	
-                             }
-                            
-                            // -- End GeoKettle modification --
-                            
+                           
                             if (v.isBinary() && show!=null && show.length()>MAX_BINARY_STRING_PREVIEW_SIZE)
                             {
                             	// We want to limit the size of the strings during preview to keep all SWT widgets happy.

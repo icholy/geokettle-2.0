@@ -1,338 +1,180 @@
 package org.pentaho.di.ui.core.dialog.geopreview.layercontrol;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-//import org.eclipse.jface.viewers.CellEditor;
-//import org.eclipse.jface.viewers.CheckStateChangedEvent;
-//import org.eclipse.jface.viewers.CheckboxCellEditor;
-//import org.eclipse.jface.viewers.CheckboxTableViewer;
-//import org.eclipse.jface.viewers.ICheckStateListener;
+import java.util.List;
+
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.ColorCellEditor;
+import org.eclipse.jface.viewers.ColumnViewer;
+import org.eclipse.jface.viewers.EditingSupport;
+import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ISelection;
-//import org.eclipse.jface.viewers.IStructuredContentProvider;
-//import org.eclipse.jface.viewers.TextCellEditor;
-//import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.TextCellEditor;
+import org.eclipse.jface.viewers.TreeViewerColumn;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-//import org.eclipse.swt.widgets.Event;
-//import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Tree;
-//import org.eclipse.swt.widgets.Text;
-import org.eclipse.jface.viewers.CheckboxTreeViewer;
-import org.eclipse.jface.viewers.ColorCellEditor;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.jface.viewers.EditingSupport;
-import org.eclipse.jface.viewers.TreeViewerColumn;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ColumnViewer;
-import org.eclipse.jface.viewers.TextCellEditor;
-import org.eclipse.jface.viewers.ICellModifier;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.PaletteData;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Color;
+import org.pentaho.di.ui.core.dialog.Messages;
 import org.pentaho.di.ui.core.dialog.geopreview.Layer;
 import org.pentaho.di.ui.core.dialog.geopreview.LayerCollection;
-//import org.pentaho.di.ui.core.dialog.geopreview.layercontrol.CheckBoxTreeViewerExample.MyTreeContentProvider;
 import org.pentaho.di.ui.core.dialog.geopreview.Symbolisation;
+import org.pentaho.di.ui.core.util.geo.renderer.swt.LayerFactory;
 
 /**
 *
-* @author mouattara & tbadard
+* @author mouattara, jmathieu & tbadard
 * @since 22-03-2009
 */
 public class LayerControl 
-{
-	// ---------------- Constants ----------------------
-	//private final String COLUMN_0_TITLE = "Visible";
-	private final String COLUMN_0_TITLE = "";
-	private final String COLUMN_1_TITLE	= "Name";
-	private final String COLUMN_2_TITLE	= "Style";
-	private final int COLUMN_0_WIDTH = 40;
-	private final int COLUMN_1_WIDTH = 150;
-	private final int COLUMN_2_WIDTH = 50;
-	// --------------------------------------------------
-
-
-	
-	// ---------------- Variables ----------------------
-	// Top control of the layerControl (for FormLayout)
-	Control topControl;
-	// The table
+{	
 	private Tree table;
-	// The table wrapper
+	private FormData fd;
+	
 	private CheckboxTreeViewer tableViewer;
 	
-	// ArrayList of Layer
-	LayerCollection layerList;	// Collection of layers
+	private ArrayList<LayerCollection> layerList;
 	
-	// Set column names
-	private String[] columnNames = new String[] {
-										this.COLUMN_0_TITLE, 
-										this.COLUMN_1_TITLE,
-										this.COLUMN_2_TITLE
-										};
-	// --------------------------------------------------
+	private String[] columnNames = new String[] {"", Messages.getString("PreviewRowsDialog.LayerTreeViewer.ColumnName.Title"), Messages.getString("PreviewRowsDialog.LayerTreeViewer.ColumnStyle.Title")};
 
-
-	/**
-	 * Constructor
-	 * 
-	 * @param parent Composite to which the control will be added
-	 * 
-	 */
-	public LayerControl(Composite parent, LayerCollection layerList, Control topControl) 
-	{
+	public LayerControl(Composite parent, ArrayList<LayerCollection> layerList, FormData fd) {
 		this.layerList = layerList;
-		this.topControl = topControl;
-		
-		this.addChildControls(parent);		
+		this.fd = fd;
+		addChildControls(parent);		
 	}
-
 	
-	/**
-	 * Create a new shell, add the widgets, open the shell
-	 *
-	 * @param parent Composite to which the control will be added
-	 * 
-	 */
-	private void addChildControls(Composite composite) 
-	{
-		// Create the table 
-		createTable(composite);
-		
-		// Create and setup the TableViewer
+	private void addChildControls(Composite composite) {
+		createTable(composite, fd);		
 		createTableViewer();
-		this.table.selectAll();
+		table.selectAll();
 	}
 
-	
-	/**
-	 * Create the Table
-	 * 
-	 * @param parent Composite to which the control will be added
-	 * 
-	 */
-	private void createTable(Composite parent) 
-	{
-		int style = SWT.SINGLE | SWT.BORDER |  
-					SWT.FULL_SELECTION | SWT.CHECK | SWT.HIDE_SELECTION;
-
-		this.table = new Tree(parent, style);
-		
-        FormData fdLayerList = new FormData();
-        fdLayerList.left = new FormAttachment(0, 0);
-        fdLayerList.top = new FormAttachment(this.topControl, 0);
-        fdLayerList.right = new FormAttachment(30, 0);
-        fdLayerList.bottom = new FormAttachment(100, -50);
-        this.table.setLayoutData(fdLayerList);
-					
-		//table.setLinesVisible(true);
-		this.table.setHeaderVisible(true);
-		
-			
-		// TODO
-		// Add listener to column so they can be sorted by name when clicked 
-		/*column.addSelectionListener(new SelectionAdapter() {
-       	
-			public void widgetSelected(SelectionEvent e) {
-				tableViewer.setSorter(new ExampleTaskSorter(ExampleTaskSorter.NAME));
-			}
-		});*/
+	private void createTable(Composite parent, FormData fd) {
+		table = new Tree(parent, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION | SWT.CHECK | SWT.HIDE_SELECTION);		
+        table.setLayoutData(fd);							
+		table.setHeaderVisible(true);
 	}
 
-	
-	static class MyEditingSupport extends EditingSupport {
-		private CellEditor editor;
-		private Viewer myViewer;
-		public MyEditingSupport(ColumnViewer viewer) {
-		super(viewer);
-		myViewer = viewer;
-		editor = new TextCellEditor((Composite)viewer.getControl());
-		}
-		protected boolean canEdit(Object element) { return false; }
-		protected CellEditor getCellEditor(Object element) { return editor; }
-		protected Object getValue(Object element) {
-			Layer current = (Layer)element;
-		return current.getName();
-		}
-		protected void setValue(Object element, Object value) {
-			Layer current = (Layer)element;
-			current.setName((String)value);
-			myViewer.refresh();
-		}
-	}
-	
-	static class MyEditingSupportStyle extends EditingSupport {
-		private CellEditor editor;
-		private Viewer myViewer;
-		public MyEditingSupportStyle(ColumnViewer viewer) {
+	static class StyleEditingSupport extends EditingSupport {
+		private Viewer viewer;
+		public StyleEditingSupport(ColumnViewer viewer) {
 			super(viewer);
-			myViewer = viewer;
-			editor = new ColorCellEditor((Composite)viewer.getControl());
-		}
-		protected boolean canEdit(Object element) { return true; }
+			this.viewer = viewer;
+		}		
+		protected boolean canEdit(Object element) { return true; }		
 		protected CellEditor getCellEditor(Object element) { 
-
-			if (!(element instanceof Symbolisation))
-				return null;
+			if (!(element instanceof Symbolisation)) return null;
+			
 			Symbolisation s = (Symbolisation)element;
-
-			if (s.getStyleUsage()==Symbolisation.LineStroke){
-				return new TextCellEditor((Composite)myViewer.getControl());
-			} 
-			if(s.getStyleUsage()==Symbolisation.Opacite){
-				return new TextCellEditor((Composite)myViewer.getControl());
-			}
-
-			if((s.getStyleUsage()==Symbolisation.BackGroundColor)||(s.getStyleUsage()==Symbolisation.LineForeColor)){
-				return editor;
-			}
-			else
-				return null; 
+			if (s.getStyleUsage()==Symbolisation.LineStrokeWidth || s.getStyleUsage()==Symbolisation.PolygonStrokeWidth)
+				return new TextCellEditor((Composite)viewer.getControl());			 
+			if(s.getStyleUsage()==Symbolisation.PointOpacity || s.getStyleUsage()==Symbolisation.LineOpacity || s.getStyleUsage()==Symbolisation.PolygonOpacity || s.getStyleUsage()==Symbolisation.CollectionOpacity)
+				return new TextCellEditor((Composite)viewer.getControl());			
+			if(s.getStyleUsage()==Symbolisation.Radius)
+				return new TextCellEditor((Composite)viewer.getControl());			
+			if((s.getStyleUsage()==Symbolisation.PointColor)||(s.getStyleUsage()==Symbolisation.PolygonFillColor)||(s.getStyleUsage()==Symbolisation.LineStrokeColor) ||(s.getStyleUsage()==Symbolisation.PolygonStrokeColor) ||(s.getStyleUsage()==Symbolisation.CollectionColor))			
+				return new ColorCellEditor((Composite)viewer.getControl());;							
+			return null; 
 		}
 		protected Object getValue(Object element) {
-			Symbolisation current = (Symbolisation)element;
-			return current.getFeatureStyle();
-		}
+			return ((Symbolisation)element).getFeatureStyle();
+		}		
 		protected void setValue(Object element, Object value) {
 			double val=0;
 			Symbolisation current = (Symbolisation)element;
-			if (current.getStyleUsage()==Symbolisation.Opacite){
+			if (current.getStyleUsage()==Symbolisation.PolygonOpacity || current.getStyleUsage()==Symbolisation.PointOpacity || current.getStyleUsage()==Symbolisation.LineOpacity || current.getStyleUsage()==Symbolisation.CollectionOpacity){
 				try{
 					val=Double.parseDouble((String)value);
-
-					if (val>1)
-						value=this.getValue(current); 
+					if (val>1) value=this.getValue(current); 
 				}catch(Exception e){
 					value=this.getValue(current);
 				}
-			}
-			
-			if (current.getStyleUsage()==Symbolisation.LineStroke){
+			}			
+			if (current.getStyleUsage()==Symbolisation.LineStrokeWidth || current.getStyleUsage()==Symbolisation.PolygonStrokeWidth || current.getStyleUsage()==Symbolisation.Radius){
 				try{
 					Integer.parseInt((String)value);
 				}catch(Exception e){
 					value=this.getValue(current);
 				}
+			}			
+			if(!current.isCustom()){
+				current.setIsCustom(true);
+				((CheckboxTreeViewer)viewer).setChecked(current, current.isCustom());
 			}
-			current.setFeatureStyle(value);
-			current.getLayerParent().setVisible(current.getLayerParent().isVisible());
-			myViewer.refresh();
-		
-		}
-		
+			current.setFeatureStyle(value);						
+			current.updateParent();
+			viewer.refresh();	
+		}		
 	}
-	
+
+	private void createTableViewer() {
+		tableViewer = new CheckboxTreeViewer(table);
+		tableViewer.setUseHashlookup(true);				
 		
-	
-	/**
-	 * Create the TableViewer
-	 * 
-	 */
-	private void createTableViewer() 
-	{
-		// Create the tableViewer
-		this.tableViewer = new CheckboxTreeViewer(this.table);
-		this.tableViewer.setUseHashlookup(true);
-		//tableViewer.setColumnProperties(this.columnNames);
-		
-		
-		TreeViewerColumn column = new TreeViewerColumn(tableViewer, SWT.CENTER);
-		
-		column.setLabelProvider(new ColumnLabelProvider() {
-			public String getText(Object element) {
-				if (element instanceof Layer) {
-					Layer current = (Layer)element;
-					
-					return current.getName();
-				} else { 
-					return null;//element.toString();				
-				}
-			}
+		TreeViewerColumn cNames = new TreeViewerColumn(tableViewer, SWT.CENTER);		
+		cNames.getColumn().setText(Messages.getString("PreviewRowsDialog.LayerTreeViewer.GeometryFields"));	
+
+		TreeViewerColumn cLegend = new TreeViewerColumn(tableViewer, SWT.CENTER);
+		cLegend.getColumn().setText(Messages.getString("PreviewRowsDialog.LayerTreeViewer.Legend"));
+		cLegend.setEditingSupport(new StyleEditingSupport(tableViewer));
 			
-			
-		
-		});
-		// TODO Require i18n
-		column.getColumn().setText("Geometry columns");
-		
-		column.setEditingSupport(new MyEditingSupport(tableViewer));
-		
-		column = new TreeViewerColumn(tableViewer, SWT.CENTER);
-		column.setLabelProvider(new ColumnLabelProvider() {
-			public String getText(Object element) {
-				if (element instanceof Symbolisation) {
-					Symbolisation current = (Symbolisation)element;
-					return current.getFeatureStyle().toString();
-				} else {
-					return null;
-				}
-			}
-		});
-		// TODO Require i18n
-		column.getColumn().setText("Legend");
-		column.setEditingSupport(new MyEditingSupportStyle(tableViewer));
-		
-		
 		for (int i = 0, n = table.getColumnCount(); i < n; i++) {
 			table.getColumn(i).setWidth(200);
 		}
-		// CheckStateListener
-		this.tableViewer.addCheckStateListener(new LayerCheckStateListener()); 
-		
-		// TODO
-		// Set the default sorter for the viewer 
-		// tableViewer.setSorter(new ExampleTaskSorter(ExampleTaskSorter.DESCRIPTION));
 
-		// ContentProvider
-		this.tableViewer.setContentProvider(new MyTreeContentProvider(layerList, this.tableViewer));
-		
-		// Set the label provider 
-		// Since the table will contains layer, this is a LayerLabelProvider
-		//this.tableViewer.setLabelProvider(new LayerLabelProvider());
-		
-		// The input for the table viewer is the instance of LayerList
-		this.tableViewer.setInput(this.layerList);
-		
+		tableViewer.addCheckStateListener(new ICheckStateListener(){
+			public void checkStateChanged(CheckStateChangedEvent event) {
+				if (event.getElement() instanceof LayerCollection) {
+			    	((LayerCollection)event.getElement()).setVisible(event.getChecked(),true);
+				}	
+				if (event.getElement() instanceof Layer){ 
+					((Layer)event.getElement()).setVisible(event.getChecked());
+					if(event.getChecked()){
+						LayerCollection lc = ((Layer)event.getElement()).getLayerCollectionParent();
+						if(!lc.isVisible()){
+							lc.setVisible(event.getChecked(), false);
+							tableViewer.setChecked(lc, event.getChecked());
+						}
+					}
+				}
+				if (event.getElement() instanceof Symbolisation) {	
+					Symbolisation sym = (Symbolisation)event.getElement();
+					sym.setIsCustom(event.getChecked()); 
+					if(!event.getChecked()){
+						if(Symbolisation.usage[sym.getStyleUsage()].equals(Symbolisation.STROKECOLOR)||Symbolisation.usage[sym.getStyleUsage()].equals(Symbolisation.FILLCOLOR)||Symbolisation.usage[sym.getStyleUsage()].equals(Symbolisation.COLOR))
+							sym.setFeatureStyle((Object)LayerFactory.getDefaultColor());
+						if(Symbolisation.usage[sym.getStyleUsage()].equals(Symbolisation.STROKEWIDTH))
+							sym.setFeatureStyle(LayerFactory.DEFAULT_STROKE_WIDTH);
+						if(Symbolisation.usage[sym.getStyleUsage()].equals(Symbolisation.RADIUS))
+							sym.setFeatureStyle(LayerFactory.DEFAULT_RADIUS);
+						if(Symbolisation.usage[sym.getStyleUsage()].equals(Symbolisation.OPACITY))
+							sym.setFeatureStyle(LayerFactory.DEFAULT_OPACITY);						
+					}	
+					sym.updateParent();
+					tableViewer.refresh();
+				}			
+			}
+		}); 
+		tableViewer.setContentProvider(new LayerTreeContentProvider(layerList, tableViewer));
+		tableViewer.setLabelProvider(new LayerLabelProvider(tableViewer));
+		tableViewer.setInput(layerList);
+		tableViewer.setAllChecked(true);
 	}
 
-	
-	/**
-	 * Return the column names in a collection
-	 * 
-	 * @return List  containing column names
-	 * 
-	 */
-	public java.util.List getColumnNames() {
-		return Arrays.asList(this.columnNames);
+	public List<String> getColumnNames() {
+		return Arrays.asList(columnNames);
 	}
 
-	
-
-	/**
-	 * @return currently selected item
-	 * 
-	 */
 	public ISelection getSelection() {
-		return this.tableViewer.getSelection();
+		return tableViewer.getSelection();
 	}
 
-
-	/**
-	 * Return the parent composite
-	 * 
-	 */
 	public Control getControl() {
-		return this.table;
+		return table;
 	}
-
 }
