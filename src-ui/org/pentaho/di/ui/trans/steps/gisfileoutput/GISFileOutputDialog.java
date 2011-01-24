@@ -62,13 +62,13 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
     private CCombo wFileNameField;
     private FormData fdFileNameField,fdlFileNameField;
 	
-//    private Label        wlEncoding;
-//    private CCombo       wEncoding;
-//    private FormData     fdlEncoding, fdEncoding;
+    private Label        wlEncoding;
+    private CCombo       wEncoding;
+    private FormData     fdlEncoding, fdEncoding;
     
 	private GISFileOutputMeta input;
 	private boolean backupChanged;
-//	private boolean gotEncodings = false;
+	private boolean gotEncodings = false;
 
 	public GISFileOutputDialog(Shell parent, Object out, TransMeta tr, String sname){
 		super(parent, (BaseStepMeta)out, tr, sname);
@@ -88,6 +88,7 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 				input.setChanged();
 			}
 		};
+		
 		backupChanged = input.hasChanged();
 		
 		FormLayout formLayout = new FormLayout();
@@ -164,15 +165,12 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 	    fdFileField.top   = new FormAttachment(wFileName, margin);
 	    fdFileField.left   = new FormAttachment(middle, 0);
 	    wFileField.setLayoutData(fdFileField);
-	    wFileField.addSelectionListener(new SelectionAdapter()
-        {
-            public void widgetSelected(SelectionEvent arg0)
-            {
+	    wFileField.addSelectionListener(new SelectionAdapter(){
+            public void widgetSelected(SelectionEvent arg0) {
             	activeFileField();
             	input.setChanged();
             }
-        }
-        );
+        });
         
 		// FileName field
 		wlFileNameField=new Label(shell, SWT.RIGHT);
@@ -183,8 +181,7 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
         fdlFileNameField.top  = new FormAttachment(wFileField,2* margin);
         fdlFileNameField.right= new FormAttachment(middle, -margin);
         wlFileNameField.setLayoutData(fdlFileNameField);
-        
-        
+            
         wFileNameField=new CCombo(shell, SWT.BORDER | SWT.READ_ONLY);
         wFileNameField.setEditable(true);
         props.setLook(wFileNameField);
@@ -194,58 +191,50 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
         fdFileNameField.top  = new FormAttachment(wFileField, margin);
         fdFileNameField.right= new FormAttachment(100, -margin);
         wFileNameField.setLayoutData(fdFileNameField);
-        wFileNameField.addFocusListener(new FocusListener()
-            {
-                public void focusLost(org.eclipse.swt.events.FocusEvent e){
-                }
-            
-                public void focusGained(org.eclipse.swt.events.FocusEvent e){
-                    Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
-                    shell.setCursor(busy);
-                    setFileField();
-                    shell.setCursor(null);
-                    busy.dispose();
-                }
+        wFileNameField.addFocusListener(new FocusListener(){
+            public void focusLost(org.eclipse.swt.events.FocusEvent e){
             }
-        );                       
-		
-//        // Encoding
-//        wlEncoding=new Label(shell, SWT.RIGHT);
-//        //TODO: Change the label in the messages file!!!
-//        wlEncoding.setText(Messages.getString("GISFileOutputDialog.Encoding.Label"));
-//        props.setLook(wlEncoding);
-//        fdlEncoding=new FormData();
-//        fdlEncoding.left = new FormAttachment(0, 0);
-//        fdlEncoding.top  = new FormAttachment(wFileNameField, margin);
-//        fdlEncoding.right= new FormAttachment(middle, -margin);
-//        wlEncoding.setLayoutData(fdlEncoding);
-//        wEncoding=new CCombo(shell, SWT.BORDER | SWT.READ_ONLY);
-//        wEncoding.setEditable(true);
-//        props.setLook(wEncoding);
-//        wEncoding.addModifyListener(lsMod);
-//        fdEncoding=new FormData();
-//        fdEncoding.left = new FormAttachment(middle, 0);
-//        fdEncoding.top  = new FormAttachment(wFileNameField, margin);
-//        fdEncoding.right= new FormAttachment(100, 0);
-//        wEncoding.setLayoutData(fdEncoding);
-//        wEncoding.addFocusListener(new FocusListener()
-//            {
-//                public void focusLost(org.eclipse.swt.events.FocusEvent e)
-//                {
-//                }
-//            
-//                public void focusGained(org.eclipse.swt.events.FocusEvent e)
-//                {
-//                    Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
-//                    shell.setCursor(busy);
-//                    setEncodings();
-//                    shell.setCursor(null);
-//                    busy.dispose();
-//                }
-//            }
-//        );
-
         
+            public void focusGained(org.eclipse.swt.events.FocusEvent e){
+                Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
+                shell.setCursor(busy);
+                setFileField();
+                shell.setCursor(null);
+                busy.dispose();
+            }
+        });                       
+		
+        //encoding
+        wlEncoding=new Label(shell, SWT.RIGHT);
+	    wlEncoding.setText(Messages.getString("GISFileOutputDialog.Encoding.Label"));
+	    props.setLook(wlEncoding);
+	    fdlEncoding=new FormData();
+	    fdlEncoding.left = new FormAttachment(0, 0);
+	    fdlEncoding.top  = new FormAttachment(wFileNameField, margin);
+	    fdlEncoding.right= new FormAttachment(middle, -margin);
+	    wlEncoding.setLayoutData(fdlEncoding);
+	    wEncoding=new CCombo(shell, SWT.BORDER | SWT.READ_ONLY);
+	    wEncoding.setEditable(true);
+	    props.setLook(wEncoding);
+	    wEncoding.addModifyListener(lsMod);
+	    fdEncoding=new FormData();
+	    fdEncoding.left = new FormAttachment(middle, 0);
+	    fdEncoding.top  = new FormAttachment(wFileNameField, margin);
+	    fdEncoding.right= new FormAttachment(100, 0);
+	    wEncoding.setLayoutData(fdEncoding);
+	    wEncoding.addFocusListener(new FocusListener(){
+	    	public void focusLost(org.eclipse.swt.events.FocusEvent e){
+	    	}
+
+	    	public void focusGained(org.eclipse.swt.events.FocusEvent e){
+	    		Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
+	    		shell.setCursor(busy);
+	    		setEncodings();
+	    		shell.setCursor(null);
+	    		busy.dispose();
+	    	}
+	    });
+      
 		// Some buttons
 		wOK=new Button(shell, SWT.PUSH);
 		wOK.setText(Messages.getString("System.Button.OK")); //$NON-NLS-1$
@@ -271,29 +260,21 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 			}
 		});	
 
-		wbFileName.addSelectionListener
-		(
-			new SelectionAdapter()
-			{
-				public void widgetSelected(SelectionEvent e) 
-				{
-					FileDialog dialog = new FileDialog(shell, SWT.OPEN);
-					dialog.setFilterExtensions(GISFILE_FILTER_EXT); //$NON-NLS-1$ //$NON-NLS-2$
-					if (wFileName.getText()!=null)
-					{
-						dialog.setFileName(wFileName.getText());
-					}
-						
-					dialog.setFilterNames(new String[] {Messages.getString("GISFileOutputDialog.Filter.SHPFiles"), Messages.getString("System.FileType.AllFiles")}); //$NON-NLS-1$ //$NON-NLS-2$
-					
-					if (dialog.open()!=null)
-					{
-						String str = dialog.getFilterPath()+Const.FILE_SEPARATOR+dialog.getFileName();
-						wFileName.setText(str);
-					}
+		wbFileName.addSelectionListener(new SelectionAdapter(){
+			public void widgetSelected(SelectionEvent e) {
+				FileDialog dialog = new FileDialog(shell, SWT.OPEN);
+				dialog.setFilterExtensions(GISFILE_FILTER_EXT); //$NON-NLS-1$ //$NON-NLS-2$
+				if (wFileName.getText()!=null)
+					dialog.setFileName(wFileName.getText());
+								
+				dialog.setFilterNames(new String[] {Messages.getString("GISFileOutputDialog.Filter.SHPFiles"), Messages.getString("System.FileType.AllFiles")}); //$NON-NLS-1$ //$NON-NLS-2$
+				
+				if (dialog.open()!=null){
+					String str = dialog.getFilterPath()+Const.FILE_SEPARATOR+dialog.getFileName();
+					wFileName.setText(str);
 				}
 			}
-		);
+		});
 		
 		// Detect X or ALT-F4 or something that kills this window...
 		shell.addShellListener(	new ShellAdapter() { public void shellClosed(ShellEvent e) { cancel(); } } );
@@ -325,7 +306,6 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 			if(input.getFileNameField() !=null)
 				wFileNameField.setText(input.getFileNameField());		
 		}
-
 		wStepname.selectAll();
 	}
 	
@@ -356,28 +336,24 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		wbFileName.setEnabled(!wFileField.getSelection());
 	}
 	
-//	private void setEncodings()
-//    {
-//        // Encoding of the shapefile:
-//        if (!gotEncodings)
-//        {
-//            gotEncodings = true;
-//            
-//            wEncoding.removeAll();
-//            List<Charset> values = new ArrayList<Charset>(Charset.availableCharsets().values());
-//            for (int i=0;i<values.size();i++)
-//            {
-//                Charset charSet = (Charset)values.get(i);
-//                wEncoding.add( charSet.displayName() );
-//            }
-//            
-//            // Now select the default!
-//            String defEncoding = Const.getEnvironmentVariable("file.encoding", "UTF-8");
-//            int idx = Const.indexOfString(defEncoding, wEncoding.getItems() );
-//            if (idx>=0) wEncoding.select( idx );
-//        }
-//    }
-
+	private void setEncodings(){
+	      // Encoding of the shapefile:
+	      if (!gotEncodings){
+	          gotEncodings = true;
+	          
+	          wEncoding.removeAll();
+	          List<Charset> values = new ArrayList<Charset>(Charset.availableCharsets().values());
+	          for (int i=0;i<values.size();i++){
+	              Charset charSet = (Charset)values.get(i);
+	              wEncoding.add( charSet.displayName() );
+	          }
+	          
+	          // Now select the default!
+	          String defEncoding = Const.getEnvironmentVariable("file.encoding", "UTF-8");
+	          int idx = Const.indexOfString(defEncoding, wEncoding.getItems() );
+	          if (idx>=0) wEncoding.select( idx );
+	     }
+	}
 	
 	private void cancel(){
 		stepname=null;
@@ -386,10 +362,10 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 	}
 	
 	public void getInfo(GISFileOutputMeta oneMeta) throws KettleStepException{
-		// copy info to Meta class (input)
 		oneMeta.setFileName( wFileName.getText() );
 		oneMeta.setFileNameInField(wFileField.getSelection());
 		oneMeta.setFileNameField(wFileNameField.getText());	
+		oneMeta.setGisFileCharset(wEncoding.getText());
 	}
 	
 	private void ok(){
@@ -397,14 +373,12 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 			stepname = wStepname.getText(); // return value
 			getInfo(input);
 			dispose();
-		}
-		catch(KettleStepException e){
+		}catch(KettleStepException e){
 			MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_ERROR );
 			mb.setMessage(e.toString());
 			mb.setText(Messages.getString("System.Warning")); //$NON-NLS-1$
 			mb.open();
-			
-			// Close anyway!
+
 			dispose();
 		}
 	}	

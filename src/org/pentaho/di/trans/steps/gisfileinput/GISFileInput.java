@@ -169,7 +169,7 @@ public class GISFileInput extends BaseStep implements StepInterface
 					
 					// Set default value for shapefile encoding to ISO-8859-1.
 					// This is the default value used in Geotools
-					if (meta.getGisFileCharset() == null)
+					if (Const.isEmpty(meta.getGisFileCharset()))
 						meta.setGisFileCharset("ISO-8859-1");
 					
 					data.charset.add(meta.getGisFileCharset());

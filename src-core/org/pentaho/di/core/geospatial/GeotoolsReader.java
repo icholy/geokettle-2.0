@@ -1,5 +1,6 @@
 package org.pentaho.di.core.geospatial;
 
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.List;
 
@@ -26,7 +27,7 @@ import com.vividsolutions.jts.geom.Geometry;
 /**
  * Handles shapefile reading from GeoTools datastores
  * 
- *  @author etdub, tbadard
+ *  @author etdub, jmathieu tbadard
  *  @since 21-03-2007
  *
  */
@@ -42,10 +43,9 @@ public class GeotoolsReader
     private FeatureCollection<SimpleFeatureType, SimpleFeature> featColl;
     private FeatureIterator<SimpleFeature> featIter;
 
-    public GeotoolsReader(java.net.URL fileURL, String charset)
-    {
-        this.log      = LogWriter.getInstance();
-        this.gisURL = fileURL;
+    public GeotoolsReader(URL fileURL, String charset){
+        log      = LogWriter.getInstance();
+        gisURL = fileURL;
         this.charset = charset;
         error         = false;
         gtDataStore = null;
@@ -54,8 +54,7 @@ public class GeotoolsReader
         featIter = null;
     }
     
-    public void open() throws KettleException
-    {
+    public void open() throws KettleException{
  		try {
  			
  			// try closing first
@@ -86,29 +85,24 @@ public class GeotoolsReader
 			featColl = featSrc.getFeatures();
             featIter = featColl.features(); 
 
-		}
-		catch(Exception e) {
+		}catch(Exception e) {
 			throw new KettleException("Error opening GIS file at URL: "+gisURL, e);
 		}
     }
         
-    public RowMetaInterface getFields() throws KettleException
-    {
+    public RowMetaInterface getFields() throws KettleException{
         String debug="get attributes from Geotools datastore";
         RowMetaInterface row = new RowMeta();
         
-        try
-        {
+        try{
             // Fetch all field information
-            //
             debug="allocate data types";
         	// datatype = new byte[reader.getFieldCount()];
             SimpleFeatureType ft = featSrc.getSchema();
             List<AttributeDescriptor> attrDescriptors = ft.getAttributeDescriptors();
             
             int i = 0;
-            for(AttributeDescriptor ad : attrDescriptors)
-            {
+            for(AttributeDescriptor ad : attrDescriptors){
               if (log.isDebug()) debug="get attribute #"+i;
 
               ValueMetaInterface value = null;
@@ -121,73 +115,52 @@ public class GeotoolsReader
             	  debug = "string attribute";
             	  value = new ValueMeta(ad.getName().getLocalPart(), ValueMetaInterface.TYPE_STRING);
             	  // value.setLength(); // TODO: check if there is a way to get max string length from AttributeType
-              }
-              else if(c == java.lang.Integer.class || c == java.lang.Long.class) {
+              }else if(c == java.lang.Integer.class || c == java.lang.Long.class) {
             	  // Integer
             	  debug = "integer attribute";
             	  value = new ValueMeta(ad.getName().getLocalPart(), ValueMetaInterface.TYPE_INTEGER);
-              }
-              else if(c == java.lang.Double.class) {
+              }else if(c == java.lang.Double.class) {
             	  // Double
             	  debug = "double attribute";
             	  value = new ValueMeta(ad.getName().getLocalPart(), ValueMetaInterface.TYPE_NUMBER);
-              }
-              else if(c == java.util.Date.class) {
+              }else if(c == java.util.Date.class) {
             	  // Date
             	  debug = "date attribute";
             	  value = new ValueMeta(ad.getName().getLocalPart(), ValueMetaInterface.TYPE_DATE);
-              }
-              else if( com.vividsolutions.jts.geom.Geometry.class.isAssignableFrom(c) )
-              {
+              }else if( com.vividsolutions.jts.geom.Geometry.class.isAssignableFrom(c)){
             	  // Geometry
             	  debug = "geometry attribute";
             	  value = new ValueMeta(ad.getName().getLocalPart(), ValueMetaInterface.TYPE_GEOMETRY);
 
             	  // set the SRS
             	  value.setGeometrySRS(getSRS());
-              }
-              // TODO: add other attribute types (logical, blob, etc.)
-              else {
-            	  //unknown
-            	  value = new ValueMeta(ad.getName().getLocalPart(), ValueMetaInterface.TYPE_STRING);
-              }
+              }else
+            	  value = new ValueMeta(ad.getName().getLocalPart(), ValueMetaInterface.TYPE_STRING);             
               
               if (value!=null)
-              {
-                  row.addValueMeta(value);
-              }
+                  row.addValueMeta(value);              
               
               i++;
             }
-        }
-        catch(Exception e)
-        {
+        }catch(Exception e){
             throw new KettleException("Error reading GIS file metadata (in part "+debug+")", e);
         }
         
         return row;
     }
     
-    public Object[] getRow(RowMetaInterface fields) throws KettleException
-    {
+    public Object[] getRow(RowMetaInterface fields) throws KettleException{
     	return getRow( RowDataUtil.allocateRowData(fields.size()) );
     }
     
-    public Object[] getRow(Object[] r) throws KettleException
-    {
-        
+    public Object[] getRow(Object[] r) throws KettleException{      
     	String debug = "";
     	
-        try
-        {
+        try{
         	// Read the next record
             
             // Are we at the end yet?
             if (!featIter.hasNext()) return null;
-            
-            // Copy the default row for speed...
-        	// debug = "copy the default row for speed!";
-        	// r = new Row(fields);
         	
         	debug = "set the values in the row";
         	// Set the values in the row...
@@ -196,8 +169,7 @@ public class GeotoolsReader
         	List<Object> attributeValues = f.getAttributes();
 
         	int i = 0;
-        	for(Object val : attributeValues)
-			{
+        	for(Object val : attributeValues){
 	        	debug = "getting value #"+i;
 				
 				if(val == null) {
@@ -205,7 +177,6 @@ public class GeotoolsReader
 					r[i] = null;
 				}
 				else {
-
 					Class<?> c = val.getClass();
 
 					if(c == java.lang.String.class) {
@@ -230,8 +201,7 @@ public class GeotoolsReader
 						debug = "date attribute";
 						r[i] = (java.util.Date) val;
 					}				
-					else if( com.vividsolutions.jts.geom.Geometry.class.isAssignableFrom(c) )
-					{
+					else if( com.vividsolutions.jts.geom.Geometry.class.isAssignableFrom(c)){
 						// Geometry
 						debug = "geometry attribute";
 						Geometry jts_geom = (Geometry) val;
@@ -243,34 +213,27 @@ public class GeotoolsReader
 						r[i] = jts_geom;
 					}
 					// TODO: add other attribute types? (numeric, float, logical, date, etc.)
-					else {
-						// unknown
+					else{
 						r[i] = null;
 					}
-				}
-				
+				}			
 				i++;
 			}
-        }
-        catch(Exception e)
-		{
+        }catch(Exception e){
             log.logError(toString(), "Unexpected error in part ["+debug+"] : "+e.toString());
             error = true;
             throw new KettleException("Unable to read row from Geotools datastore", e);
-		}
-        
+		}       
         return r;
     }
     
     private SRS getSRS() throws KettleException {
         if(featColl != null) {
-        	CoordinateReferenceSystem crs =
-        		featSrc.getSchema().getGeometryDescriptor().getCoordinateReferenceSystem();
+        	CoordinateReferenceSystem crs = featSrc.getSchema().getGeometryDescriptor().getCoordinateReferenceSystem();
         	return new SRS(crs);
         }
-        else {
-        	throw new KettleException("FeatureSource is not open");
-        }
+        else 
+        	throw new KettleException("FeatureSource is not open");        
     }
     
     public boolean close()

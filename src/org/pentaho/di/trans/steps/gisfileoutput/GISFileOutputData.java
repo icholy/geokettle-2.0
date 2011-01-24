@@ -19,11 +19,13 @@ public class GISFileOutputData extends BaseStepData implements StepDataInterface
 	public RowMetaInterface fields;
     public ArrayList <FileObject> file_gis;
     public RowMetaInterface outputRowMeta;
+    public ArrayList <String> charset;
 
 	public GISFileOutputData(){
 		super();
 		gtwriter=null;
 		fields=null;
 		file_gis=null;
+		charset=null;
 	}
 }

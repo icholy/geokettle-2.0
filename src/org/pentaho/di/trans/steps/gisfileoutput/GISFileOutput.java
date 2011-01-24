@@ -49,20 +49,22 @@ public class GISFileOutput extends BaseStep implements StepInterface {
 			try {
 				for (int i=0;i<data.gtwriter.size();i++){
 					data.gtwriter.get(i).write();
+					data.gtwriter.get(i).close();
 				}
-				return false;
+				setOutputDone();
+	            return false;
 			}catch (Exception e) {
 				logError("Because of an error, this step can't continue: ", e);
+				for (int i=0;i<data.gtwriter.size();i++){
+					data.gtwriter.get(i).close();
+				}
 				setErrors(1);
 				stopAll();
 				setOutputDone(); // signal end to receiver(s)
 				return false;
-			}finally {
-				for (int i=0;i<data.gtwriter.size();i++){
-					data.gtwriter.get(i).close();
-				}
 			}
 		}
+		
 		int fileIndex = 0;
 		
 		if (first) {
@@ -89,9 +91,8 @@ public class GISFileOutput extends BaseStep implements StepInterface {
 					data.file_gis.add(fo); 
 					fileIndex = data.file_gis.indexOf(fo);
 					// Create file if it does not exist
-					if (!data.file_gis.get(fileIndex).exists()) {
+					if (!data.file_gis.get(fileIndex).exists())
 						data.file_gis.get(fileIndex).createFile();
-					}
 					openNextFile(fileIndex);
 					data.outputRowMeta = getInputRowMeta().clone();
 					data.gtwriter.get(fileIndex).createSimpleFeatureType(data.outputRowMeta, r, data.file_gis.get(fileIndex).getURL());
@@ -113,7 +114,7 @@ public class GISFileOutput extends BaseStep implements StepInterface {
 					return false;
 				}
 			}
-		}catch (Exception e) {
+		}catch (Exception e){
 			logError("Error creating gis file from field value", e);
 			data.gtwriter.get(fileIndex).close();
 			setErrors(1);
@@ -132,14 +133,21 @@ public class GISFileOutput extends BaseStep implements StepInterface {
 			try {
 				data.file_gis = new ArrayList <FileObject>();
 				data.gtwriter = new ArrayList <GeotoolsWriter>();
+				data.charset = new ArrayList <String>();
 				if(!meta.isFileNameInField()){
 					String fileName = meta.getFileName();
 					data.file_gis.add(KettleVFS.getFileObject(fileName)); 
 				
 					// Create file if it does not exist
-					if (!data.file_gis.get(0).exists()) {// 0 -> only one file
+					if (!data.file_gis.get(0).exists())
 						data.file_gis.get(0).createFile();
-					}
+					
+					// Set default value for shapefile encoding to ISO-8859-1.
+					// This is the default value used in Geotools
+					if (Const.isEmpty(meta.getGisFileCharset()))
+						meta.setGisFileCharset("ISO-8859-1");
+					
+					data.charset.add(meta.getGisFileCharset());
 					openNextFile(0);
 				}
 			}catch (Exception e) {
@@ -153,10 +161,10 @@ public class GISFileOutput extends BaseStep implements StepInterface {
 
 	private void openNextFile(int fileIndex) throws KettleException {		
 		try {
-			data.gtwriter.add(new GeotoolsWriter(data.file_gis.get(fileIndex).getURL()));
+			data.gtwriter.add(new GeotoolsWriter(data.file_gis.get(fileIndex).getURL(),data.charset.get(fileIndex)));
 			data.gtwriter.get(fileIndex).open();
 
-			logBasic(Messages.getString("GISFileOutput.Log.OpenedGISFile") + " : [" + data.gtwriter.get(fileIndex) + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$	     			
+			logBasic(Messages.getString("GISFileOutput.Log.OpenedGISFile") + " : ["+data.gtwriter.get(fileIndex)+" ("+data.charset.get(fileIndex)+")]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 		}catch (Exception e) {
 			logError(Messages.getString("GISFileOutput.Log.Error.CouldNotOpenGISFile1") + data.file_gis.get(fileIndex) + Messages.getString("GISFileOutput.Log.Error.CouldNotOpenGISFile2") + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
 			throw new KettleException(e);

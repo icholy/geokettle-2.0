@@ -28,6 +28,7 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	private  String  fileName; 
 	private boolean isFileNameInField;
 	private String fileNameField;
+	private String  gisFileCharset;
 
 	public GISFileOutputMeta(){
 		super(); // allocate BaseStepMeta
@@ -57,6 +58,14 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
         this.isFileNameInField = isfileNameInField;
     }
     
+	public String getGisFileCharset() {
+		return gisFileCharset;
+	}
+
+	public void setGisFileCharset(String gisFileCharset) {
+		this.gisFileCharset = gisFileCharset;
+	}
+	
     public void loadXML(Node stepnode, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleXMLException {
 		readData(stepnode);
 	}
@@ -72,8 +81,8 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 			fileNameField     = XMLHandler.getTagValue(stepnode, "filenamefield");
 			isFileNameInField  = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "isfilenameinfield"));			
 			fileName    = XMLHandler.getTagValue(stepnode, "filename");			
-		}
-		catch(Exception e){
+			gisFileCharset     = XMLHandler.getTagValue(stepnode, "gis_file_charset"); //$NON-NLS-1$
+		}catch(Exception e){
 			throw new KettleXMLException(Messages.getString("GISFileOutputMeta.Exception.UnableToReadStepInformationFromXML"), e); //$NON-NLS-1$
 		}
 	}
@@ -82,6 +91,7 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 		fileName    = null;
 		fileNameField = null;
 		isFileNameInField = false;
+		gisFileCharset = null;
 	}
 
 	public String getXML(){
@@ -89,7 +99,7 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 		retval.append("    " + XMLHandler.addTagValue("filename", fileName));
 		retval.append("    " + XMLHandler.addTagValue("isfilenameinfield", isFileNameInField));
 		retval.append("    " + XMLHandler.addTagValue("filenamefield", fileNameField));  	
-		
+		retval.append("    " + XMLHandler.addTagValue("gis_file_charset", gisFileCharset)); //$NON-NLS-1$ //$NON-NLS-2$
 		return retval.toString();
 	}
 
@@ -99,8 +109,8 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 			fileName    = rep.getStepAttributeString (id_step, "filename");
 			isFileNameInField   = rep.getStepAttributeBoolean(id_step, "isfilenameinfield");	
 			fileNameField     = rep.getStepAttributeString (id_step, "filenamefield");
-		}
-		catch(Exception e){
+			gisFileCharset     = rep.getStepAttributeString (id_step, "gis_file_charset"); //$NON-NLS-1$
+		}catch(Exception e){
 			throw new KettleException(Messages.getString("GISFileOutputMeta.Exception.UnexpectedErrorReadingMetaDataFromRepository"), e); //$NON-NLS-1$
 		}
 	}
@@ -111,8 +121,8 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 			rep.saveStepAttribute(id_transformation, id_step, "filenamefield", fileNameField);
 			rep.saveStepAttribute(id_transformation, id_step, "filename", fileName);
 			rep.saveStepAttribute(id_transformation, id_step, "isfilenameinfield", isFileNameInField);
-		}
-		catch(Exception e){
+			rep.saveStepAttribute(id_transformation, id_step, "gis_file_charset", gisFileCharset); //$NON-NLS-1$
+		}catch(Exception e){
 			throw new KettleException(Messages.getString("GISFileOutputMeta.Exception.UnableToSaveMetaDataToRepository")+id_step, e); //$NON-NLS-1$
 		}
 	}
@@ -132,13 +142,10 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 		}else{	
             cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("GISFileOutputMeta.Remark.FileToUseIsSpecified"), stepMeta); //$NON-NLS-1$
             remarks.add(cr);
-            if (input.length > 0)
-            {
+            if (input.length > 0){
                 cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("GISFileOutputMeta.CheckResult.ReceivingInfoFromOtherSteps"), stepMeta); //$NON-NLS-1$
                 remarks.add(cr);
-            }
-            else
-            {
+            }else{
                 cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("GISFileOutputMeta.CheckResult.NoInpuReceived"), stepMeta); //$NON-NLS-1$
                 remarks.add(cr);
             }
