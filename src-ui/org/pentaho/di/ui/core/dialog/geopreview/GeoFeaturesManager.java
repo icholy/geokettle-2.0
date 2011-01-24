@@ -15,7 +15,6 @@ import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.DefaultMapLayer;
 import org.geotools.map.MapContext;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -100,7 +99,13 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 		double diffX = (envelope.getMaxX() - envelope.getMinX()) * diffXOnScreen / getCanvasWidth(); 
 		double diffY = -(envelope.getMaxY() - envelope.getMinY()) * diffYOnScreen / getCanvasHeight();
 		
-		envelope = new ReferencedEnvelope(envelope.getMinX()-diffX, envelope.getMaxX()-diffX, envelope.getMinY()-diffY, envelope.getMaxY()-diffY, DefaultGeographicCRS.WGS84);
+		double minX = envelope.getMinX()-diffX;
+		double maxX =  envelope.getMaxX()-diffX;
+		double minY = envelope.getMinY()-diffY;
+		double maxY =  envelope.getMaxY()-diffY;
+		
+		envelope = new ReferencedEnvelope();
+		envelope.init( minX, maxX, minY, maxY);	
 		
 		setChanged();
 		notifyObservers();
@@ -313,7 +318,7 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
     	if (allFeatures != null && !allFeatures.isEmpty()){
 			allFeatureLayer = new DefaultMapLayer(allFeatures, layerFactory.createDefaultLayerStyles());    	
 			try {
-				layersExtent = lockAspectRatio(new ReferencedEnvelope(allFeatureLayer.getFeatureSource().getBounds(), DefaultGeographicCRS.WGS84));
+				layersExtent = lockAspectRatio(new ReferencedEnvelope(allFeatureLayer.getFeatureSource().getBounds()));
 			} catch (MismatchedDimensionException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -324,7 +329,7 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
     	
         if (envelope == null){
 			try {
-				envelope = lockAspectRatio(new ReferencedEnvelope(allFeatureLayer.getFeatureSource().getBounds(), DefaultGeographicCRS.WGS84));				
+				envelope = lockAspectRatio(new ReferencedEnvelope(allFeatureLayer.getFeatureSource().getBounds()));				
 			} catch (MismatchedDimensionException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -379,8 +384,15 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 		double diffX = (envelope.getWidth() - newEnvelopewidth) / 2;
 		double diffY = (envelope.getHeight() - newEnvelopeHeight) / 2;
 		
-		envelope = new ReferencedEnvelope(envelope.getMinX()+diffX, envelope.getMaxX()-diffX, envelope.getMinY()+diffY, envelope.getMaxY()-diffY, DefaultGeographicCRS.WGS84);
 		
+		double minX = envelope.getMinX()+diffX;
+		double maxX =  envelope.getMaxX()-diffX;
+		double minY = envelope.getMinY()+diffY;
+		double maxY =  envelope.getMaxY()-diffY;
+		
+		envelope = new ReferencedEnvelope();
+		envelope.init(minX, maxX, minY, maxY);	
+
 		setChanged();
 		notifyObservers();
 	}	
@@ -393,8 +405,14 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 		double diffX = (envelope.getWidth() - newEnvelopewidth) / 2;
 		double diffY = (envelope.getHeight() - newEnvelopeHeight) / 2;
 		
-		envelope = new ReferencedEnvelope(envelope.getMinX()+diffX, envelope.getMaxX()-diffX, envelope.getMinY()+diffY, envelope.getMaxY()-diffY, DefaultGeographicCRS.WGS84);
+		double minX = envelope.getMinX()+diffX;
+		double maxX =  envelope.getMaxX()-diffX;
+		double minY = envelope.getMinY()+diffY;
+		double maxY =  envelope.getMaxY()-diffY;
 		
+		envelope = new ReferencedEnvelope();
+		envelope.init( minX, maxX, minY, maxY);	
+
 		setChanged();
 		notifyObservers();
 	}
@@ -425,7 +443,13 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 		double newX = envelope.getMinX() + x * pixelValueX;
 		double newY = envelope.getMinY() + (canvasHeight-y) * pixelValueY;
 		
-		envelope =new ReferencedEnvelope(newX-envelope.getWidth()/2, newX+envelope.getWidth()/2, newY-envelope.getHeight()/2, newY+envelope.getHeight()/2, DefaultGeographicCRS.WGS84);
+		double minX = newX-envelope.getWidth()/2;
+		double maxX = newX+envelope.getWidth()/2;
+		double minY = newY-envelope.getHeight()/2;
+		double maxY = newY+envelope.getHeight()/2;
+		
+		envelope = new ReferencedEnvelope();
+		envelope.init( minX, maxX, minY, maxY);	
 	}
 
 	public int getFeatureIndex(int x, int y){		
