@@ -90,7 +90,8 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 
 	public void setCanvasSize(int width, int height){
 		canvasWidth = width;
-		canvasHeight = height;		
+		canvasHeight = height;
+		if(envelope!=null)envelope = lockAspectRatio(envelope);
 		setChanged();
 		notifyObservers();
 	}
@@ -309,15 +310,21 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 	        collectionIndex++;
 		}
     	
-    	if (allFeatures != null && !allFeatures.isEmpty())
+    	if (allFeatures != null && !allFeatures.isEmpty()){
 			allFeatureLayer = new DefaultMapLayer(allFeatures, layerFactory.createDefaultLayerStyles());    	
-    	else
+			try {
+				layersExtent = lockAspectRatio(new ReferencedEnvelope(allFeatureLayer.getFeatureSource().getBounds(), DefaultGeographicCRS.WGS84));
+			} catch (MismatchedDimensionException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			};
+    	}else
     		return;
     	
         if (envelope == null){
 			try {
-				envelope = new ReferencedEnvelope(allFeatureLayer.getFeatureSource().getBounds(), DefaultGeographicCRS.WGS84);
-				layersExtent = new ReferencedEnvelope(allFeatureLayer.getFeatureSource().getBounds(), DefaultGeographicCRS.WGS84);
+				envelope = lockAspectRatio(new ReferencedEnvelope(allFeatureLayer.getFeatureSource().getBounds(), DefaultGeographicCRS.WGS84));				
 			} catch (MismatchedDimensionException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -326,6 +333,22 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
         }
 	}
 
+	public ReferencedEnvelope lockAspectRatio(ReferencedEnvelope env){
+		double ratioX  = env.getWidth() / canvasWidth;
+		double ratioY   = env.getHeight() / canvasHeight;
+		double diff, width, height;
+		if (ratioY > ratioX){
+			width = ratioY*canvasWidth;
+			diff = (width-env.getWidth())/2;
+			env.init(env.getMinX()-diff, env.getMaxX()+diff, env.getMinY(), env.getMaxY());
+		}else{
+			height = ratioX*canvasHeight;
+			diff = (height-env.getHeight())/2;
+			env.init(env.getMinX(), env.getMaxX(), env.getMinY()-diff, env.getMaxY()+diff);		
+		}
+		return env;
+	}
+	
 	public void addLayerEvent(Layer layer) {
 		updateGeoFeatures();		
 		setChanged();

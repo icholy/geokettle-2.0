@@ -50,7 +50,7 @@ public class SWTMapRenderer
 
             // Set the map on the renderer
             renderer.setContext(map);
-
+            
             // Set the hints
             // Hints provides a way to control low-level details used by Renderers of GeoTools
             RenderingHints hints = new RenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
