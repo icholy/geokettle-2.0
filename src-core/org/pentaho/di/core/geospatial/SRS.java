@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.geotools.data.PrjFileReader;
 import org.geotools.factory.FactoryRegistryException;
+import org.geotools.factory.Hints;
 import org.geotools.metadata.iso.citation.Citations;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.ReferencingFactoryFinder;
@@ -51,6 +52,7 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 	/** Mandatory: Indicates, if this {@link SRS} is custom defined **/
 	public boolean is_custom = false;
 
+	public Hints hints;
 	// XML tags
 	public final static String XML_AUTH = "authority";
 	public final static String XML_SRID = "srid";
@@ -74,7 +76,7 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 	private final class SRSInit {
 		public String auth = null;
 		public String srid = null;
-		public String desc = null;
+		public String desc = null;		
 	}
 
 	/**
@@ -92,6 +94,7 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 		this.srid = srid;
 		this.description = description;
 		this.crs = crs;
+		hints = srid.equals("4326")? new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE):null;						
 	}
 	
 	/**
@@ -106,15 +109,8 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 		this.authority = Const.NVL(authority, "");
 		this.srid = Const.NVL(srid, "");
 		this.description = Const.NVL(description, "");
-		/*
-		if ( authority != null && !authority.equals("") && srid != null && !srid.equals("") ) {
-			this.crs = crsFromAuthSrid(authority, srid);
-		}
-		else {
-			this.crs = null;
-		}
-		*/
 		this.crs = null;
+		hints = srid.equals("4326")? new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE):null;	
 	}
 
 
@@ -130,12 +126,10 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 		if (this.crs != null) {
 			SRSInit init = new SRSInit();
 			getProperties(init, this.crs);
-
 			this.authority = init.auth;
 			this.srid = init.srid;
 			this.description = init.desc;
-		}
-		else {
+		}else {
 			this.authority = "";
 			this.srid = "";
 			this.description = "";
@@ -214,6 +208,7 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 		this.authority = init.auth;
 		this.srid = init.srid;
 		this.description = init.desc;
+		if(crs!=null)hints = init.srid.equals("4326")? new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE):null;	
 	}
 
 	/**
@@ -236,7 +231,8 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 				init.auth = Citations.getIdentifier(id.getAuthority());
 				init.srid = id.getCode();
 				try {
-					CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory(init.auth, null);
+					hints = init.srid.equals("4326")? new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE):null;	
+					CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory(init.auth, hints);
 					init.desc = factory.getDescriptionText(init.srid).toString();
 					this.is_custom = false;
 					break;
@@ -244,9 +240,8 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 					this.is_custom = true;
 				}
 			}
-		} else {
-			this.is_custom = true;
-		}
+		} else 
+			this.is_custom = true;		
 
 		// If this is not an EPSG spatial reference system, use WKT to describe it but get
 		// as much information as possible about the SRS from the WKT.
@@ -303,18 +298,9 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 	 * @throws KettleStepException
 	 */
 	public CoordinateReferenceSystem getCRS() throws KettleStepException {
-		if (crs != null) {
+		if (crs != null)
 			return crs;
-		} else {
-			return crsFromAuthSrid(authority, srid);
-//			try {
-//				//return CRS.decode(authority + ":" + srid);
-//			} catch (FactoryException e) {
-//				throw new KettleStepException("The coordinate reference system could not be created!");
-//			} catch (FactoryRegistryException e) {
-//				throw new KettleStepException("The coordinate reference system could not be created!");
-//			} 
-		}
+		return crsFromAuthSrid(authority, srid);		
 	}
 
 	/*
@@ -364,7 +350,9 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 	}
 
 	public static SRS createFromEPSG(String srid) {
-		CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory(AUTH_EPSG, null);
+		Hints hints = null;
+		if(srid.equals("4326")) hints = new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE);
+		CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory(AUTH_EPSG, hints);
 		try {
 			return new SRS(AUTH_EPSG, srid, factory.getDescriptionText(srid).toString());
 		} catch (NoSuchAuthorityCodeException e) {
@@ -372,8 +360,6 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 		} catch (FactoryException e) {
 			return SRS.UNKNOWN;
 		}
-
-
 	}
 
 	private static CoordinateReferenceSystem crsFromAuthSrid(String auth, String srid) {
@@ -383,7 +369,9 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 
 		if (!auth.equals("") && (!srid.equals("") || !srid.equals("-1")) ) {
 			try {
-				CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory(auth, null);
+				Hints hints = null;
+				if(srid.equals("4326")) hints = new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE);				
+				CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory(auth, hints);
 				crs = factory.createCoordinateReferenceSystem(srid);
 			} catch (NoSuchAuthorityCodeException e) {
 				LogWriter.getInstance().logDetailed("GeoKettle SRS",
@@ -401,8 +389,6 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 						"NullPointerException occured", e);			
 			}
 		}
-
 		return crs;
-
 	}
 }

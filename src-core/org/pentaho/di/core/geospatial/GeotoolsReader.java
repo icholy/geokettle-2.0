@@ -14,6 +14,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.AttributeType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.logging.LogWriter;
 import org.pentaho.di.core.row.RowDataUtil;
@@ -64,7 +65,7 @@ public class GeotoolsReader
  			// causes out of memory errors with large files (~500mb).
  			 			
  			//gtDataStore = new ShapefileDataStore(gisURL, null, false);
- 			Charset charsetToBeUsed = Charset.forName(this.charset);
+ 			Charset charsetToBeUsed = Charset.forName(Const.isEmpty(this.charset)?"ISO-8859-1":this.charset);
  			gtDataStore = new ShapefileDataStore(gisURL, null, false,charsetToBeUsed);
  			/*
  			if(gisURL.toString().substring(gisURL.toString().length()-3,gisURL.toString().length()).equalsIgnoreCase("SHP"))

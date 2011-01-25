@@ -196,7 +196,6 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		try
 		{
 			java.net.URL fileURL = fo.getURL();
-            //gtr = new GeotoolsReader(fileURL);
 			gtr = new GeotoolsReader(fileURL,gisFileCharset);
             gtr.open();
 			RowMetaInterface add = gtr.getFields();

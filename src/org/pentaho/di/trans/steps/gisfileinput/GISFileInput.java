@@ -23,7 +23,7 @@ import org.pentaho.di.trans.steps.gisfileinput.Messages;
 /**
  * Reads data from an GIS file.
  * 
- * @author etdub, tbadard
+ * @author etdub,jmathieu & tbadard
  * @since 29-sep-2008
  */
 public class GISFileInput extends BaseStep implements StepInterface
