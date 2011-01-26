@@ -230,7 +230,7 @@ public class GeotoolsWriter
 
 	public void write() throws KettleException{
 		try{
-			featWriter.close();
+			if(featWriter!=null)featWriter.close();
 		}catch(Exception e){
 			throw new KettleException("An error has occured", e);
 		}

@@ -52,7 +52,7 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 	/** Mandatory: Indicates, if this {@link SRS} is custom defined **/
 	public boolean is_custom = false;
 
-	public Hints hints;
+	public final static Hints HINTS = new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE);
 	// XML tags
 	public final static String XML_AUTH = "authority";
 	public final static String XML_SRID = "srid";
@@ -76,7 +76,7 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 	private final class SRSInit {
 		public String auth = null;
 		public String srid = null;
-		public String desc = null;		
+		public String desc = null;	
 	}
 
 	/**
@@ -94,7 +94,6 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 		this.srid = srid;
 		this.description = description;
 		this.crs = crs;
-		hints = srid.equals("4326")? new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE):null;						
 	}
 	
 	/**
@@ -110,7 +109,6 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 		this.srid = Const.NVL(srid, "");
 		this.description = Const.NVL(description, "");
 		this.crs = null;
-		hints = srid.equals("4326")? new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE):null;	
 	}
 
 
@@ -208,7 +206,6 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 		this.authority = init.auth;
 		this.srid = init.srid;
 		this.description = init.desc;
-		if(crs!=null)hints = init.srid.equals("4326")? new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE):null;	
 	}
 
 	/**
@@ -230,9 +227,8 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 			for (ReferenceIdentifier id : identifiers) {
 				init.auth = Citations.getIdentifier(id.getAuthority());
 				init.srid = id.getCode();
-				try {
-					hints = init.srid.equals("4326")? new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE):null;	
-					CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory(init.auth, hints);
+				try {					
+					CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory(init.auth, HINTS);
 					init.desc = factory.getDescriptionText(init.srid).toString();
 					this.is_custom = false;
 					break;
@@ -350,9 +346,7 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 	}
 
 	public static SRS createFromEPSG(String srid) {
-		Hints hints = null;
-		if(srid.equals("4326")) hints = new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE);
-		CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory(AUTH_EPSG, hints);
+		CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory(AUTH_EPSG, HINTS);
 		try {
 			return new SRS(AUTH_EPSG, srid, factory.getDescriptionText(srid).toString());
 		} catch (NoSuchAuthorityCodeException e) {
@@ -369,9 +363,7 @@ public class SRS implements Comparable<SRS>, Cloneable, XMLInterface {
 
 		if (!auth.equals("") && (!srid.equals("") || !srid.equals("-1")) ) {
 			try {
-				Hints hints = null;
-				if(srid.equals("4326")) hints = new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE);				
-				CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory(auth, hints);
+				CRSAuthorityFactory factory = ReferencingFactoryFinder.getCRSAuthorityFactory(auth, HINTS);
 				crs = factory.createCoordinateReferenceSystem(srid);
 			} catch (NoSuchAuthorityCodeException e) {
 				LogWriter.getInstance().logDetailed("GeoKettle SRS",
