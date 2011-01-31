@@ -27,7 +27,6 @@ import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
-import org.pentaho.di.trans.steps.sosinput.Messages;
 import org.xml.sax.InputSource;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -251,7 +250,7 @@ public class SOSReader{
 
     		 return bodyBuffer.toString();
 		}catch (IOException e) { 
-			throw new KettleException(Messages.getString("SOSInputDialog.ErrorConnectingToSOS.DialogMessage"), e);
+			throw new KettleException("Error connecting to SOS...", e);
 		}finally{
 			 httpMethod.releaseConnection();
 		}
@@ -278,7 +277,7 @@ public class SOSReader{
 			rd.close();
 			return response;
 		}catch (Exception e) { 
-			throw new KettleException(Messages.getString("SOSInputDialog.ErrorConnectingToSOS.DialogMessage"), e);
+			throw new KettleException("Error connecting to SOS...", e);
 		}
 	}
 
@@ -287,7 +286,7 @@ public class SOSReader{
 		try {
 			return findElement(parser.build(new InputSource(new StringReader(response))).getRootElement(), "ObservationOffering");
 		} catch (Exception e) {
-			throw new KettleException(Messages.getString("SOSInputDialog.ErrorGetCapabilities.DialogMessage"), e);
+			throw new KettleException("Error parsing SOS capabilities...", e);
 		}
 	}
 	
@@ -301,7 +300,7 @@ public class SOSReader{
 					procedureElements = findElement(offeringEl, "procedure");	
 			}
 		} catch (Exception e) {
-			throw new KettleException(Messages.getString("SOSInputDialog.ErrorGetCapabilities.DialogMessage"), e);
+			throw new KettleException("Error parsing SOS capabilities...", e);
 		}
 		return procedureElements;
 	}
@@ -316,7 +315,7 @@ public class SOSReader{
 					observedPropertyElement = findElement(offeringEl, "observedProperty");	
 			}
 		} catch (Exception e) {
-			throw new KettleException(Messages.getString("SOSInputDialog.ErrorGetCapabilities.DialogMessage"), e);
+			throw new KettleException("Error parsing SOS capabilities...", e);
 		}
 		return observedPropertyElement;
 	}
@@ -356,7 +355,7 @@ public class SOSReader{
 			measurementElements = findElement(doc.getRootElement(), "Measurement");
 			if (measurementElements.isEmpty()) return null;
 		} catch (Exception e) {
-			 throw new KettleException(Messages.getString("SOSInput.Log.ErrorReadingSOSResponse"), e);
+			 throw new KettleException("Error parsing SOS response...", e);
 		}		
 		
 		ArrayList<Object[]> rows = new ArrayList<Object[]>();
@@ -454,7 +453,7 @@ public class SOSReader{
 				
 				rows.add(r);			
 			}catch (Exception e){
-				throw new KettleException(Messages.getString("SOSInput.Log.ErrorParsingObservations"), e);
+				throw new KettleException("Error parsing SOS response...", e);
 			}
         }
         return rows;

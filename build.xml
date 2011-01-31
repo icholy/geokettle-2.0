@@ -376,8 +376,8 @@
 	  		<mkdir dir="${distrib}"/>
 	  		<copy todir="${distrib}">
 	  			<fileset dir="${bin}" includes="**/*" excludes="**/.vpn .project .classpath"/>
-	  			</copy>
-
+	  		</copy>
+            
 	  		<!-- base lib -->
 	  		<mkdir dir="${distrib}/lib"/>
 			<copy todir="${distrib}/lib"  file="${lib}/kettle-core.jar"/>
