@@ -460,6 +460,10 @@
 	  		<copy todir="${distrib}/extra">
 	  			<fileset dir="${extra}" includes="**/*"/>
 	  			</copy>
+	  			
+	  		<copy todir="${distrib}">
+  				<fileset dir="." includes="LICENSE.txt" excludes=""/>
+  			</copy>
 
 	  	    <!-- Begin GeoKettle modification -->
 	        <!-- xsd stuff for JAK lib. -->
