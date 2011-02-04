@@ -467,7 +467,6 @@
 
 	  	    <!-- Begin GeoKettle modification -->
 	        <!-- xsd stuff for JAK lib. -->
-  			<mkdir dir="${distrib}/src"/>
 	  		<mkdir dir="${distrib}/src/main"/>
   			<copy todir="${distrib}/src/main">
   				<fileset dir="${src}/main" includes="**/*"/>
