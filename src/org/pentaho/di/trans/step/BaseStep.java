@@ -121,9 +121,6 @@ public class BaseStep extends Thread implements VariableSpace, StepInterface
         StepCategory.EXPERIMENTAL.getName(),
         StepCategory.DEPRECATED.getName(),
         StepCategory.BULK.getName(),
-        // -- Begin GeoKettle modification --
-        StepCategory.GEOSPATIAL.getName(),
-        // -- End GeoKettle modification --
     };
 
     public static final String[] statusDesc = { 

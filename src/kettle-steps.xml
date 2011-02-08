@@ -1078,7 +1078,7 @@
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.GISFileInput")
 		</description>
 		<class-name>org.pentaho.di.trans.steps.gisfileinput.GISFileInputMeta</class-name>
-		<category>ognl:@org.pentaho.di.trans.step.StepCategory@GEOSPATIAL.getName()</category>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@INPUT.getName()</category>
 		<tooltip>
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.GISFileInput")
 		</tooltip>
@@ -1089,7 +1089,7 @@
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.GISFileOutput")
 		</description>
 		<class-name>org.pentaho.di.trans.steps.gisfileoutput.GISFileOutputMeta</class-name>
-		<category>ognl:@org.pentaho.di.trans.step.StepCategory@GEOSPATIAL.getName()</category>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@OUTPUT.getName()</category>
 		<tooltip>
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.GISFileOutput")
 		</tooltip>
@@ -1100,7 +1100,7 @@
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.SRSTransformation")
 		</description>
 		<class-name>org.pentaho.di.trans.steps.srstransformation.SRSTransformationMeta</class-name>
-		<category>ognl:@org.pentaho.di.trans.step.StepCategory@GEOSPATIAL.getName()</category>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@TRANSFORM.getName()</category>
 		<tooltip>
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.SRSTransformation")
 		</tooltip>
@@ -1111,7 +1111,7 @@
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.SetSRS")
 		</description>
 		<class-name>org.pentaho.di.trans.steps.setsrs.SetSRSMeta</class-name>
-		<category>ognl:@org.pentaho.di.trans.step.StepCategory@GEOSPATIAL.getName()</category>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@TRANSFORM.getName()</category>
 		<tooltip>
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.SetSRS")
 		</tooltip>
@@ -1122,7 +1122,7 @@
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.GMLFileInput")
 		</description> 
   		<class-name>org.pentaho.di.trans.steps.gmlfileinput.GMLFileInputMeta</class-name> 
-  		<category>ognl:@org.pentaho.di.trans.step.StepCategory@GEOSPATIAL.getName()</category> 
+  		<category>ognl:@org.pentaho.di.trans.step.StepCategory@INPUT.getName()</category> 
   		<tooltip>ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.GMLFileInput")</tooltip> 
   		<image-uri>ui/images/GMLInput.png</image-uri> 
 	</step>
@@ -1131,7 +1131,7 @@
   			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.GMLFileOutput")
   		</description> 
   		<class-name>org.pentaho.di.trans.steps.gmlfileoutput.GMLFileOutputMeta</class-name> 
-  		<category>ognl:@org.pentaho.di.trans.step.StepCategory@GEOSPATIAL.getName()</category> 
+  		<category>ognl:@org.pentaho.di.trans.step.StepCategory@OUTPUT.getName()</category> 
   		<tooltip>ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.GMLFileOutput")</tooltip> 
   		<image-uri>ui/images/GMLOutput.png</image-uri> 
 	</step>
@@ -1140,7 +1140,7 @@
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.KMLFileInput")
 		</description>
 		<class-name>org.pentaho.di.trans.steps.kmlfileinput.KMLFileInputMeta</class-name>
-		<category>ognl:@org.pentaho.di.trans.step.StepCategory@GEOSPATIAL.getName()</category>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@INPUT.getName()</category>
 		<tooltip>
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.KMLFileInput")
 		</tooltip>
@@ -1151,7 +1151,7 @@
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.KMLFileOutput")
 		</description>
 		<class-name>org.pentaho.di.trans.steps.kmlfileoutput.KMLFileOutputMeta</class-name>
-		<category>ognl:@org.pentaho.di.trans.step.StepCategory@GEOSPATIAL.getName()</category>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@OUTPUT.getName()</category>
 		<tooltip>
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.KMLFileOutput")
 		</tooltip>
@@ -1162,7 +1162,7 @@
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.OGRFileInput")
 		</description>
 		<class-name>org.pentaho.di.trans.steps.ogrfileinput.OGRFileInputMeta</class-name>
-		<category>ognl:@org.pentaho.di.trans.step.StepCategory@GEOSPATIAL.getName()</category>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@INPUT.getName()</category>
 		<tooltip>
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.OGRFileInput")
 		</tooltip>
@@ -1173,7 +1173,7 @@
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.OGRFileOutput")
 		</description>
 		<class-name>org.pentaho.di.trans.steps.ogrfileoutput.OGRFileOutputMeta</class-name>
-		<category>ognl:@org.pentaho.di.trans.step.StepCategory@GEOSPATIAL.getName()</category>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@OUTPUT.getName()</category>
 		<tooltip>
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.OGRFileOutput")
 		</tooltip>
@@ -1582,7 +1582,7 @@
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.SpatialAnalysis")
 		</description>
 		<class-name>org.pentaho.di.trans.steps.spatialanalysis.SpatialAnalysisMeta</class-name>
-		<category>ognl:@org.pentaho.di.trans.step.StepCategory@GEOSPATIAL.getName()</category>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@TRANSFORM.getName()</category>
 		<tooltip>
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.SpatialAnalysis")
 		</tooltip>
@@ -1594,7 +1594,7 @@
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.SOSInput")
 		</description>
 		<class-name>org.pentaho.di.trans.steps.sosinput.SOSInputMeta</class-name>
-		<category>ognl:@org.pentaho.di.trans.step.StepCategory@GEOSPATIAL.getName()</category>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@INPUT.getName()</category>
 		<tooltip>
 			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.SOSInput")
 		</tooltip>

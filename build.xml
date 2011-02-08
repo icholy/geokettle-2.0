@@ -477,12 +477,45 @@
 
 	  <!--
 	       ==========================
+	        Distribution jar package + plugins
+	       =========================
+	  -->
+	  
+	  <target name="distrib-plugins" depends="distrib" description="Add plugins to distribution directory (distrib)">
+	  	<echo>Adding plugins to distribution...</echo>
+	  	<mkdir dir="${distrib}/temp"/>
+	  	
+	  	<get src="${sextante.url}" dest="${distrib}/temp/${sextante.filename}"/>
+	  	<unzip src="${distrib}/temp/${sextante.filename}" dest="${distrib}"/>	
+	  	
+	  	<!-- repeat the last 2 lines for each additionnal plugin-->	  	
+	  	
+	  	<delete dir="${distrib}/temp"/>
+	  </target>
+	  	  
+	  <!--
+	       ==========================
 	             zipfile
 	       ==========================
 	  -->
 		
 	  <target name="zip" depends="distrib" description="generate the ${impl.productID}-${version}-r${revision}.zip file">
 	  	<echo>Generating the GeoKettle distribution package ${impl.productID}-${version}-r${revision}.zip ...</echo>
+	  	<jar jarfile="${dist.dir}/${impl.productID}-${version}-r${revision}.zip" 
+	    	 basedir="${distrib}" 
+	    	 includes="**/*"
+	  	     excludes="**/Thumbs.db"
+	  		/>
+	  </target>
+	  	  
+	  <!--
+	       ==========================
+	             zipfile + plugins
+	       ==========================
+	  -->
+		
+	  <target name="zip-plugins" depends="distrib-plugins" description="generate the ${impl.productID}-${version}-r${revision}.zip file (Including plugins)">
+	  	<echo>Generating the GeoKettle distribution package ${impl.productID}-${version}-r${revision}.zip (including plugins)...</echo>
 	  	<jar jarfile="${dist.dir}/${impl.productID}-${version}-r${revision}.zip" 
 	    	 basedir="${distrib}" 
 	    	 includes="**/*"

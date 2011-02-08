@@ -38,10 +38,7 @@ public class StepCategory
 	public static final StepCategory STATISTICS     = new StepCategory(Messages.getString("BaseStep.Category.Statistics"));
 	public static final StepCategory UTILITY        = new StepCategory(Messages.getString("BaseStep.Category.Utility"));
 	public static final StepCategory FLOW           = new StepCategory(Messages.getString("BaseStep.Category.Flow"));
-	// -- Begin GeoKettle modification --
-	public static final StepCategory GEOSPATIAL     = new StepCategory(Messages.getString("BaseStep.Category.Geospatial"));
-	// -- End GeoKettle modification --
-	
+
 	public static final int CATEGORY_USER_DEFINED   = -1;
 	public static final int CATEGORY_INPUT          =  0;
 	public static final int CATEGORY_OUTPUT         =  1;
@@ -60,19 +57,12 @@ public class StepCategory
 	public static final int CATEGORY_STATISTICS		= 14;
 	public static final int CATEGORY_UTILITY		= 15;
 	public static final int CATEGORY_FLOW    		= 16;
-	// -- Begin GeoKettle modification --
-	public static final int CATEGORY_GEOSPATIAL     = 99;
-	// -- End GeoKettle modification --
-	
+
     public static final StepCategory[] BRIDGE_ANNOTATION_CATEGORY_NUMBERS = new StepCategory[] { INPUT, OUTPUT, TRANSFORM, SCRIPTING, 
         LOOKUP, JOINS, DATA_WAREHOUSE, JOB, MAPPING, INLINE, EXPERIMENTAL, DEPRECATED, BULK, VALIDATION, STATISTICS, UTILITY, FLOW,};
 
-	// -- Begin GeoKettle modification --
-	//public static final StepCategory[] STANDARD_CATEGORIES = new StepCategory[] { INPUT, OUTPUT, TRANSFORM, UTILITY, FLOW, SCRIPTING, 
-	//	LOOKUP, JOINS, DATA_WAREHOUSE, VALIDATION, STATISTICS, JOB, MAPPING, INLINE, EXPERIMENTAL, DEPRECATED, BULK,};
 public static final StepCategory[] STANDARD_CATEGORIES = new StepCategory[] { INPUT, OUTPUT, TRANSFORM, UTILITY, FLOW, SCRIPTING, 
-		LOOKUP, JOINS, DATA_WAREHOUSE, VALIDATION, STATISTICS, JOB, MAPPING, INLINE, EXPERIMENTAL, DEPRECATED, BULK, GEOSPATIAL, };
-	// -- End GeoKettle modification --
+		LOOKUP, JOINS, DATA_WAREHOUSE, VALIDATION, STATISTICS, JOB, MAPPING, INLINE, EXPERIMENTAL, DEPRECATED, BULK,};
 
 	private String name;
 	
