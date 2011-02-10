@@ -75,9 +75,11 @@ public class GISFileInput extends BaseStep implements StepInterface
 					data.file_gis.add(fo); 
 					fileIndex = data.file_gis.indexOf(fo);
 					// Create file if it does not exist
-					if (!data.file_gis.get(fileIndex).exists()) {
+					if (!data.file_gis.get(fileIndex).exists()) 
 						data.file_gis.get(fileIndex).createFile();
-					}
+					
+					data.charset.add(meta.getGisFileCharset());
+					
 					createReader(fileIndex);
 					
 					checkFirst();

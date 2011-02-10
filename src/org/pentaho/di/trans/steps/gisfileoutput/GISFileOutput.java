@@ -93,6 +93,7 @@ public class GISFileOutput extends BaseStep implements StepInterface {
 					// Create file if it does not exist
 					if (!data.file_gis.get(fileIndex).exists())
 						data.file_gis.get(fileIndex).createFile();
+					data.charset.add(meta.getGisFileCharset());
 					openNextFile(fileIndex);
 					data.outputRowMeta = getInputRowMeta().clone();
 					data.gtwriter.get(fileIndex).createSimpleFeatureType(data.outputRowMeta, r, data.file_gis.get(fileIndex).getURL());
