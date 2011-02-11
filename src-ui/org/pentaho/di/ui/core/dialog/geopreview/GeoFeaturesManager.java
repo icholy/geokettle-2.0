@@ -75,7 +75,7 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 		bufferMultiplier = new int[layerList.size()*4];
 		
 		//order layers to ease getFeatureIndex() method
-		Iterator<LayerCollection> itLayerCollection = layerList.iterator();
+		/*Iterator<LayerCollection> itLayerCollection = layerList.iterator();
 		int collectionIndex = 0;
 		while(itLayerCollection.hasNext()){
 			ArrayList<Layer> layers = itLayerCollection.next().getLayers();
@@ -84,7 +84,17 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 			orderedLayers[collectionIndex+Layer.POLYGON_LAYER*layerList.size()] = layers.get(Layer.POLYGON_LAYER);
 			orderedLayers[collectionIndex+Layer.COLLECTION_LAYER*layerList.size()] = layers.get(Layer.COLLECTION_LAYER);
 			collectionIndex++;			
-		}		
+		}	*/
+
+		for(int collectionIndex = layerList.size()-1; collectionIndex>=0;collectionIndex--){
+			ArrayList<Layer> layers = layerList.get(collectionIndex).getLayers();
+			orderedLayers[collectionIndex+Layer.POINT_LAYER*layerList.size()] = layers.get(Layer.POINT_LAYER);
+			orderedLayers[collectionIndex+Layer.LINE_LAYER*layerList.size()] = layers.get(Layer.LINE_LAYER);			
+			orderedLayers[collectionIndex+Layer.POLYGON_LAYER*layerList.size()] = layers.get(Layer.POLYGON_LAYER);
+			orderedLayers[collectionIndex+Layer.COLLECTION_LAYER*layerList.size()] = layers.get(Layer.COLLECTION_LAYER);		
+		}	
+		
+		
 	}	
 
 	public void setCanvasSize(int width, int height){
@@ -473,12 +483,13 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 	    Geometry bufferedGeom = null;
 		double buffer = -1;
 		boolean featureDetected = false;
-				
+	
 		Iterator<Object> itVisibleLayers= visibleLayerIndexes.iterator();
+	
 		while(itVisibleLayers.hasNext()&&!featureDetected){
 			layerIndex = Integer.parseInt(itVisibleLayers.next().toString());
-			
-			Layer layer = orderedLayers[layerIndex];
+
+			Layer layer = orderedLayers[orderedLayers.length - 1 - layerIndex];
 
 			switch (layer.getType()) {
 	        	case Layer.POINT_LAYER: 
@@ -500,18 +511,19 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
         		geom = (Geometry)layer.getGeometry(geometryIndex).getJTSGeom();
         		bufferedGeom = geom.buffer(buffer);
         		if(bufferedGeom.contains(point)){
-        			collectionIndex = layerIndex-(layerList.size()*layer.getType());	
+        			collectionIndex = (orderedLayers.length -1 - layerIndex) - (layerList.size()*layer.getType());	
         			featureDetected = true;
         			break;
         		}		        		
         	}
 		}
-		
+		int allo = orderedLayers.length;
+		int allo2 = layerIndex;
 		if(featureDetected)
-			return Integer.parseInt(layerList.get(collectionIndex).getFeatureIndexes().get(orderedLayers[layerIndex].getType()).get(geometryIndex).toString());		
+			return Integer.parseInt(layerList.get(collectionIndex).getFeatureIndexes().get(orderedLayers[orderedLayers.length -1 - layerIndex].getType()).get(geometryIndex).toString());		
 		return -1;
 	}
-		
+	
 	public void recenter(int x, int y){
 		recenterCalculator(x, y);
 		setChanged();

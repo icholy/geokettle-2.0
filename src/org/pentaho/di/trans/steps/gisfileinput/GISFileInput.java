@@ -163,11 +163,6 @@ public class GISFileInput extends BaseStep implements StepInterface
 				if(!meta.isFileNameInField()){
 					String fileName = meta.getFileName();
 					data.file_gis.add(KettleVFS.getFileObject(fileName)); 
-				
-					// Create file if it does not exist
-					if (!data.file_gis.get(0).exists()) {// 0 -> only one file
-						data.file_gis.get(0).createFile();
-					}
 					
 					// Set default value for shapefile encoding to ISO-8859-1.
 					// This is the default value used in Geotools
