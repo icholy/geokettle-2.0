@@ -75,7 +75,7 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 		bufferMultiplier = new int[layerList.size()*4];
 		
 		//order layers to ease getFeatureIndex() method
-		/*Iterator<LayerCollection> itLayerCollection = layerList.iterator();
+		Iterator<LayerCollection> itLayerCollection = layerList.iterator();
 		int collectionIndex = 0;
 		while(itLayerCollection.hasNext()){
 			ArrayList<Layer> layers = itLayerCollection.next().getLayers();
@@ -84,17 +84,7 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 			orderedLayers[collectionIndex+Layer.POLYGON_LAYER*layerList.size()] = layers.get(Layer.POLYGON_LAYER);
 			orderedLayers[collectionIndex+Layer.COLLECTION_LAYER*layerList.size()] = layers.get(Layer.COLLECTION_LAYER);
 			collectionIndex++;			
-		}	*/
-
-		for(int collectionIndex = layerList.size()-1; collectionIndex>=0;collectionIndex--){
-			ArrayList<Layer> layers = layerList.get(collectionIndex).getLayers();
-			orderedLayers[collectionIndex+Layer.POINT_LAYER*layerList.size()] = layers.get(Layer.POINT_LAYER);
-			orderedLayers[collectionIndex+Layer.LINE_LAYER*layerList.size()] = layers.get(Layer.LINE_LAYER);			
-			orderedLayers[collectionIndex+Layer.POLYGON_LAYER*layerList.size()] = layers.get(Layer.POLYGON_LAYER);
-			orderedLayers[collectionIndex+Layer.COLLECTION_LAYER*layerList.size()] = layers.get(Layer.COLLECTION_LAYER);		
-		}	
-		
-		
+		}				
 	}	
 
 	public void setCanvasSize(int width, int height){
@@ -213,8 +203,7 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 						RGB RGBColor=(RGB)s.getFeatureStyle();
 						Color AWTColor=new Color(RGBColor.red,RGBColor.green,RGBColor.blue);				
 						polygonFillColor= "#"+Integer.toHexString(AWTColor.getRGB()).substring(2);
-					}
-					
+					}					
 					if (s.getStyleUsage()==Symbolisation.PointColor){
 						RGB RGBColor=(RGB)s.getFeatureStyle();
 						Color AWTColor=new Color(RGBColor.red,RGBColor.green,RGBColor.blue);				
@@ -243,8 +232,11 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 				}
 					
 				if (layer.isVisible() == true){
-					visibleLayerIndexes.add(collectionIndex+layerList.size()*layer.getType());
-		    		for (int x = 0; x < layer.getGeometryCount(); x++){	    			
+					if(!visibleLayerIndexes.contains((Object) (collectionIndex+layerList.size()*layer.getType())))
+						visibleLayerIndexes.add((Object) (collectionIndex+layerList.size()*layer.getType()));
+					
+					
+					for (int x = 0; x < layer.getGeometryCount(); x++){	    			
 		    			geom = layer.getGeometry(x);	    			
 		    			if (geom.getJTSGeom() instanceof MultiPoint || geom.getJTSGeom() instanceof Point){
 		    				if (pointFeatures == null)
@@ -288,6 +280,9 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 	    					}
 		    			}
 		    		}	    		
+				}else{
+					if(visibleLayerIndexes.contains((Object) (collectionIndex+layerList.size()*layer.getType())))
+						visibleLayerIndexes.remove((Object) (collectionIndex+layerList.size()*layer.getType()));					
 				}
 			}			
 			
@@ -483,13 +478,15 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 	    Geometry bufferedGeom = null;
 		double buffer = -1;
 		boolean featureDetected = false;
-	
+		
+		orderVisibleLayerIndexes();
+		
 		Iterator<Object> itVisibleLayers= visibleLayerIndexes.iterator();
 	
 		while(itVisibleLayers.hasNext()&&!featureDetected){
 			layerIndex = Integer.parseInt(itVisibleLayers.next().toString());
-
-			Layer layer = orderedLayers[orderedLayers.length - 1 - layerIndex];
+				
+			Layer layer = orderedLayers[layerIndex];
 
 			switch (layer.getType()) {
 	        	case Layer.POINT_LAYER: 
@@ -511,16 +508,14 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
         		geom = (Geometry)layer.getGeometry(geometryIndex).getJTSGeom();
         		bufferedGeom = geom.buffer(buffer);
         		if(bufferedGeom.contains(point)){
-        			collectionIndex = (orderedLayers.length -1 - layerIndex) - (layerList.size()*layer.getType());	
+        			collectionIndex = layerIndex - layerList.size() * layer.getType();	
         			featureDetected = true;
         			break;
         		}		        		
         	}
 		}
-		int allo = orderedLayers.length;
-		int allo2 = layerIndex;
 		if(featureDetected)
-			return Integer.parseInt(layerList.get(collectionIndex).getFeatureIndexes().get(orderedLayers[orderedLayers.length -1 - layerIndex].getType()).get(geometryIndex).toString());		
+			return Integer.parseInt(layerList.get(collectionIndex).getFeatureIndexes().get(orderedLayers[layerIndex].getType()).get(geometryIndex).toString());		
 		return -1;
 	}
 	
@@ -529,4 +524,14 @@ public class GeoFeaturesManager extends Observable implements ILayerListViewer
 		setChanged();
 		notifyObservers();
 	}	
+	
+	public void orderVisibleLayerIndexes(){
+		ArrayList<Object> array = new ArrayList<Object>();
+		for(int i = 0; i<=3;i++){//3 possible types
+			for(int j = layerList.size()-1;j>=0;j--){
+				if(visibleLayerIndexes.contains((Object) (j+layerList.size()*i)))array.add((Object) (j+layerList.size()*i));
+			}
+		}		
+		visibleLayerIndexes = array;
+	}
 }
