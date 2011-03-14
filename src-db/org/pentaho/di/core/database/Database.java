@@ -429,6 +429,14 @@ public class Database implements VariableSpace
                 
                 connection = DriverManager.getConnection(url, properties);
             }
+            
+//            // -- Begin GeoKettle modification -- 
+//            if (databaseMeta.getDatabaseType() == DatabaseMeta.TYPE_DATABASE_POSTGRES) {
+//            	((org.postgresql.PGConnection)connection).addDataType("geometry", org.postgis.PGgeometry.class);
+//            	((org.postgresql.PGConnection)connection).addDataType("box3d", org.postgis.PGbox3d.class);
+//            }
+//            // -- End GeoKettle modification --
+            
 		} 
 		catch(SQLException e) 
 		{
@@ -4937,7 +4945,8 @@ public class Database implements VariableSpace
 					// -- Begin GeoKettle modification --
 				case ValueMetaInterface.TYPE_GEOMETRY:
 					if (databaseMeta.getDatabaseType()==DatabaseMeta.TYPE_DATABASE_POSTGRES) {
-						ins.append("'" +  fields.getString(r,i)+ "'") ;
+						//ins.append("'" +  fields.getString(r,i)+ "'") ;
+						ins.append("ST_GeomFromText('" +  fields.getString(r,i)+ "',"+fields.getValueMeta(i).getGeometrySRS().getSRID()+")") ;
 					}
 					else {
 						ins.append( fields.getString(r,i)) ;

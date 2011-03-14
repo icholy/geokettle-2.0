@@ -530,7 +530,7 @@ public class PostgreSQLDatabaseMeta extends BaseDatabaseMeta implements Database
     {
     	// -- Begin GeoKettle modification --
         // return new String[] { "postgresql-8.2-506.jdbc3.jar" };
-        return new String[] { "postgresql-8.2-506.jdbc3.jar", "postgis_1.3.3.jar" };
+        return new String[] { "postgresql-8.3-604.jdbc3.jar", "postgis_1.3.6.jar" };
     	// -- End GeoKettle modification --
     }
     
