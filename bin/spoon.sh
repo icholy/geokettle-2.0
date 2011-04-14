@@ -48,6 +48,7 @@ done
 
 JAVA_BIN=java
 LIBPATH="NONE"
+GDAL_LIBPATH="NONE"
 
 case `uname -s` in 
 	AIX)
@@ -69,10 +70,12 @@ case `uname -s` in
 		case $ARCH in
 			x86_64)
 				LIBPATH=$BASEDIR/libswt/linux/x86_64/
+				GDAL_LIBPATH=$BASEDIR/libext/geometry/libgdal/linux/x86_64/
 				;;
 
 			i[3-6]86)
 				LIBPATH=$BASEDIR/libswt/linux/x86/
+				GDAL_LIBPATH=$BASEDIR/libext/geometry/libgdal/linux/x86/
 				;;
 
 			ppc)
@@ -127,6 +130,12 @@ case `uname -s` in
 esac 
 
 export LIBPATH
+export GDAL_LIBPATH
+
+if [ "$GDAL_LIBPATH" != "NONE" ]
+then
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GDAL_LIBPATH
+fi
 
 if [ "$LIBPATH" != "NONE" ]
 then

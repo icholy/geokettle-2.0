@@ -69,6 +69,15 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 
 	private OGRFileOutputMeta Output;
 	private boolean backupChanged;
+	
+	public boolean isOGRWritableFormat(String format) {
+		String[] readOnlyFormats = {"AeronavFAA", "ArcObjects","AVCBin","AVCE00","DODS","EDIGEO","PGeo","SDE","FMEObjects Gateway","Geomedia","GRASS","HTF","MDB","MySQL","NAS","ODBC","OGDI","OpenAir","PCIDSK","PDS","REC","S57","SDTS","SOSI","SUA","SVG","UK .NTF","TIGER","VFK","VRT","XPlane"};
+		for (int i=0;i<readOnlyFormats.length;i++) {
+			if (format.equals(readOnlyFormats[i]))
+				return false;
+		}
+		return true;
+	}
 
 	public OGRFileOutputDialog(Shell parent, Object out, TransMeta tr, String sname)
 	{
@@ -147,7 +156,8 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 //				});
 		wcbStepformat.removeAll();
 	    for (int i = 0; i < ogrFormats.length; i++) {
-	    	wcbStepformat.add(ogrFormats[i]);
+	    	if (isOGRWritableFormat(ogrFormats[i]))
+	    		wcbStepformat.add(ogrFormats[i]);
 	    }
 	    wcbStepformat.select(0);
 	    props.setLook(wcbStepformat);
