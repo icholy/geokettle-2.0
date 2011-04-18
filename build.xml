@@ -77,6 +77,7 @@
 	    	<classpath id="cp-kettle-core">
 				<fileset dir="${libext}" 		includes="*.jar *.zip"/>
 				<fileset dir="${libext}/"	    includes="**/*.jar *.zip"/>
+	    		<fileset dir="${gdal.jni.lib}" 		includes="*.jar"/>
 		  		</classpath>
 	    </javac>
 	  </target>
@@ -146,6 +147,7 @@
 				<fileset dir="${libext}" 		includes="*.jar *.zip"/>
 				<fileset dir="${libext}/"	    includes="**/*.jar *.zip"/>
 				<fileset dir="${libswt}" 		includes="*.jar *.zip"/>
+	    		<fileset dir="${gdal.jni.lib}"  includes="*.jar"/>
 				<fileset dir="${libswt}/win32/" includes="*.jar *.zip"/>
 		  		</classpath>
 	    </javac>
@@ -388,7 +390,7 @@
   	        <!-- external libs (jdbc etc) -->
 	  		<mkdir dir="${distrib}/libext"/>
 	  		<copy todir="${distrib}/libext">
-	  			<fileset dir="${libext}" includes="**/*.jar **/*.zip **/*.so **/*.dll" excludes="**/.vpn"/>
+	  			<fileset dir="${libext}" includes="**/*.jar **/*.zip **/*.so* **/*.dll" excludes="**/.vpn"/>
 	  			</copy>
 
 	        <!-- swt libs (jdbc etc) -->
