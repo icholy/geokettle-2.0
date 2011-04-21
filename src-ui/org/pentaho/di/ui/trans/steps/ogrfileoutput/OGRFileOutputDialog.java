@@ -22,12 +22,13 @@
 
 package org.pentaho.di.ui.trans.steps.ogrfileoutput;
 
+import java.util.ArrayList;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.layout.FormAttachment;
@@ -43,6 +44,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.gdal.ogr.Driver;
 import org.gdal.ogr.ogr;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleStepException;
@@ -70,8 +72,16 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 	private OGRFileOutputMeta Output;
 	private boolean backupChanged;
 	
+	/**
+	 * 
+	 * @param format
+	 * @return
+	 */
 	public boolean isOGRWritableFormat(String format) {
-		String[] readOnlyFormats = {"AeronavFAA", "ArcObjects","AVCBin","AVCE00","DODS","EDIGEO","PGeo","SDE","FMEObjects Gateway","Geomedia","GRASS","HTF","MDB","MySQL","NAS","ODBC","OGDI","OpenAir","PCIDSK","PDS","REC","S57","SDTS","SOSI","SUA","SVG","UK .NTF","TIGER","VFK","VRT","XPlane"};
+		//TODO GPX, BNA, GPSTrackMaker are excluded this time but should be included by adding a dropbox in the step interface to select the geometry type
+		//TODO Bug with Interlis has not been identified yt
+		//TODO GPSBabel, WFS, GFT, MSSQLSpatial have not been tested and require a important change in the way paths are managed from the FileObject field ... Need to be able to handle URL, connection string, etc. and not only file path.
+		String[] readOnlyFormats = {"AeronavFAA", "ArcObjects","AVCBin","AVCE00","DODS","EDIGEO","PGeo","SDE","FMEObjects Gateway","Geomedia","GRASS","HTF","MDB","MySQL","NAS","ODBC","OGDI","OpenAir","PCIDSK","PDS","REC","S57","SDTS","SOSI","SUA","SVG","UK .NTF","TIGER","VFK","VRT","XPlane","GPX","BNA","Interlis 1","Interlis 2","GPSTrackMaker","GPSBabel","WFS","GFT","MSSQLSpatial"};
 		for (int i=0;i<readOnlyFormats.length;i++) {
 			if (format.equals(readOnlyFormats[i]))
 				return false;
@@ -79,15 +89,25 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		return true;
 	}
 
+	public boolean isOGRWritableFormat(Driver driver) {
+		return driver.TestCapability( ogr.ODrCCreateDataSource );
+	}
+	
 	public OGRFileOutputDialog(Shell parent, Object out, TransMeta tr, String sname)
 	{
 		super(parent, (BaseStepMeta)out, tr, sname);
 		ogr.RegisterAll();
-		ogrFormats = new String[ogr.GetDriverCount()];
+		
+		ArrayList<String> ogrf = new ArrayList<String>();
+		
+		//ogrFormats = new String[ogr.GetDriverCount()];
 		for(int i = 0; i < ogr.GetDriverCount(); i++)
         {
-			ogrFormats[i] = ogr.GetDriver(i).getName();
+			//if (isOGRWritableFormat(ogr.GetDriver(i)))
+			if (isOGRWritableFormat(ogr.GetDriver(i).getName()))
+				ogrf.add(ogr.GetDriver(i).getName());
         }
+		ogrFormats = (String[]) ogrf.toArray(ogrFormats);
 		Output=(OGRFileOutputMeta)out;
 	}
 
@@ -156,8 +176,7 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 //				});
 		wcbStepformat.removeAll();
 	    for (int i = 0; i < ogrFormats.length; i++) {
-	    	if (isOGRWritableFormat(ogrFormats[i]))
-	    		wcbStepformat.add(ogrFormats[i]);
+	    	wcbStepformat.add(ogrFormats[i]);
 	    }
 	    wcbStepformat.select(0);
 	    props.setLook(wcbStepformat);

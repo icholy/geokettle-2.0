@@ -49,6 +49,7 @@ done
 JAVA_BIN=java
 LIBPATH="NONE"
 GDAL_LIBPATH="NONE"
+GDAL_DATA=libext/geometry/gdal_data
 
 case `uname -s` in 
 	AIX)
@@ -131,6 +132,7 @@ esac
 
 export LIBPATH
 export GDAL_LIBPATH
+export GDAL_DATA
 
 if [ "$GDAL_LIBPATH" != "NONE" ]
 then

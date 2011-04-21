@@ -1,4 +1,4 @@
-<project name="GeoKettle" default="default" basedir=".">
+<project name="GeoKettle-2.0" default="default" basedir=".">
 
 	  <description>
 	      GeoKettle build file
@@ -390,7 +390,8 @@
   	        <!-- external libs (jdbc etc) -->
 	  		<mkdir dir="${distrib}/libext"/>
 	  		<copy todir="${distrib}/libext">
-	  			<fileset dir="${libext}" includes="**/*.jar **/*.zip **/*.so* **/*.dll" excludes="**/.vpn"/>
+	  			<fileset dir="${libext}" includes="**/*.jar **/*.zip **/*.so* **/*.dll **/*.csv **/*.txt **/*.wkt **/*.svg  **/*.dxf  **/*.dgn **/*.png" 
+	  				     excludes="**/.vpn"/>
 	  			</copy>
 
 	        <!-- swt libs (jdbc etc) -->

@@ -135,7 +135,12 @@ public class OGRFileOutput extends BaseStep implements StepInterface {
 		// data.fileNr++;
 		try 
 		{
-			data.ogrWriter = new OGRWriter(data.file_gis.getURL().getPath(),data.file_format);
+			String ogr_path = data.file_gis.getURL().getPath();
+			if (Const.isWindows()) {
+				data.ogrWriter = new OGRWriter(ogr_path.substring(3).replace('/', '\\'),data.file_format);
+			} else {
+				data.ogrWriter = new OGRWriter(ogr_path,data.file_format);
+			}
 			data.ogrWriter.open();
 
 			logBasic(Messages.getString("OGRFileOutput.Log.OpenedGISFile") + " : [" + data.ogrWriter + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$	     		        	

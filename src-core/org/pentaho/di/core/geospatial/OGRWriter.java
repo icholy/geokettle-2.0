@@ -1,5 +1,6 @@
 package org.pentaho.di.core.geospatial;
 
+import java.io.File;
 import java.util.Vector;
 
 import org.gdal.ogr.DataSource;
@@ -10,6 +11,7 @@ import org.gdal.ogr.Layer;
 import org.gdal.ogr.ogr;
 import org.gdal.ogr.ogrConstants;
 import org.gdal.osr.SpatialReference;
+import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.logging.LogWriter;
 import org.pentaho.di.core.row.RowMetaInterface;
@@ -96,7 +98,24 @@ public class OGRWriter
 				}
 	        }
 			
+			//log.println(log.LOG_LEVEL_BASIC, "  --> ogrDataFormat = "+ogrDataFormat);
+			//log.println(log.LOG_LEVEL_BASIC, "  --> FORMAT = "+ogrDriver.getName());
+			
+			if (Const.isWindows()) {
+				ogrDataDestinationPath = ogrDataDestinationPath.replace('/', '\\');
+			} else {
+				ogrDataDestinationPath = ogrDataDestinationPath.substring(2);
+			}
+			
+			if ((new File(ogrDataDestinationPath)).exists())
+				if (ogrDriver.TestCapability( ogr.ODrCDeleteDataSource ))
+					ogrDriver.DeleteDataSource(ogrDataDestinationPath);
+			
+			//log.println(log.LOG_LEVEL_BASIC, " --> ogrDataDestinationPath = "+ogrDataDestinationPath);
+			
 			ogrDataDestination = ogrDriver.CreateDataSource(ogrDataDestinationPath, ogrDataDestinationOptions);
+			
+			//log.println(log.LOG_LEVEL_BASIC, " --> ogrDataDestination = "+ogrDataDestination);
 
 		}
 		catch (Exception e) {
@@ -116,15 +135,42 @@ public class OGRWriter
 		try
 		{
 			debug = "create layer";
+			//log.println(log.LOG_LEVEL_BASIC, " --> Before GetName !");
 			ogrLayerName = ogrDataDestination.GetName();
+			//log.println(log.LOG_LEVEL_BASIC, " --> After GetName !");
 			// Works if data destination is a file
 			// TODO Check if the layer name is correct for other types of data destination
-	        if (ogrLayerName.lastIndexOf('/')!=-1)
-	        	ogrLayerName = ogrLayerName.substring(ogrLayerName.lastIndexOf('/')+1);
+			
+			//log.println(log.LOG_LEVEL_BASIC, " --> ogrLayerName = "+ogrLayerName);
+			
+			if (Const.isWindows()) {
+				if (ogrLayerName.lastIndexOf('\\')!=-1)
+					ogrLayerName = ogrLayerName.substring(ogrLayerName.lastIndexOf('\\')+1);
+			} else {
+				if (ogrLayerName.lastIndexOf('/')!=-1)
+					ogrLayerName = ogrLayerName.substring(ogrLayerName.lastIndexOf('/')+1);
+			}
 	        if (ogrLayerName.lastIndexOf('.')!=-1)
 	        	ogrLayerName = ogrLayerName.substring(0, ogrLayerName.lastIndexOf('.'));
-
-			ogrLayer = ogrDataDestination.CreateLayer(ogrLayerName);
+	        
+	        //log.println(log.LOG_LEVEL_BASIC, " --> Cleaned ogrLayerName = "+ogrLayerName);
+	        
+	        SpatialReference sr = new SpatialReference();
+			for(int i = 0; i < fields.size(); i++)
+			{
+				ValueMetaInterface value = fields.getValueMeta(i);
+				if (value.getType()==ValueMeta.TYPE_GEOMETRY) {
+					SRS srs = value.getGeometrySRS();
+					if (srs!=null) {
+						sr.ImportFromWkt(srs.getCRS().toWKT());
+					}				
+					break;
+				}
+			}
+			ogrLayer = ogrDataDestination.CreateLayer(ogrLayerName,sr);
+			
+			//log.println(log.LOG_LEVEL_BASIC, " --> After CreateLayer !");
+			
 			// Fetch all field information
 			//
 			debug="allocate data types";

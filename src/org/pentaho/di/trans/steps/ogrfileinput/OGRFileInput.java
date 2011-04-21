@@ -145,7 +145,14 @@ public class OGRFileInput extends BaseStep implements StepInterface
         try
         {
         	// TODO Handle more appropriately the OGR data source type (file vs. connection string) !
-        	data.ogrReader = new OGRReader(data.file_gis.getURL().getPath());
+        	String ogr_path = data.file_gis.getURL().getPath();
+        	
+        	if (Const.isWindows()) {
+        		ogr_path = ogr_path.substring(3).replace('/', '\\');
+        		data.ogrReader = new OGRReader(ogr_path);
+        	} else {
+        		data.ogrReader = new OGRReader(ogr_path);
+        	}
         	data.ogrReader.open();
 
         	logBasic(Messages.getString("OGRFileInput.Log.OpenedGISFile")+" : ["+data.ogrReader+"]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

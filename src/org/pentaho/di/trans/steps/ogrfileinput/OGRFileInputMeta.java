@@ -215,7 +215,16 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		{
 			//files.getFile(0).getName().getURI();
 			//java.net.URL fileURL = files.getFile(0).getURL();
-            ogrReader = new OGRReader(files.getFile(0).getURL().getPath());
+			
+        	String ogr_path = files.getFile(0).getURL().getPath();
+        	
+        	if (Const.isWindows()) {
+        		ogr_path = ogr_path.substring(3).replace('/', '\\');
+        		ogrReader = new OGRReader(ogr_path);
+        	} else {
+        		ogrReader = new OGRReader(ogr_path);
+        	}
+
             ogrReader.open();
 			RowMetaInterface add = ogrReader.getFields();
 			for (int i=0;i<add.size();i++)
@@ -369,7 +378,14 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
             OGRReader ogrReader = null;
             try
             {
-            	ogrReader = new OGRReader(getURLfromFileName(transMeta.environmentSubstitute(gisFileName)).getPath());
+            	String ogr_path = getURLfromFileName(transMeta.environmentSubstitute(gisFileName)).getPath();
+            	if (Const.isWindows()) {
+            		ogr_path = ogr_path.substring(3).replace('/', '\\');
+            		ogrReader = new OGRReader(ogr_path);
+            	} else {
+            		ogrReader = new OGRReader(ogr_path);
+            	}
+
             	ogrReader.open();
                 cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("OGRFileInputMeta.Remark.FileExistsAndCanBeOpened"), stepMeta); //$NON-NLS-1$
                 remarks.add(cr);

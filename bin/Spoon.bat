@@ -94,6 +94,14 @@ set CLASSPATH=%CLASSPATH%;libswt\common.jar
 set CLASSPATH=%CLASSPATH%;libswt\commands.jar
 set CLASSPATH=%CLASSPATH%;libswt\win32\swt.jar
 
+REM ******************
+REM   GDAL Libraries
+REM ******************
+
+set GDAL_DATA=libext\geometry\gdal_data
+set CLASSPATH=%CLASSPATH%;libswt\win32\gdal.jar
+set PATH=%PATH%;libswt\win32;libext\geometry\libgdal\win32
+
 REM ******************************************************************
 REM ** Set java runtime options                                     **
 REM ** Change 256m to higher values in case you run out of memory.  **
