@@ -572,6 +572,84 @@ public class Calculator extends BaseStep implements StepInterface
                     resultType=ValueMetaInterface.TYPE_DATE; 
                 }
                 break;
+                case CalculatorMetaFunction.CALC_GEOM_UNION         : // Calculate geometry union
+                {
+                    calcData[index] = ValueDataUtil.union(metaA, dataA, metaB, dataB);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_INTERSECTION        : // Calculate geometry intersection
+                {
+                    calcData[index] = ValueDataUtil.intersection(metaA, dataA, metaB, dataB);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_DIFFERENCE        : // Calculate geometry difference
+                {
+                    calcData[index] = ValueDataUtil.geomDifference(metaA, dataA, metaB, dataB);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_SYMETRIC_DIFFERENCE      : // Calculate geometry symetric difference
+                {
+                    calcData[index] = ValueDataUtil.geomSymDifference(metaA, dataA, metaB, dataB);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_AREA      : // Calculate area
+                {
+                    calcData[index] = ValueDataUtil.area(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_NUMBER; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_LENGTH      : // Calculate length
+                {
+                    calcData[index] = ValueDataUtil.length(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_NUMBER; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_CENTROID      : // Calculate centroid
+                {
+                    calcData[index] = ValueDataUtil.centroid(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_POINT_ON_SURFACE     : // Calculate random point on surface
+                {
+                    calcData[index] = ValueDataUtil.pointOnSurface(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_REVERSE    : // Reverse geometry
+                {
+                    calcData[index] = ValueDataUtil.reverse(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_BOUNDARY    : // Calculate geometry boundary
+                {
+                    calcData[index] = ValueDataUtil.boundary(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_ENVELOPE   : // Calculate geometry envelope
+                {
+                    calcData[index] = ValueDataUtil.envelope(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_CONVEX_HULL   : // Calculate geometry convex hull
+                {
+                    calcData[index] = ValueDataUtil.convexHull(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_BUFFER   : // Calculate geometry buffer
+                {
+                    calcData[index] = ValueDataUtil.buffer(metaA, dataA, metaB, dataB);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
                 default:
                     throw new KettleValueException(Messages.getString("Calculator.Log.UnknownCalculationType")+fn.getCalcType());
                 }

@@ -83,21 +83,23 @@ public class LayerCollection implements Observer
 	}
 
 	public void addGeometryToCollection(Geometry geom, boolean batchMode, int featureIndex){	
-		int type = -1;
-		if(geom instanceof Point || geom instanceof MultiPoint){
-			type = Layer.POINT_LAYER;
-			layers.get(type).addGeometry((Geometry)geom, batchMode);
-		}else if(geom instanceof LineString || geom instanceof MultiLineString){
-			type = Layer.LINE_LAYER;
-			layers.get(type).addGeometry((Geometry)geom, batchMode);
-		}else if(geom instanceof Polygon || geom instanceof MultiPolygon){
-			type = Layer.POLYGON_LAYER;
-			layers.get(type).addGeometry((Geometry)geom, batchMode);
-		}else if(geom instanceof GeometryCollection){
-			type = Layer.COLLECTION_LAYER;
-			layers.get(type).addGeometry((Geometry)geom, batchMode);
+		if (geom!=null){
+			int type = -1;
+			if(geom instanceof Point || geom instanceof MultiPoint){
+				type = Layer.POINT_LAYER;
+				layers.get(type).addGeometry((Geometry)geom, batchMode);
+			}else if(geom instanceof LineString || geom instanceof MultiLineString){
+				type = Layer.LINE_LAYER;
+				layers.get(type).addGeometry((Geometry)geom, batchMode);
+			}else if(geom instanceof Polygon || geom instanceof MultiPolygon){
+				type = Layer.POLYGON_LAYER;
+				layers.get(type).addGeometry((Geometry)geom, batchMode);
+			}else if(geom instanceof GeometryCollection){
+				type = Layer.COLLECTION_LAYER;
+				layers.get(type).addGeometry((Geometry)geom, batchMode);
+			}
+			featureIndexes.get(type).add(featureIndex);
 		}
-		featureIndexes.get(type).add(featureIndex);
 	}
 
 	public void removeLayer(Layer layer) {

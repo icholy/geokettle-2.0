@@ -79,6 +79,19 @@ public class CalculatorMetaFunction implements Cloneable
     public static final int CALC_STRING_LEN           =  52;
     public static final int CALC_LOAD_FILE_CONTENT_BINARY   =  53;
     public static final int CALC_ADD_TIME_TO_DATE       =  54;
+    public static final int CALC_GEOM_UNION       =  55;
+    public static final int CALC_GEOM_INTERSECTION       =  56;
+    public static final int CALC_GEOM_DIFFERENCE      =  57;
+    public static final int CALC_GEOM_SYMETRIC_DIFFERENCE       =  58;
+    public static final int CALC_GEOM_AREA     =  59;
+    public static final int CALC_GEOM_LENGTH      =  60;
+    public static final int CALC_GEOM_BOUNDARY       =  61;
+    public static final int CALC_GEOM_CENTROID      =  62;
+    public static final int CALC_GEOM_POINT_ON_SURFACE      =  63;
+    public static final int CALC_GEOM_BUFFER =  64;
+    public static final int CALC_GEOM_ENVELOPE =  65;
+    public static final int CALC_GEOM_CONVEX_HULL =  66;
+    public static final int CALC_GEOM_REVERSE =  67;
     
     public static final String calc_desc[] = 
         { 
@@ -136,7 +149,20 @@ public class CalculatorMetaFunction implements Cloneable
             "REMOVE_DIGITS",
             "STRING_LEN",
             "LOAD_FILE_CONTENT_BINARY",
-            "ADD_TIME_TO_DATE"
+            "ADD_TIME_TO_DATE",
+            "GEOMETRY_UNION",
+            "GEOMETRY_INTERSECTION",
+            "GEOMETRY_DIFFERENCE",
+            "GEOMETRY_SYMETRIC_DIFFERENCE",
+            "GEOMETRY_AREA",
+            "GEOMETRY_LENGTH",
+            "GEOMETRY_BOUNDARY",
+            "GEOMETRY_CENTROID",
+            "GEOMETRY_POINT_ON_SURFACE",
+            "GEOMETRY_BUFFER",
+            "GEOMETRY_ENVELOPE",
+            "GEOMETRY_CONVEX_HULL",
+            "GEOMETRY_REVERSE"
         };
     
     public static final String calcLongDesc[] = 
@@ -196,6 +222,19 @@ public class CalculatorMetaFunction implements Cloneable
             Messages.getString("CalculatorMetaFunction.CalcFunctions.StringLen"),
             Messages.getString("CalculatorMetaFunction.CalcFunctions.LoadFileContentInBinary"),
             Messages.getString("CalculatorMetaFunction.CalcFunctions.AddTimeToDate"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomUnion"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomIntersection"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomDifference"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomSymetricDifference"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomArea"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomLength"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomBoundary"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomCentroid"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomPointOnSurface"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomBuffer"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomEnvelope"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomConvexHull"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomReverse"),
         };
    
     private String fieldName;

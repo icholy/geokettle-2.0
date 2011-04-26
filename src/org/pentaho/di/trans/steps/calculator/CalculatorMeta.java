@@ -339,6 +339,45 @@ public class CalculatorMeta extends BaseStepMeta implements StepMetaInterface
             case CalculatorMetaFunction.CALC_ADD_TIME_TO_DATE   :   // ADD TIME TO A DATE
                 defaultResultType = ValueMetaInterface.TYPE_DATE;
                 break;
+            case CalculatorMetaFunction.CALC_GEOM_UNION         : // Calculate geometry union
+            	defaultResultType = ValueMetaInterface.TYPE_GEOMETRY;             
+            	break;
+            case CalculatorMetaFunction.CALC_GEOM_INTERSECTION        : // Calculate geometry intersection
+            	defaultResultType = ValueMetaInterface.TYPE_GEOMETRY;            
+            	break;
+            case CalculatorMetaFunction.CALC_GEOM_DIFFERENCE        : // Calculate geometry difference
+            	defaultResultType = ValueMetaInterface.TYPE_GEOMETRY;            
+            	break;
+            case CalculatorMetaFunction.CALC_GEOM_SYMETRIC_DIFFERENCE      : // Calculate geometry symetric difference
+            	defaultResultType = ValueMetaInterface.TYPE_GEOMETRY;        
+                break;
+            case CalculatorMetaFunction.CALC_GEOM_AREA      : // Calculate area
+            	defaultResultType = ValueMetaInterface.TYPE_NUMBER;            
+                break;
+            case CalculatorMetaFunction.CALC_GEOM_LENGTH      : // Calculate length
+            	defaultResultType = ValueMetaInterface.TYPE_NUMBER;       
+                break;
+            case CalculatorMetaFunction.CALC_GEOM_CENTROID      : // Calculate centroid
+            	defaultResultType = ValueMetaInterface.TYPE_GEOMETRY;           
+                break;
+            case CalculatorMetaFunction.CALC_GEOM_POINT_ON_SURFACE     : // Calculate random point on surface      
+            	defaultResultType = ValueMetaInterface.TYPE_GEOMETRY;       
+                break;
+            case CalculatorMetaFunction.CALC_GEOM_REVERSE    : // Reverse geometry        
+            	defaultResultType = ValueMetaInterface.TYPE_GEOMETRY;         
+                break;
+            case CalculatorMetaFunction.CALC_GEOM_BOUNDARY    : // Calculate geometry boundary   
+            	defaultResultType = ValueMetaInterface.TYPE_GEOMETRY;       
+                break;
+            case CalculatorMetaFunction.CALC_GEOM_ENVELOPE   : // Calculate geometry envelope        
+            	defaultResultType = ValueMetaInterface.TYPE_GEOMETRY;             
+                break;
+            case CalculatorMetaFunction.CALC_GEOM_CONVEX_HULL   : // Calculate geometry convex hull
+            	defaultResultType = ValueMetaInterface.TYPE_GEOMETRY;
+                break;
+            case CalculatorMetaFunction.CALC_GEOM_BUFFER   : // Calculate geometry buffer
+            	defaultResultType = ValueMetaInterface.TYPE_GEOMETRY;        
+                break;
             default:
                 break;
             }

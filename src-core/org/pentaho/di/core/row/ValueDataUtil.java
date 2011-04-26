@@ -32,6 +32,8 @@ import org.apache.commons.vfs.provider.local.LocalFile;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleValueException;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 
 public class ValueDataUtil
 {
@@ -1126,5 +1128,78 @@ public class ValueDataUtil
             if (!isSpace(str.charAt(i)))
                 return false;
         return true;
+    }
+        
+    public static Geometry union(ValueMetaInterface metaA, Object dataA, ValueMetaInterface metaB, Object dataB) throws KettleValueException{
+        if ((dataA==null || dataB==null) || (!metaB.isGeometry() || !metaA.isGeometry())) 
+        	return null;      
+    	return metaA.getGeometry(dataA).union(metaB.getGeometry(dataB));       
+    }
+    public static Geometry intersection(ValueMetaInterface metaA, Object dataA, ValueMetaInterface metaB, Object dataB) throws KettleValueException{
+        if ((dataA==null || dataB==null) || (!metaB.isGeometry() || !metaA.isGeometry())) 
+        	return null;      
+    	return metaA.getGeometry(dataA).intersection(metaB.getGeometry(dataB));       
+    }
+    public static Geometry geomDifference(ValueMetaInterface metaA, Object dataA, ValueMetaInterface metaB, Object dataB) throws KettleValueException{
+        if ((dataA==null || dataB==null) || (!metaB.isGeometry() || !metaA.isGeometry())) 
+        	return null;      
+    	return metaA.getGeometry(dataA).difference(metaB.getGeometry(dataB));       
+    }
+    public static Geometry geomSymDifference(ValueMetaInterface metaA, Object dataA, ValueMetaInterface metaB, Object dataB) throws KettleValueException{
+        if ((dataA==null || dataB==null) || (!metaB.isGeometry() || !metaA.isGeometry())) 
+        	return null;      
+    	return metaA.getGeometry(dataA).symDifference(metaB.getGeometry(dataB));       
+    }
+    public static Geometry buffer(ValueMetaInterface metaA, Object dataA, ValueMetaInterface metaB, Object dataB) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return null;
+        double distance = 0;
+        if (dataB!=null){
+        	if(metaB.isBigNumber() || metaB.isInteger() || metaB.isNumber() || metaB.isNumeric())
+        		distance = metaB.getNumber(dataB);
+        	if(metaB.isString())
+        		distance = Double.parseDouble(metaB.getString(dataB));       	
+        }
+    	return metaA.getGeometry(dataA).buffer(distance);       
+    }
+    public static Geometry centroid(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return null;      
+    	return metaA.getGeometry(dataA).getCentroid();       
+    }
+    public static Geometry pointOnSurface(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return null;      
+    	return metaA.getGeometry(dataA).getInteriorPoint();       
+    }
+    public static Geometry envelope(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return null;      
+    	return metaA.getGeometry(dataA).getEnvelope();       
+    }
+    public static Geometry boundary(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return null;      
+    	return metaA.getGeometry(dataA).getBoundary();       
+    }
+    public static Geometry convexHull(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return null;      
+    	return metaA.getGeometry(dataA).convexHull();       
+    }
+    public static double area(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return -1;     
+    	return metaA.getGeometry(dataA).getArea();       
+    }
+    public static double length(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return -1;      
+    	return metaA.getGeometry(dataA).getLength();       
+    }
+    public static Geometry reverse(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return null;      
+    	return metaA.getGeometry(dataA).reverse();       
     }
 }

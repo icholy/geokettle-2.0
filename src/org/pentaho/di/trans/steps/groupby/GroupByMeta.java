@@ -443,6 +443,8 @@ public class GroupByMeta extends BaseStepMeta implements StepMetaInterface
                     case TYPE_GROUP_CONCAT_STRING      : value_type = ValueMetaInterface.TYPE_STRING; break;
                     // -- BEGIN GeoKettle modification --
                     case TYPE_GROUP_GIS_UNION          : value_type = ValueMetaInterface.TYPE_GEOMETRY; break;
+                    case TYPE_GROUP_GIS_COLLECT        : value_type = ValueMetaInterface.TYPE_GEOMETRY; break;
+                    case TYPE_GROUP_GIS_ENVELOPE       : value_type = ValueMetaInterface.TYPE_GEOMETRY; break;
                     // -- END GeoKettle modification --
 					default: break;
 				}
