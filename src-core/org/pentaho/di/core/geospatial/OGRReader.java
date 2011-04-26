@@ -111,6 +111,7 @@ public class OGRReader
 			//String name = gtDataStore.getTypeNames()[0];
 			//featSrc = gtDataStore.getFeatureSource(name);
  	        // TODO Here we assume that each data source has at least one layer and we process the first one only
+ 	        //log.println(log.LOG_LEVEL_BASIC, "--> # of Layers: "+ogrDataSource.GetLayerCount());
  	        ogrLayer =  ogrDataSource.GetLayer(0);
 			ogrLayerDefinition = ogrLayer.GetLayerDefn();
 			
@@ -353,11 +354,17 @@ public class OGRReader
 			//for (int j = 0; j < ogrLayer.GetFeatureCount(); j++) {
         		
         	Feature ogrFeature = null;
+        	//log.println(log.LOG_LEVEL_BASIC, "--> ogrLayer:"+ogrLayer);
+        	//log.println(log.LOG_LEVEL_BASIC, "--> ogrLayer.GetFeatureCount():"+ogrLayer.GetFeatureCount());
+        	//log.println(log.LOG_LEVEL_BASIC, "--> ogrLayer.GetLayerDefn().GetFieldCount():"+ogrLayer.GetLayerDefn().GetFieldCount());
         	
         	while ((ogrFeature == null) && (ogrFeatureIndex < ogrLayer.GetFeatureCount()-1)) {
 				ogrFeature = ogrLayer.GetFeature(++ogrFeatureIndex);
         	}
-			int ogrFieldsCount = ogrFeature.GetFieldCount();
+        	//ogrFeature = ogrLayer.GetNextFeature();
+        	//log.println(log.LOG_LEVEL_BASIC, "--> ogrFeature:"+ogrFeature);
+        	
+        	int ogrFieldsCount = ogrFeature.GetFieldCount();
 			org.gdal.ogr.Geometry ogrGeometry = ogrFeature.GetGeometryRef();
 			int k = 0;
 
@@ -370,7 +377,7 @@ public class OGRReader
 					switch (ogrFieldType) {
 						case ogrConstants.OFTInteger:
 							debug = "integer attribute";
-							r[k] = ogrFeature.GetFieldAsInteger(k);
+							r[k] = new Long(((Integer)ogrFeature.GetFieldAsInteger(k)).longValue());
 							break;
 						case ogrConstants.OFTReal:
 							debug = "double attribute";

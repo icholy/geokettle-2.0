@@ -222,6 +222,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
         		ogr_path = ogr_path.substring(3).replace('/', '\\');
         		ogrReader = new OGRReader(ogr_path);
         	} else {
+        		ogr_path = ogr_path.substring(2);
         		ogrReader = new OGRReader(ogr_path);
         	}
 
@@ -383,6 +384,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
             		ogr_path = ogr_path.substring(3).replace('/', '\\');
             		ogrReader = new OGRReader(ogr_path);
             	} else {
+            		ogr_path = ogr_path.substring(2);
             		ogrReader = new OGRReader(ogr_path);
             	}
 

@@ -151,6 +151,7 @@ public class OGRFileInput extends BaseStep implements StepInterface
         		ogr_path = ogr_path.substring(3).replace('/', '\\');
         		data.ogrReader = new OGRReader(ogr_path);
         	} else {
+        		ogr_path = ogr_path.substring(2);
         		data.ogrReader = new OGRReader(ogr_path);
         	}
         	data.ogrReader.open();
