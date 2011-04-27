@@ -24,6 +24,7 @@ REM ** Uncomment the PATH line in case of trouble   **
 REM **************************************************
 
 REM set PATH=C:\j2sdk1.4.2_01\bin;.;%PATH%
+FOR /F %%a IN ('java -version 2^>^&1^|find /C "64-Bit"') DO (SET /a IS64BITJAVA=%%a)
 
 REM **************************************************
 REM ** Libraries used by Kettle:                    **
@@ -83,31 +84,39 @@ shift
 goto TopArg
 :EndArg
 
-
-REM *****************
-REM   SWT Libraries
-REM *****************
+REM ************************
+REM   SWT & GDAL Libraries
+REM ************************
 
 set CLASSPATH=%CLASSPATH%;libswt\runtime.jar
 set CLASSPATH=%CLASSPATH%;libswt\jface.jar
 set CLASSPATH=%CLASSPATH%;libswt\common.jar
 set CLASSPATH=%CLASSPATH%;libswt\commands.jar
-set CLASSPATH=%CLASSPATH%;libswt\win32\swt.jar
-
-REM ******************
-REM   GDAL Libraries
-REM ******************
 
 set GDAL_DATA=libext\geometry\gdal_data
+
+IF %IS64BITJAVA% == 1 GOTO :JVM64
+
+:JVM32
+set LIBSPATH=libswt\win32\
+set CLASSPATH=%CLASSPATH%;libswt\win32\swt.jar
 set CLASSPATH=%CLASSPATH%;libswt\win32\gdal.jar
 set PATH=%PATH%;libswt\win32;libext\geometry\libgdal\win32
+GOTO :CONTINUE
 
+:JVM64
+set LIBSPATH=libswt\win64\
+set CLASSPATH=%CLASSPATH%;libswt\win64\swt.jar
+set CLASSPATH=%CLASSPATH%;libswt\win64\gdal.jar
+set PATH=%PATH%;libswt\win64;libext\geometry\libgdal\win64
+
+:CONTINUE
 REM ******************************************************************
 REM ** Set java runtime options                                     **
 REM ** Change 256m to higher values in case you run out of memory.  **
 REM ******************************************************************
 
-set OPT=-Xmx512m -cp %CLASSPATH% -Djava.library.path=libswt\win32\ -DKETTLE_HOME="%KETTLE_HOME%" -DKETTLE_REPOSITORY="%KETTLE_REPOSITORY%" -DKETTLE_USER="%KETTLE_USER%" -DKETTLE_PASSWORD="%KETTLE_PASSWORD%" -DKETTLE_PLUGIN_PACKAGES="%KETTLE_PLUGIN_PACKAGES%" -DKETTLE_LOG_SIZE_LIMIT="%KETTLE_LOG_SIZE_LIMIT%"
+set OPT=-Xmx512m -cp %CLASSPATH% -Djava.library.path=%LIBSPATH% -DKETTLE_HOME="%KETTLE_HOME%" -DKETTLE_REPOSITORY="%KETTLE_REPOSITORY%" -DKETTLE_USER="%KETTLE_USER%" -DKETTLE_PASSWORD="%KETTLE_PASSWORD%" -DKETTLE_PLUGIN_PACKAGES="%KETTLE_PLUGIN_PACKAGES%" -DKETTLE_LOG_SIZE_LIMIT="%KETTLE_LOG_SIZE_LIMIT%"
 
 REM ***************
 REM ** Run...    **
