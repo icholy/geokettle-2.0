@@ -67,7 +67,9 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 	private Label		 wlStepformat;
 	private Combo		 wcbStepformat;
 	private TextVar      wFilename;
-	private FormData     fdlFilename, fdbFilename, fdFilename, fdlStepformat, fdcbStepformat;
+	private FormData     fdlFilename, fdbFilename, fdFilename, fdlStepformat, fdcbStepformat, fdlOptions, fdOptions;
+	private Label		 wlOptions;
+	private Text		 wOptions;
 
 	private OGRFileOutputMeta Output;
 	private boolean backupChanged;
@@ -217,6 +219,26 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		fdFilename.top  = new FormAttachment(wcbStepformat, margin);
 		wFilename.setLayoutData(fdFilename);
 		
+		//GDAL/OGR options line
+		wlOptions=new Label(shell, SWT.RIGHT);
+		wlOptions.setText("OGR options"); //$NON-NLS-1$
+ 		props.setLook(wlOptions);
+		fdlOptions=new FormData();
+		fdlOptions.left = new FormAttachment(0, 0);
+		fdlOptions.right= new FormAttachment(middle, -margin);
+		fdlOptions.top  = new FormAttachment(wFilename, margin);
+		wlOptions.setLayoutData(fdlOptions);
+		wOptions=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+		//wOptions.setText("");
+ 		props.setLook(wOptions);
+ 		wOptions.addModifyListener(lsMod);
+		fdOptions=new FormData();
+		fdOptions.left = new FormAttachment(middle, 0);
+		fdOptions.top  = new FormAttachment(wFilename, margin);
+		fdOptions.right= new FormAttachment(100, 0);
+		wOptions.setLayoutData(fdOptions);
+
+		
 		// Some buttons
 		wOK=new Button(shell, SWT.PUSH);
 		wOK.setText(Messages.getString("System.Button.OK")); //$NON-NLS-1$
@@ -261,7 +283,7 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 						dialog.setFileName(wFilename.getText());
 					}
 						
-					dialog.setFilterNames(new String[] {Messages.getString("OGRFileOutputDialog.Filter.SHPFiles"), Messages.getString("System.FileType.AllFiles")}); //$NON-NLS-1$ //$NON-NLS-2$
+					dialog.setFilterNames(new String[] { Messages.getString("System.FileType.AllFiles") }); //$NON-NLS-1$ //$NON-NLS-2$
 					
 					if (dialog.open()!=null)
 					{
@@ -315,6 +337,11 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 				}
 			}
 		}
+		
+		if (Output.getOgrOptions() != null) 
+		{
+			wOptions.setText(Output.getOgrOptions());
+		}
 
         setFlags();
 		
@@ -333,6 +360,7 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		// copy info to Meta class (Output)
 		meta.setGisFileName( wFilename.getText() );
 		meta.setOgrOutputFormat(ogrFormats[wcbStepformat.getSelectionIndex()]);
+		meta.setOgrOptions( wOptions.getText() );
 
 		if (Const.isEmpty(meta.getGisFileName()) /* && !meta.isAcceptingFilenames() */)
 		{

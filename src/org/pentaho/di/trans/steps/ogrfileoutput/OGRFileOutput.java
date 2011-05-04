@@ -104,6 +104,7 @@ public class OGRFileOutput extends BaseStep implements StepInterface {
 			{
 				data.file_gis = KettleVFS.getFileObject(this.environmentSubstitute(meta.getGisFileName())); 
 				data.file_format = meta.getOgrOutputFormat();
+				data.file_options = meta.getOgrOptions();
 				
 				// Create file if it does not exist
 //				if (!data.file_gis.exists()) {
@@ -137,9 +138,9 @@ public class OGRFileOutput extends BaseStep implements StepInterface {
 		{
 			String ogr_path = data.file_gis.getURL().getPath();
 			if (Const.isWindows()) {
-				data.ogrWriter = new OGRWriter(ogr_path.substring(3).replace('/', '\\'),data.file_format);
+				data.ogrWriter = new OGRWriter(ogr_path.substring(3).replace('/', '\\'),data.file_format,data.file_options);
 			} else {
-				data.ogrWriter = new OGRWriter(ogr_path,data.file_format);
+				data.ogrWriter = new OGRWriter(ogr_path,data.file_format,data.file_options);
 			}
 			data.ogrWriter.open();
 

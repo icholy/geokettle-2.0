@@ -39,8 +39,9 @@ public class OGRWriter
 	private Layer ogrLayer;
 	private String ogrLayerName;
 	private String ogrDataFormat;
+	private String ogrOptions;
 	private Driver ogrDriver;
-	private Vector<?> ogrDataDestinationOptions;
+	private Vector<String> ogrDataDestinationOptions;
 	private org.gdal.ogr.Geometry ogrGeometry;
 	private SpatialReference ogrSpatialReference;
 	
@@ -51,7 +52,7 @@ public class OGRWriter
 	
 	//private RowMetaInterface rowMeta;
 
-	public OGRWriter(String dataDestinationPath, String format)
+	public OGRWriter(String dataDestinationPath, String format, String options)
 	{
 		this.log = LogWriter.getInstance();
 		ogrDataDestinationPath = dataDestinationPath;
@@ -59,10 +60,16 @@ public class OGRWriter
 		ogrLayer = null;
 		ogrLayerName = null;
 		ogrDataFormat = format;
+		ogrOptions = options;
 		ogrDriver = null;
-		ogrDataDestinationOptions = new Vector();
+
 		ogrGeometry = null;
 		ogrSpatialReference = new SpatialReference();
+		ogrDataDestinationOptions = new Vector<String>();
+		
+		String[] ogr_options = ogrOptions.trim().split(" ");
+		for(int i=0;i<ogr_options.length;i++)
+			ogrDataDestinationOptions.addElement(ogr_options[i]);
 		
 		//sf = null;
 		//featWriter = null;
