@@ -45,13 +45,6 @@ public class OGRWriter
 	private org.gdal.ogr.Geometry ogrGeometry;
 	private SpatialReference ogrSpatialReference;
 	
-	//private FileDataStoreFactorySpi factory;
-	//private SimpleFeatureType featureType;
-	//private SimpleFeature sf;
-	//private FeatureWriter<SimpleFeatureType, SimpleFeature> featWriter;
-	
-	//private RowMetaInterface rowMeta;
-
 	public OGRWriter(String dataDestinationPath, String format, String options)
 	{
 		this.log = LogWriter.getInstance();
@@ -67,16 +60,14 @@ public class OGRWriter
 		ogrSpatialReference = new SpatialReference();
 		ogrDataDestinationOptions = new Vector<String>();
 		
-		String[] ogr_options = ogrOptions.trim().split(" ");
-		for(int i=0;i<ogr_options.length;i++)
-			ogrDataDestinationOptions.addElement(ogr_options[i]);
+		//log.println(log.LOG_LEVEL_BASIC, " --> ogrOptions = \""+ogrOptions+"\"");
 		
-		//sf = null;
-		//featWriter = null;
-		//featureType = null;
-		//factory = null;
+		if (ogrOptions!= null) {
+			String[] ogr_options = ogrOptions.trim().split(" ");
+			for(int i=0;i<ogr_options.length;i++)
+				ogrDataDestinationOptions.addElement(ogr_options[i]);
+		}
 		
-		//rowMeta = null;
 	}
 
 	public void open() throws KettleException

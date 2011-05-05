@@ -358,11 +358,16 @@ public class OGRReader
         	//log.println(log.LOG_LEVEL_BASIC, "--> ogrLayer.GetFeatureCount():"+ogrLayer.GetFeatureCount());
         	//log.println(log.LOG_LEVEL_BASIC, "--> ogrLayer.GetLayerDefn().GetFieldCount():"+ogrLayer.GetLayerDefn().GetFieldCount());
         	
-        	while ((ogrFeature == null) && (ogrFeatureIndex < ogrLayer.GetFeatureCount()-1)) {
+        	int featureCount = ogrLayer.GetFeatureCount();
+        	
+        	while ((ogrFeature == null) && (ogrFeatureIndex < featureCount-1)) {
 				ogrFeature = ogrLayer.GetFeature(++ogrFeatureIndex);
         	}
+        	//log.println(log.LOG_LEVEL_BASIC, "--> FeatureCount = "+ogrFeatureIndex+" / "+featureCount);
         	//ogrFeature = ogrLayer.GetNextFeature();
         	//log.println(log.LOG_LEVEL_BASIC, "--> ogrFeature:"+ogrFeature);
+        	if (ogrFeature == null)
+        		return null;
         	
         	int ogrFieldsCount = ogrFeature.GetFieldCount();
 			org.gdal.ogr.Geometry ogrGeometry = ogrFeature.GetGeometryRef();

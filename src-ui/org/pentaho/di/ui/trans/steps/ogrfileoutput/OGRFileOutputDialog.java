@@ -229,7 +229,7 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		fdlOptions.top  = new FormAttachment(wFilename, margin);
 		wlOptions.setLayoutData(fdlOptions);
 		wOptions=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-		//wOptions.setText("");
+		wOptions.setText("");
  		props.setLook(wOptions);
  		wOptions.addModifyListener(lsMod);
 		fdOptions=new FormData();
