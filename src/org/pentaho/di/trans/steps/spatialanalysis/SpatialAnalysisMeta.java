@@ -47,7 +47,6 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
     
     private boolean 	compressFiles;
     private boolean 	oneRow;
-    private boolean 	attributes;
     
     public static final String UNION=Messages.getString("SpatialAnalysisMeta.AnalysisType.UNION");
     public static final String INTERSECTION=Messages.getString("SpatialAnalysisMeta.AnalysisType.INTERSECTION");
@@ -165,14 +164,6 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
         this.oneRow = oneRow;
     }
 	
-	public boolean getAttributes(){
-        return attributes;
-    }
-	
-	public void setAttributes(boolean attributes){
-        this.attributes = attributes;
-    }
-	
     public SpatialAnalysisMeta(){
 		super(); // allocate BaseStepMeta
 	}
@@ -229,7 +220,6 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
         retval.append("      ").append(XMLHandler.addTagValue("resultfieldName", resultfieldName));
         retval.append("      ").append(XMLHandler.addTagValue("compress", compressFiles));
         retval.append("      ").append(XMLHandler.addTagValue("oneRow", oneRow));
-        retval.append("      ").append(XMLHandler.addTagValue("attributes", attributes));
         retval.append(XMLHandler.addTagValue("referenceField", referenceField));
         retval.append(XMLHandler.addTagValue("compareField", compareField));
         retval.append(XMLHandler.addTagValue("distField", distField));
@@ -254,7 +244,6 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
 			referenceStepName = XMLHandler.getTagValue(stepnode, "reference"); //$NON-NLS-1$
 			compressFiles = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "compress"));
 			oneRow = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "oneRow"));
-			attributes = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "attributes"));
 			distField = XMLHandler.getTagValue(stepnode, "distField"); //$NON-NLS-1$
 		}catch(Exception e){
 			throw new KettleXMLException(Messages.getString("SpatialAnalysisMeta.Exception.UnableToLoadStepInfo"), e); //$NON-NLS-1$
@@ -267,14 +256,16 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
 		spatialAnalysisType = spatialAnalysisTypeCodes[0];
 		compressFiles = false;
 		oneRow = false;
-		attributes = false;
 	}
     
     public String[] getInfoSteps(){
-        if (referenceStepMeta!=null && compareStepMeta!=null)
-            return new String[] { referenceStepMeta.getName(), compareStepMeta.getName(), };
-        else
-            return null;
+        if (referenceStepMeta!=null){
+        	 if(compareStepMeta!=null)
+        		 return new String[] {referenceStepMeta.getName(), compareStepMeta.getName(),};
+        	 else
+        		 return new String[] {referenceStepMeta.getName()};
+        }         
+        return null;
     }
 
     /**
@@ -298,7 +289,6 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
 			compareStepName =      rep.getStepAttributeString (id_step, "compare");  //$NON-NLS-1$
 			compressFiles = rep.getStepAttributeBoolean(id_step, "compress");
 			oneRow = rep.getStepAttributeBoolean(id_step, "oneRow");
-			attributes = rep.getStepAttributeBoolean(id_step, "attributes");
 			distField        = rep.getStepAttributeString (id_step, "distField");  //$NON-NLS-1$
 		}catch(Exception e){
 			throw new KettleException(Messages.getString("SpatialAnalysisMeta.Exception.UnexpectedErrorReadingStepInfo"), e); //$NON-NLS-1$
@@ -313,7 +303,6 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
 			rep.saveStepAttribute(id_transformation, id_step, "distField", distField);
 			rep.saveStepAttribute(id_transformation, id_step, "compress", compressFiles);
 			rep.saveStepAttribute(id_transformation, id_step, "oneRow", oneRow);
-			rep.saveStepAttribute(id_transformation, id_step, "attributes", attributes);
 			rep.saveStepAttribute(id_transformation, id_step, "referenceField", referenceField); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "compareField", compareField); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "reference", getReferenceStepName()); //$NON-NLS-1$
@@ -340,7 +329,15 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
 	}
     
     public void getFields(RowMetaInterface r, String name, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) throws KettleStepException{                     
-		// Output field (Geometry)
+    	if (info!=null){
+            for (int i=0;i<info.length;i++){
+                if (info[i]!=null){              	
+                	r.mergeRowMeta(info[i]);    
+                }                            
+            }
+        }
+    	
+    	// Output field (Geometry)
 		if (!Const.isEmpty(resultfieldName)) {
 			ValueMetaInterface v = null;		
 			v = new ValueMeta(space.environmentSubstitute(resultfieldName),
@@ -397,6 +394,10 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
 		return new SpatialAnalysis(stepMeta, stepDataInterface, cnr, tr, trans);
 	}
 
+    public boolean excludeFromRowLayoutVerification(){
+        return true;
+    }
+    
 	public StepDataInterface getStepData(){
 		return new SpatialAnalysisData();
 	}

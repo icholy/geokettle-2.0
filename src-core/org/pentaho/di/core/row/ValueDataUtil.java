@@ -1167,6 +1167,11 @@ public class ValueDataUtil
         	return null;      
     	return metaA.getGeometry(dataA).getCentroid();       
     }
+    public static double distance(ValueMetaInterface metaA, Object dataA, ValueMetaInterface metaB, Object dataB) throws KettleValueException{
+        if ((dataA==null || dataB==null) || (!metaB.isGeometry() || !metaA.isGeometry())) 
+        	return -1;      
+    	return metaA.getGeometry(dataA).distance(metaB.getGeometry(dataB));       
+    }
     public static Geometry pointOnSurface(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
         if (dataA==null || !metaA.isGeometry()) 
         	return null;      

@@ -316,7 +316,7 @@ public class GMLFileInputDialog extends BaseStepDialog implements StepDialogInte
 						dialog.setFileName(wFileName.getText());
 					}
 						
-					dialog.setFilterNames(new String[] {Messages.getString("GISFileInputDialog.Filter.SHPFiles"), Messages.getString("System.FileType.AllFiles")}); //$NON-NLS-1$ //$NON-NLS-2$
+					dialog.setFilterNames(new String[] {Messages.getString("GLMFileInputDialog.Filter.SHPFiles"), Messages.getString("System.FileType.AllFiles")}); //$NON-NLS-1$ //$NON-NLS-2$
 					
 					if (dialog.open()!=null)
 					{

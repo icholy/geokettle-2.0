@@ -92,6 +92,7 @@ public class CalculatorMetaFunction implements Cloneable
     public static final int CALC_GEOM_ENVELOPE =  65;
     public static final int CALC_GEOM_CONVEX_HULL =  66;
     public static final int CALC_GEOM_REVERSE =  67;
+    public static final int CALC_GEOM_DISTANCE =  68;
     
     public static final String calc_desc[] = 
         { 
@@ -162,7 +163,8 @@ public class CalculatorMetaFunction implements Cloneable
             "GEOMETRY_BUFFER",
             "GEOMETRY_ENVELOPE",
             "GEOMETRY_CONVEX_HULL",
-            "GEOMETRY_REVERSE"
+            "GEOMETRY_REVERSE",
+            "GEOMETRY_DISTANCE"
         };
     
     public static final String calcLongDesc[] = 
@@ -235,6 +237,7 @@ public class CalculatorMetaFunction implements Cloneable
             Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomEnvelope"),
             Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomConvexHull"),
             Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomReverse"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomDistance"),
         };
    
     private String fieldName;

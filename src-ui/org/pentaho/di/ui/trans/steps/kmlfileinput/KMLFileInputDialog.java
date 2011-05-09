@@ -43,7 +43,7 @@ import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
 public class KMLFileInputDialog extends BaseStepDialog implements StepDialogInterface
 {
-	final static private String[] KMLFILE_FILTER_EXT = new String[] {"*.kml;*.KML", "*"};
+	final static private String[] KMLFILE_FILTER_EXT = new String[] {"*.kml;*.KML;*.xml;*.XML", "*"};
 	
 	private Label        wlFileName;
 	private Button       wbFileName;

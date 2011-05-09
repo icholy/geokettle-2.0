@@ -50,10 +50,6 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
     private Label       		wlOneRow;
     private Button      		wOneRow;
     private FormData     		fdlOneRow, fdOneRow;
-    
-    private Label       		wlAttributes;
-    private Button      		wAttributes;
-    private FormData     		fdlAttributes, fdAttributes;
 	
 	private Label 				wlCompareField;
 	private CCombo 				wCompareField;
@@ -109,7 +105,6 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		wCompare.setEnabled(bool);
     	wCompareField.setEnabled(bool);
     	wOneRow.setEnabled(bool);
-		wAttributes.setEnabled(bool);
 	}
 	
 	public void checkPreviousSteps(){ //clear fields if step/hop has been deteled/disabled
@@ -369,22 +364,6 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
         fdlOneRow.right = new FormAttachment(wOneRow, -margin);
         fdlOneRow.top  = new FormAttachment(wCompareField, margin*5);
         wlOneRow.setLayoutData(fdlOneRow);
-        
-		// Keep attributes of compared rows?		        
-        wAttributes=new Button(shell, SWT.CHECK);
-		wAttributes.setToolTipText(null);
-	    props.setLook(wAttributes);
-	    fdAttributes=new FormData();
-	    fdAttributes.right  = new FormAttachment(100, 0);
-	    fdAttributes.top   = new FormAttachment(wOneRow, margin);
-	    wAttributes.setLayoutData(fdAttributes);
-	    wlAttributes=new Label(shell, SWT.RIGHT);
-        wlAttributes.setText(Messages.getString("SpatialAnalysisDialog.Attributes.Label"));
-        props.setLook(wlAttributes);
-        fdlAttributes=new FormData();
-        fdlAttributes.right = new FormAttachment(wAttributes, -margin);
-        fdlAttributes.top  = new FormAttachment(wOneRow, margin*2);
-        wlAttributes.setLayoutData(fdlAttributes);
 		
 		// Result line...
         wResult=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
@@ -392,7 +371,7 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		wResult.addModifyListener(lsMod);
 		fdResult=new FormData();
 		fdResult.left = new FormAttachment(70, 0);
-		fdResult.top  = new FormAttachment(wAttributes, margin*4);
+		fdResult.top  = new FormAttachment(wOneRow, margin*4);
 		fdResult.right= new FormAttachment(100, 0);
 		wResult.setLayoutData(fdResult);
 		wlResult=new Label(shell, SWT.RIGHT);
@@ -400,7 +379,7 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
  		props.setLook(wlResult);
 		fdlResult=new FormData();
 		fdlResult.right= new FormAttachment(wResult, -margin);
-		fdlResult.top  = new FormAttachment(wAttributes, margin*5);
+		fdlResult.top  = new FormAttachment(wOneRow, margin*5);
 		wlResult.setLayoutData(fdlResult);
         
 		// Some buttons
@@ -454,7 +433,6 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		if (input.getCompareStepName() != null) wCompare.setText(input.getCompareStepName());
 		wCompress.setSelection(input.getCompressFiles());
 		wOneRow.setSelection(input.getOneRow());
-		wAttributes.setSelection(input.getAttributes());
 		wReferenceField.setText(Const.NVL(input.getReferenceField(), ""));
 		wCompareField.setText(Const.NVL(input.getCompareField(), ""));      
         wStepname.selectAll();
@@ -478,7 +456,6 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
         input.setDistField(wDistField.getText());
         input.setCompressFiles(wCompress.getSelection());
         input.setOneRow(wOneRow.getSelection());
-        input.setAttributes(wAttributes.getSelection());
         if(wAnalysis.getSelectionIndex()<0)
 			input.setSpatialAnalysisType(0); 
 		else

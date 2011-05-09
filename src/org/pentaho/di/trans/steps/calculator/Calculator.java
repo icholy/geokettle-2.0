@@ -650,6 +650,12 @@ public class Calculator extends BaseStep implements StepInterface
                     resultType=ValueMetaInterface.TYPE_GEOMETRY; 
                 }
                 break;
+                case CalculatorMetaFunction.CALC_GEOM_DISTANCE   : // Calculate distance between geometries
+                {
+                    calcData[index] = ValueDataUtil.distance(metaA, dataA, metaB, dataB);
+                    resultType=ValueMetaInterface.TYPE_NUMBER; 
+                }
+                break;
                 default:
                     throw new KettleValueException(Messages.getString("Calculator.Log.UnknownCalculationType")+fn.getCalcType());
                 }

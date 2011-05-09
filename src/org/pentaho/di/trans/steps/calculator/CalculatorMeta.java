@@ -378,6 +378,9 @@ public class CalculatorMeta extends BaseStepMeta implements StepMetaInterface
             case CalculatorMetaFunction.CALC_GEOM_BUFFER   : // Calculate geometry buffer
             	defaultResultType = ValueMetaInterface.TYPE_GEOMETRY;        
                 break;
+            case CalculatorMetaFunction.CALC_GEOM_DISTANCE   : // Calculate distance between geometries
+            	defaultResultType = ValueMetaInterface.TYPE_NUMBER;        
+                break;
             default:
                 break;
             }

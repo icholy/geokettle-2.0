@@ -15,6 +15,7 @@ import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleValueException;
 import org.pentaho.di.core.row.RowDataUtil;
+import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.vfs.KettleVFS;
 import org.pentaho.di.trans.Trans;
@@ -39,7 +40,6 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
 	
 	private boolean hasTwoInputStreams = false;	
 	private boolean oneRow = false;	
-	private boolean keepAttributes = false;
 	
 	public SpatialAnalysis(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta, Trans trans){
 		super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
@@ -239,10 +239,8 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
  		  
     		//setting meta output
     		if (data.outputRowMeta == null){            
-            	data.outputRowMeta = data.oneRowSet.getRowMeta().clone();  
-            	if(keepAttributes && hasTwoInputStreams)
-                	data.outputRowMeta.mergeRowMeta(data.twoRowSet.getRowMeta().clone());           	        	
-                meta.getFields(data.outputRowMeta, getStepname(), new RowMetaInterface[] { data.oneRowSet.getRowMeta() }, null, this);           
+    			data.outputRowMeta = new RowMeta(); 
+                meta.getFields(data.outputRowMeta, getStepname(), hasTwoInputStreams?new RowMetaInterface[] {data.oneRowSet.getRowMeta(), data.twoRowSet.getRowMeta()}:new RowMetaInterface[] {data.oneRowSet.getRowMeta()}, null, this);    
             }
         }
 	
@@ -261,7 +259,7 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
             if(!com.vividsolutions.jts.geom.Geometry.class.isAssignableFrom(c))
             	throw new KettleException(Messages.getString("SpatialAnalysis.Exception.ReferenceMustBeGeometry", meta.getReferenceField()));
             
-        	if(!keepAttributes || !hasTwoInputStreams){
+        	if(!hasTwoInputStreams){
         		outputRow = data.one;
         		outputIndex = data.oneRowSet.getRowMeta().size();
         	}else{          		
@@ -436,7 +434,6 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
        	
 	        hasTwoInputStreams = meta.isAlgoDual();            
 	        oneRow = meta.getOneRow();
-	        keepAttributes = meta.getAttributes();
 	        
 	        if(!oneRow){
 	        	data.writeSize = 5000;
@@ -462,7 +459,7 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
     	    			}
         	    		//check compare input if transformation requires 2 streams
         	    		if (analysisType == 0 || analysisType == 1 || analysisType == 3 || analysisType == 8){
-        	    			if (meta.getCompareStepName() != null){			
+        	    			if (meta.getCompareStepName() != null){
         	    				if (!Const.isEmpty(meta.getCompareField()))
         	    					return true;
         	    				else
