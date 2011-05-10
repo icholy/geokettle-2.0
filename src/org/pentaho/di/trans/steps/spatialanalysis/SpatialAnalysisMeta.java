@@ -174,15 +174,11 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
 	}
 
     public String getCompareStepName(){
-		if (compareStepMeta!=null && compareStepMeta.getName()!=null && compareStepMeta.getName().length()>0) 
-			return compareStepMeta.getName();
-		return null;
+		return (compareStepMeta!=null && compareStepMeta.getName()!=null && compareStepMeta.getName().length()>0)?compareStepMeta.getName():null;
 	}
  
     public String getReferenceStepName(){
-		if (referenceStepMeta!=null && referenceStepMeta.getName()!=null && referenceStepMeta.getName().length()>0) 
-			return referenceStepMeta.getName();
-		return null;
+		return (referenceStepMeta!=null && referenceStepMeta.getName()!=null && referenceStepMeta.getName().length()>0)?referenceStepMeta.getName():null;
     }
     
     public void setCompareStepName(String sendFalseStepname){
@@ -259,12 +255,8 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
 	}
     
     public String[] getInfoSteps(){
-        if (referenceStepMeta!=null){
-        	 if(compareStepMeta!=null)
-        		 return new String[] {referenceStepMeta.getName(), compareStepMeta.getName(),};
-        	 else
-        		 return new String[] {referenceStepMeta.getName()};
-        }         
+        if (referenceStepMeta!=null)
+        	return compareStepMeta!=null?new String[] {referenceStepMeta.getName(), compareStepMeta.getName(),}:new String[] {referenceStepMeta.getName()};         
         return null;
     }
 
