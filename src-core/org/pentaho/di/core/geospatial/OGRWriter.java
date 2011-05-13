@@ -40,12 +40,13 @@ public class OGRWriter
 	private String ogrLayerName;
 	private String ogrDataFormat;
 	private String ogrOptions;
+	private int ogrGeomType;
 	private Driver ogrDriver;
 	private Vector<String> ogrDataDestinationOptions;
 	private org.gdal.ogr.Geometry ogrGeometry;
 	private SpatialReference ogrSpatialReference;
 	
-	public OGRWriter(String dataDestinationPath, String format, String options)
+	public OGRWriter(String dataDestinationPath, String format, String options, int geomType)
 	{
 		this.log = LogWriter.getInstance();
 		ogrDataDestinationPath = dataDestinationPath;
@@ -54,6 +55,7 @@ public class OGRWriter
 		ogrLayerName = null;
 		ogrDataFormat = format;
 		ogrOptions = options;
+		ogrGeomType = geomType;
 		ogrDriver = null;
 
 		ogrGeometry = null;
@@ -165,9 +167,9 @@ public class OGRWriter
 					break;
 				}
 			}
-			ogrLayer = ogrDataDestination.CreateLayer(ogrLayerName,sr);
+			ogrLayer = ogrDataDestination.CreateLayer(ogrLayerName,sr,ogrGeomType);
 			
-			//log.println(log.LOG_LEVEL_BASIC, " --> After CreateLayer !");
+			log.println(log.LOG_LEVEL_BASIC, " --> CreateLayer with a geom type: "+org.gdal.ogr.ogr.GeometryTypeToName(ogrGeomType));
 			
 			// Fetch all field information
 			//

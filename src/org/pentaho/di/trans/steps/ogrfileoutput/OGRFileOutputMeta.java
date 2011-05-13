@@ -32,6 +32,7 @@ public class OGRFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	private String gisFileName;
 	private String ogrOutputFormat;
 	private String ogrOptions;
+	private int ogrGeomType;
 	
 //    /** Are we accepting filenames in Output rows?  */
 //    private boolean acceptingFilenames;
@@ -91,6 +92,9 @@ public class OGRFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 			gisFileName        = XMLHandler.getTagValue(stepnode, "file_gis"); //$NON-NLS-1$
 			ogrOutputFormat    = XMLHandler.getTagValue(stepnode, "file_format");
 			ogrOptions         = XMLHandler.getTagValue(stepnode, "file_options");
+			if (XMLHandler.getTagValue(stepnode, "file_geomtype")!=null)
+				ogrGeomType    = Integer.parseInt(XMLHandler.getTagValue(stepnode, "file_geomtype"));
+			else ogrGeomType   = org.gdal.ogr.ogrConstants.wkbUnknown;
 		}
 		catch(Exception e)
 		{
@@ -111,6 +115,7 @@ public class OGRFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 		retval.append("    " + XMLHandler.addTagValue("file_gis",    gisFileName)); //$NON-NLS-1$ //$NON-NLS-2$
 		retval.append("    " + XMLHandler.addTagValue("file_format", ogrOutputFormat));
 		retval.append("    " + XMLHandler.addTagValue("file_options", ogrOptions));
+		retval.append("    " + XMLHandler.addTagValue("file_geomtype", ogrGeomType));
 //		retval.append("    " + XMLHandler.addTagValue("include", includeFilename));
 //		retval.append("    " + XMLHandler.addTagValue("include_field", filenameField));
 //
@@ -129,6 +134,9 @@ public class OGRFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 			gisFileName = rep.getStepAttributeString (id_step, "file_gis"); //$NON-NLS-1$
             ogrOutputFormat = rep.getStepAttributeString (id_step, "file_format");
             ogrOptions = rep.getStepAttributeString (id_step, "file_options");
+            if (rep.getStepAttributeString(id_step, "file_geomtype")!=null)
+            	ogrGeomType = Integer.parseInt(rep.getStepAttributeString(id_step, "file_geomtype"));
+            else ogrGeomType = org.gdal.ogr.ogrConstants.wkbUnknown;
 //            includeFilename = rep.getStepAttributeBoolean(id_step, "include");
 //            filenameField = rep.getStepAttributeString(id_step, "include_field");
 //
@@ -151,6 +159,7 @@ public class OGRFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 			rep.saveStepAttribute(id_transformation, id_step, "file_gis", gisFileName); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "file_format", ogrOutputFormat);
 			rep.saveStepAttribute(id_transformation, id_step, "file_options", ogrOptions);
+			rep.saveStepAttribute(id_transformation, id_step, "file_geomtype", ogrGeomType);
 			
 //            rep.saveStepAttribute(id_transformation, id_step, "include", includeFilename);
 //            rep.saveStepAttribute(id_transformation, id_step, "include_field", filenameField);
@@ -202,7 +211,7 @@ public class OGRFileOutputMeta extends BaseStepMeta implements StepMetaInterface
             OGRWriter ogrWriter = null;
             try
             {
-            	ogrWriter = new OGRWriter(gisFileName,ogrOutputFormat,ogrOptions);
+            	ogrWriter = new OGRWriter(gisFileName,ogrOutputFormat,ogrOptions, ogrGeomType);
             	ogrWriter.open();
                 cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("OGRFileOutputMeta.Remark.FileExistsAndCanBeOpened"), stepMeta); //$NON-NLS-1$
                 remarks.add(cr);
@@ -290,6 +299,14 @@ public class OGRFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 
 	public void setOgrOptions(String ogrOptions) {
 		this.ogrOptions = ogrOptions;
+	}
+
+	public int getOgrGeomType() {
+		return ogrGeomType;
+	}
+
+	public void setOgrGeomType(int ogrGeomType) {
+		this.ogrGeomType = ogrGeomType;
 	}
     
 }

@@ -20,6 +20,7 @@ public class OGRFileOutputData extends BaseStepData implements StepDataInterface
     public FileObject file_gis;
     public String file_format;
     public String file_options;
+    public int file_geomtype;
     // public FileInputList files;
     public RowMetaInterface outputRowMeta;
 

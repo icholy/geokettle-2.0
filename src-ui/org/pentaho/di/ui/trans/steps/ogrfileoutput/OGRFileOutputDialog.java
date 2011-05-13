@@ -46,6 +46,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.gdal.ogr.Driver;
 import org.gdal.ogr.ogr;
+import org.gdal.ogr.ogrConstants;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.trans.TransMeta;
@@ -61,13 +62,16 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 	//final static private String[] OGRFILE_FILTER_EXT = new String[] {"*.shp;*.SHP", "*"};
 	
 	private String[] ogrFormats = { };
+	private int[] ogrGeomTypes = {ogrConstants.wkbUnknown, ogrConstants.wkbPoint, ogrConstants.wkbLineString, ogrConstants.wkbPolygon, ogrConstants.wkbMultiPoint, ogrConstants.wkbMultiLineString, ogrConstants.wkbMultiPolygon, ogrConstants.wkbGeometryCollection};
 	
 	private Label        wlFilename;
 	private Button       wbFilename;
 	private Label		 wlStepformat;
+	private Label		 wlGeomtype;
 	private Combo		 wcbStepformat;
+	private Combo		 wcbGeomtype;
 	private TextVar      wFilename;
-	private FormData     fdlFilename, fdbFilename, fdFilename, fdlStepformat, fdcbStepformat, fdlOptions, fdOptions;
+	private FormData     fdlFilename, fdbFilename, fdFilename, fdlStepformat, fdcbStepformat, fdlOptions, fdOptions, fdlGeomtype, fdcbGeomtype;
 	private Label		 wlOptions;
 	private Text		 wOptions;
 
@@ -83,7 +87,8 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		//TODO GPX, BNA, GPSTrackMaker are excluded this time but should be included by adding a dropbox in the step interface to select the geometry type
 		//TODO Bug with Interlis has not been identified yt
 		//TODO GPSBabel, WFS, GFT, MSSQLSpatial have not been tested and require a important change in the way paths are managed from the FileObject field ... Need to be able to handle URL, connection string, etc. and not only file path.
-		String[] readOnlyFormats = {"AeronavFAA", "ArcObjects","AVCBin","AVCE00","DODS","EDIGEO","PGeo","SDE","FMEObjects Gateway","Geomedia","GRASS","HTF","MDB","MySQL","NAS","ODBC","OGDI","OpenAir","PCIDSK","PDS","REC","S57","SDTS","SOSI","SUA","SVG","UK .NTF","TIGER","VFK","VRT","XPlane","GPX","BNA","Interlis 1","Interlis 2","GPSTrackMaker","GPSBabel","WFS","GFT","MSSQLSpatial"};
+		//String[] readOnlyFormats = {"AeronavFAA", "ArcObjects","AVCBin","AVCE00","DODS","EDIGEO","PGeo","SDE","FMEObjects Gateway","Geomedia","GRASS","HTF","MDB","MySQL","NAS","ODBC","OGDI","OpenAir","PCIDSK","PDS","REC","S57","SDTS","SOSI","SUA","SVG","UK .NTF","TIGER","VFK","VRT","XPlane","GPX","BNA","Interlis 1","Interlis 2","GPSTrackMaker","GPSBabel","WFS","GFT","MSSQLSpatial"};
+		String[] readOnlyFormats = {"AeronavFAA", "ArcObjects","AVCBin","AVCE00","DODS","EDIGEO","PGeo","SDE","FMEObjects Gateway","Geomedia","GRASS","HTF","MDB","MySQL","NAS","ODBC","OGDI","OpenAir","PCIDSK","PDS","REC","S57","SDTS","SOSI","SUA","SVG","UK .NTF","TIGER","VFK","VRT","XPlane","Interlis 1","Interlis 2","GPSBabel","WFS","GFT","MSSQLSpatial"};
 		for (int i=0;i<readOnlyFormats.length;i++) {
 			if (format.equals(readOnlyFormats[i]))
 				return false;
@@ -221,6 +226,7 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		
 		//GDAL/OGR options line
 		wlOptions=new Label(shell, SWT.RIGHT);
+		// TODO This string should be externalised !
 		wlOptions.setText("OGR options"); //$NON-NLS-1$
  		props.setLook(wlOptions);
 		fdlOptions=new FormData();
@@ -237,6 +243,34 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		fdOptions.top  = new FormAttachment(wFilename, margin);
 		fdOptions.right= new FormAttachment(100, 0);
 		wOptions.setLayoutData(fdOptions);
+		
+		// Geometry type line
+		wlGeomtype = new Label(shell, SWT.RIGHT);
+		// TODO This string should be externalised !
+		wlGeomtype.setText("Geometry type");
+		props.setLook(wlGeomtype);
+		fdlGeomtype=new FormData();
+		fdlGeomtype.left = new FormAttachment(0, 0);
+		fdlGeomtype.right= new FormAttachment(middle, -margin);
+		fdlGeomtype.top  = new FormAttachment(wOptions, margin);
+		wlGeomtype.setLayoutData(fdlGeomtype);
+		wcbGeomtype = new Combo(shell, 
+                SWT.DROP_DOWN | SWT.MULTI | 
+                SWT.V_SCROLL | SWT.H_SCROLL);
+//		wcbFormats.addSelectionListener(
+//				new SelectionListener() {
+//				});
+		wcbGeomtype.removeAll();
+	    for (int i = 0; i < ogrGeomTypes.length; i++) {
+	    	wcbGeomtype.add(org.gdal.ogr.ogr.GeometryTypeToName(ogrGeomTypes[i]));
+	    }
+	    wcbGeomtype.select(0);
+	    props.setLook(wcbGeomtype);
+	    fdcbGeomtype = new FormData();
+	    fdcbGeomtype.left = new FormAttachment(middle, 0);
+	    fdcbGeomtype.top  = new FormAttachment(wOptions, margin);
+	    fdcbGeomtype.right= new FormAttachment(100, 0);
+		wcbGeomtype.setLayoutData(fdcbGeomtype);
 
 		
 		// Some buttons
@@ -343,6 +377,15 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 			wOptions.setText(Output.getOgrOptions());
 		}
 
+		int geomtype = Output.getOgrGeomType();
+		
+		for (int i=0; i < ogrGeomTypes.length; i++) {
+			if (ogrGeomTypes[i] == geomtype) {
+				wcbGeomtype.select(i);
+				break;
+			}
+		}
+		
         setFlags();
 		
 		wStepname.selectAll();
@@ -361,6 +404,7 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		meta.setGisFileName( wFilename.getText() );
 		meta.setOgrOutputFormat(ogrFormats[wcbStepformat.getSelectionIndex()]);
 		meta.setOgrOptions( wOptions.getText() );
+		meta.setOgrGeomType(ogrGeomTypes[wcbGeomtype.getSelectionIndex()]);
 
 		if (Const.isEmpty(meta.getGisFileName()) /* && !meta.isAcceptingFilenames() */)
 		{
