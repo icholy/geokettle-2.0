@@ -105,7 +105,7 @@
 
 
 	  <target name="compile" depends="compile-db" description="compile the source " >
-	  	<echo>Compiling GeoKettle...</echo>
+	  	<echo>Compiling GeoKettle ...</echo>
         <javac fork="true"
             destdir="${classes}"
             target="5"
@@ -121,6 +121,7 @@
 	    		<pathelement path="${classes-db}"/>
                 <fileset dir="${libext}" 		includes="*.jar *.zip"/>
                 <fileset dir="${libext}/"	    includes="**/*.jar *.zip"/>
+				<fileset dir="${gdal.jni.lib}"  includes="*.jar"/>
             </classpath>
         </javac>
 	  </target>
