@@ -169,7 +169,7 @@ public class OGRWriter
 			}
 			ogrLayer = ogrDataDestination.CreateLayer(ogrLayerName,sr,ogrGeomType);
 			
-			log.println(log.LOG_LEVEL_BASIC, " --> CreateLayer with a geom type: "+org.gdal.ogr.ogr.GeometryTypeToName(ogrGeomType));
+			//log.println(log.LOG_LEVEL_BASIC, " --> CreateLayer with a geom type: "+org.gdal.ogr.ogr.GeometryTypeToName(ogrGeomType));
 			
 			// Fetch all field information
 			//
