@@ -88,7 +88,7 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		//TODO Bug with Interlis has not been identified yt
 		//TODO GPSBabel, WFS, GFT, MSSQLSpatial have not been tested and require a important change in the way paths are managed from the FileObject field ... Need to be able to handle URL, connection string, etc. and not only file path.
 		//String[] readOnlyFormats = {"AeronavFAA", "ArcObjects","AVCBin","AVCE00","DODS","EDIGEO","PGeo","SDE","FMEObjects Gateway","Geomedia","GRASS","HTF","MDB","MySQL","NAS","ODBC","OGDI","OpenAir","PCIDSK","PDS","REC","S57","SDTS","SOSI","SUA","SVG","UK .NTF","TIGER","VFK","VRT","XPlane","GPX","BNA","Interlis 1","Interlis 2","GPSTrackMaker","GPSBabel","WFS","GFT","MSSQLSpatial"};
-		String[] readOnlyFormats = {"AeronavFAA", "ArcObjects","AVCBin","AVCE00","DODS","EDIGEO","PGeo","SDE","FMEObjects Gateway","Geomedia","GRASS","HTF","MDB","MySQL","NAS","ODBC","OGDI","OpenAir","PCIDSK","PDS","REC","S57","SDTS","SOSI","SUA","SVG","UK .NTF","TIGER","VFK","VRT","XPlane","Interlis 1","Interlis 2","GPSBabel","WFS","GFT","MSSQLSpatial"};
+		String[] readOnlyFormats = {"AeronavFAA", "ArcObjects","AVCBin","AVCE00","DODS","EDIGEO","PGeo","SDE","FMEObjects Gateway","Geomedia","GRASS","HTF","MDB","MySQL","NAS","ODBC","OGDI","OpenAir","PCIDSK","PDS","REC","S57","SDTS","SOSI","SUA","SVG","UK .NTF","TIGER","VFK","VRT","XPlane","Interlis 1","Interlis 2","GPSBabel","WFS","GFT","MSSQLSpatial","CouchDB"};
 		for (int i=0;i<readOnlyFormats.length;i++) {
 			if (format.equals(readOnlyFormats[i]))
 				return false;

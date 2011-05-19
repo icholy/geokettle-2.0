@@ -50,6 +50,7 @@ JAVA_BIN=java
 LIBPATH="NONE"
 GDAL_LIBPATH="NONE"
 GDAL_DATA=libext/geometry/gdal_data
+ISDARWIN="NO"
 
 case `uname -s` in 
 	AIX)
@@ -61,9 +62,9 @@ case `uname -s` in
 		;;
 
 	Darwin)
+	    ISDARWIN="YES"
 		LIBPATH=$BASEDIR/libswt/osx/
-		JAVA_BIN=$BASEDIR/libswt/osx/java_swt
-		chmod +x $JAVA_BIN
+		GDAL_LIBPATH=$BASEDIR/libext/geometry/libgdal/osx/
 		;;
 
 	Linux)
@@ -136,7 +137,12 @@ export GDAL_DATA
 
 if [ "$GDAL_LIBPATH" != "NONE" ]
 then
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GDAL_LIBPATH
+  if [ "$ISDARWIN" == "YES" ]
+  then
+    export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$GDAL_LIBPATH
+  else
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GDAL_LIBPATH
+  fi
 fi
 
 if [ "$LIBPATH" != "NONE" ]
@@ -159,5 +165,9 @@ OPT="-Xmx512m -cp $CLASSPATH -Djava.library.path=$LIBPATH -DKETTLE_HOME=$KETTLE_
 # ** Run...    **
 # ***************
 
-$JAVA_BIN $OPT org.pentaho.di.ui.spoon.Spoon "${1+$@}"
-
+if [ "$ISDARWIN" == "YES" ]
+then
+  $JAVA_BIN -d32 -XstartOnFirstThread $OPT org.pentaho.di.ui.spoon.Spoon "${1+$@}"
+else
+  $JAVA_BIN $OPT org.pentaho.di.ui.spoon.Spoon "${1+$@}"
+fi

@@ -391,7 +391,7 @@
   	        <!-- external libs (jdbc etc) -->
 	  		<mkdir dir="${distrib}/libext"/>
 	  		<copy todir="${distrib}/libext">
-	  			<fileset dir="${libext}" includes="**/*.jar **/*.zip **/*.so* **/*.dll **/*.csv **/*.txt **/*.wkt **/*.svg  **/*.dxf  **/*.dgn **/*.png" 
+	  			<fileset dir="${libext}" includes="**/*.jar **/*.zip **/*.so* **/*.dll **/*.csv **/*.txt **/*.wkt **/*.svg  **/*.dxf  **/*.dgn **/*.png **/*.dylib **/GEOS **/iODBCinst" 
 	  				     excludes="**/.vpn"/>
 	  			</copy>
 
