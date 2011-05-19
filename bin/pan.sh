@@ -30,10 +30,13 @@ JAVA_BIN=java
 LIBPATH="NONE"
 GDAL_LIBPATH="NONE"
 GDAL_DATA=libext/geometry/gdal_data
+ISDARWIN="NO"
 
 case `uname -s` in 
 	Darwin)
+		ISDARWIN="YES"
 		LIBPATH=$BASEDIR/libswt/osx/
+		GDAL_LIBPATH=$BASEDIR/libext/geometry/libgdal/osx/
 		;;
 
 	Linux)
@@ -58,7 +61,12 @@ export GDAL_DATA
 
 if [ "$GDAL_LIBPATH" != "NONE" ]
 then
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GDAL_LIBPATH
+  if [ "$ISDARWIN" == "YES" ]
+  then
+    export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$GDAL_LIBPATH
+  else
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$GDAL_LIBPATH
+  fi
 fi
 
 if [ "$LIBPATH" != "NONE" ]
@@ -104,5 +112,9 @@ fi
 # ** Run...    **
 # ***************
 
-$JAVA_BIN $OPT org.pentaho.di.pan.Pan "${1+$@}"
-
+if [ "$ISDARWIN" == "YES" ]
+then
+  $JAVA_BIN -d32 -XstartOnFirstThread $OPT org.pentaho.di.pan.Pan "${1+$@}"
+else
+  $JAVA_BIN $OPT org.pentaho.di.pan.Pan "${1+$@}"
+fi
