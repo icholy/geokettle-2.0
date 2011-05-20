@@ -34,14 +34,12 @@ import org.pentaho.di.core.Messages;
 import org.pentaho.di.core.exception.KettleEOFException;
 import org.pentaho.di.core.exception.KettleFileException;
 import org.pentaho.di.core.exception.KettleValueException;
-// -- Begin GeoKettle modification --
 import org.pentaho.di.core.geospatial.SRS;
-// -- End GeoKettle modification --
 import org.pentaho.di.core.xml.XMLHandler;
 import org.w3c.dom.Node;
 
-// -- Begin GeoKettle modification --
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKBWriter;
 import com.vividsolutions.jts.io.WKTReader;
@@ -57,6 +55,8 @@ public class ValueMeta implements ValueMetaInterface
     
 	public static final String XML_META_TAG = "value-meta";
 	public static final String XML_DATA_TAG = "value-data";
+	
+	private final PreparedGeometryFactory pgf = new PreparedGeometryFactory();
 	
     private String   name;
     private int      length;
@@ -3938,9 +3938,9 @@ public class ValueMeta implements ValueMetaInterface
 	throws KettleValueException
 	{
 		// topological predicates only make sense for geometry types
-		if( (getType() == TYPE_GEOMETRY) && (meta2.getType() == TYPE_GEOMETRY) )
-			return getGeometry(data).intersects(meta2.getGeometry(data2));
-
+		if( (getType() == TYPE_GEOMETRY) && (meta2.getType() == TYPE_GEOMETRY) ) 
+			return (pgf.create(getGeometry(data))).intersects(meta2.getGeometry(data2));
+		
 		return false;
 	}
 
@@ -3949,7 +3949,7 @@ public class ValueMeta implements ValueMetaInterface
 	{
 		// topological predicates only make sense for geometry types
 		if( (getType() == TYPE_GEOMETRY) && (meta2.getType() == TYPE_GEOMETRY) )
-			return getGeometry(data).equals(meta2.getGeometry(data2));
+			return (pgf.create(getGeometry(data))).equals(meta2.getGeometry(data2));
 
 		return false;
 	}
@@ -3959,8 +3959,8 @@ public class ValueMeta implements ValueMetaInterface
 	{
 		// topological predicates only make sense for geometry types
 		if( (getType() == TYPE_GEOMETRY) && (meta2.getType() == TYPE_GEOMETRY) )
-			return getGeometry(data).contains(meta2.getGeometry(data2));
-
+			return (pgf.create(getGeometry(data))).contains(meta2.getGeometry(data2));	
+		
 		return false;
 	}
 
@@ -3969,7 +3969,7 @@ public class ValueMeta implements ValueMetaInterface
 	{
 		// topological predicates only make sense for geometry types
 		if( (getType() == TYPE_GEOMETRY) && (meta2.getType() == TYPE_GEOMETRY) )
-			return getGeometry(data).crosses(meta2.getGeometry(data2));
+			return (pgf.create(getGeometry(data))).crosses(meta2.getGeometry(data2));
 
 		return false;
 	}
@@ -3979,7 +3979,7 @@ public class ValueMeta implements ValueMetaInterface
 	{
 		// topological predicates only make sense for geometry types
 		if( (getType() == TYPE_GEOMETRY) && (meta2.getType() == TYPE_GEOMETRY) )
-			return getGeometry(data).disjoint(meta2.getGeometry(data2));
+			return (pgf.create(getGeometry(data))).disjoint(meta2.getGeometry(data2));
 
 		return false;
 	}
@@ -3989,7 +3989,7 @@ public class ValueMeta implements ValueMetaInterface
 	{
 		// topological predicates only make sense for geometry types
 		if( (getType() == TYPE_GEOMETRY) && (meta2.getType() == TYPE_GEOMETRY) )
-			return getGeometry(data).within(meta2.getGeometry(data2));
+			return (pgf.create(getGeometry(data))).within(meta2.getGeometry(data2));
 
 		return false;
 	}
@@ -3999,7 +3999,7 @@ public class ValueMeta implements ValueMetaInterface
 	{
 		// topological predicates only make sense for geometry types
 		if( (getType() == TYPE_GEOMETRY) && (meta2.getType() == TYPE_GEOMETRY) )
-			return getGeometry(data).overlaps(meta2.getGeometry(data2));
+			return (pgf.create(getGeometry(data))).overlaps(meta2.getGeometry(data2));
 
 		return false;
 	}
@@ -4009,7 +4009,7 @@ public class ValueMeta implements ValueMetaInterface
 	{
 		// topological predicates only make sense for geometry types
 		if( (getType() == TYPE_GEOMETRY) && (meta2.getType() == TYPE_GEOMETRY) )
-			return getGeometry(data).touches(meta2.getGeometry(data2));
+			return (pgf.create(getGeometry(data))).touches(meta2.getGeometry(data2));
 
 		return false;
 	}
