@@ -32,6 +32,7 @@ public class Symbolisation {
 	private int styleUsage;
 	
 	private Object featureStyle;//
+	private Object lastFeatureStyle;//
 	
 	private Layer layerParent;
 	
@@ -45,6 +46,10 @@ public class Symbolisation {
 		this.featureStyle=o;
 	}
 	
+	public void setLastFeatureStyle(Object o){
+		this.lastFeatureStyle=o;
+	}
+	
 	public int getStyleUsage(){
 		return styleUsage;
 	}
@@ -53,13 +58,18 @@ public class Symbolisation {
 		return featureStyle;
 	}
 	
+	public Object getLastFeatureStyle(){
+		return lastFeatureStyle;
+	}
+	
 	public void setLayerParent(Layer l){
 		this.layerParent=l;
 	}
 	
-	public Symbolisation(int usage,Object fs) {
+	public Symbolisation(int usage, Object fs) {
 		this.styleUsage=usage;
 		this.featureStyle=fs;
+    	setLastFeatureStyle(fs);
 		isCustom=true;
 	}
 	
