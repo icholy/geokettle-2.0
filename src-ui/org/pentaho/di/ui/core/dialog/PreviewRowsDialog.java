@@ -428,8 +428,8 @@ public class PreviewRowsDialog extends Dialog
         wGeoCanvas.addListener(SWT.Paint, new Listener(){   	
 			public void handleEvent(Event event) {
 	        	if (geoFeaturesManager.getGeometryCount() <= 0)return;
-	        	Rectangle clientArea = event.display.getClientArea();
-	        	event.gc.setClipping(clientArea);	            
+	        	//Rectangle clientArea = event.display.getClientArea(); /////crash on mac OSX
+	        	//event.gc.setClipping(clientArea);/////crash on mac OSX	            
 	        	SWTMapRenderer mapRenderer = new SWTMapRenderer(event.gc);
 	            mapRenderer.render(geoFeaturesManager.getMapContext(), geoFeaturesManager.getEnvelope());
 			}        	

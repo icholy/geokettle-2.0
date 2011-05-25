@@ -68,17 +68,12 @@ public class LayerControl
 		}		
 		protected boolean canEdit(Object element) { return true; }		
 		protected CellEditor getCellEditor(Object element) { 
-			if (!(element instanceof Symbolisation)) return null;
-			
-			Symbolisation s = (Symbolisation)element;
-			if (s.getStyleUsage()==Symbolisation.LineStrokeWidth || s.getStyleUsage()==Symbolisation.PolygonStrokeWidth)
-				return new TextCellEditor((Composite)viewer.getControl());			 
-			if(s.getStyleUsage()==Symbolisation.PointOpacity || s.getStyleUsage()==Symbolisation.LineOpacity || s.getStyleUsage()==Symbolisation.PolygonOpacity || s.getStyleUsage()==Symbolisation.CollectionOpacity)
-				return new TextCellEditor((Composite)viewer.getControl());			
-			if(s.getStyleUsage()==Symbolisation.Radius)
-				return new TextCellEditor((Composite)viewer.getControl());			
-			if((s.getStyleUsage()==Symbolisation.PointColor)||(s.getStyleUsage()==Symbolisation.PolygonFillColor)||(s.getStyleUsage()==Symbolisation.LineStrokeColor) ||(s.getStyleUsage()==Symbolisation.PolygonStrokeColor) ||(s.getStyleUsage()==Symbolisation.CollectionColor))			
-				return new ColorCellEditor((Composite)viewer.getControl());;							
+			if (element instanceof Symbolisation){			
+				Symbolisation s = (Symbolisation)element;		
+				if((s.getStyleUsage()==Symbolisation.PointColor)||(s.getStyleUsage()==Symbolisation.PolygonFillColor)||(s.getStyleUsage()==Symbolisation.LineStrokeColor) ||(s.getStyleUsage()==Symbolisation.PolygonStrokeColor) ||(s.getStyleUsage()==Symbolisation.CollectionColor))			
+					return new ColorCellEditor((Composite)viewer.getControl());
+				return new TextCellEditor((Composite)viewer.getControl());	
+			}
 			return null; 
 		}
 		protected Object getValue(Object element) {
@@ -106,6 +101,7 @@ public class LayerControl
 				current.setIsCustom(true);
 				((CheckboxTreeViewer)viewer).setChecked(current, current.isCustom());
 			}
+			current.setLastFeatureStyle(value);	
 			current.setFeatureStyle(value);						
 			current.updateParent();
 			viewer.refresh();	
@@ -145,7 +141,9 @@ public class LayerControl
 				if (event.getElement() instanceof Symbolisation) {	
 					Symbolisation sym = (Symbolisation)event.getElement();
 					sym.setIsCustom(event.getChecked()); 
-					if(!event.getChecked()){
+					if(event.getChecked()){
+						sym.setFeatureStyle(sym.getLastFeatureStyle());		
+					}else{
 						if(Symbolisation.usage[sym.getStyleUsage()].equals(Symbolisation.STROKECOLOR)||Symbolisation.usage[sym.getStyleUsage()].equals(Symbolisation.FILLCOLOR)||Symbolisation.usage[sym.getStyleUsage()].equals(Symbolisation.COLOR))
 							sym.setFeatureStyle((Object)LayerFactory.getDefaultColor());
 						if(Symbolisation.usage[sym.getStyleUsage()].equals(Symbolisation.STROKEWIDTH))
