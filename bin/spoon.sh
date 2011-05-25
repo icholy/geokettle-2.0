@@ -137,7 +137,7 @@ export GDAL_DATA
 
 if [ "$GDAL_LIBPATH" != "NONE" ]
 then
-  if [ "$ISDARWIN" == "YES" ]
+  if [ "$ISDARWIN" = "YES" ]
   then
     export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$GDAL_LIBPATH
   else
@@ -165,7 +165,7 @@ OPT="-Xmx512m -cp $CLASSPATH -Djava.library.path=$LIBPATH -DKETTLE_HOME=$KETTLE_
 # ** Run...    **
 # ***************
 
-if [ "$ISDARWIN" == "YES" ]
+if [ "$ISDARWIN" = "YES" ]
 then
   $JAVA_BIN -d32 -XstartOnFirstThread $OPT org.pentaho.di.ui.spoon.Spoon "${1+$@}"
 else

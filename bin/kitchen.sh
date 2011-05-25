@@ -61,7 +61,7 @@ export GDAL_DATA
 
 if [ "$GDAL_LIBPATH" != "NONE" ]
 then
-  if [ "$ISDARWIN" == "YES" ]
+  if [ "$ISDARWIN" = "YES" ]
   then
     export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$GDAL_LIBPATH
   else
@@ -112,7 +112,7 @@ fi
 # ** Run...    **
 # ***************
 
-if [ "$ISDARWIN" == "YES" ]
+if [ "$ISDARWIN" = "YES" ]
 then
   $JAVA_BIN -d32 -XstartOnFirstThread $OPT org.pentaho.di.kitchen.Kitchen "${1+$@}"
 else
