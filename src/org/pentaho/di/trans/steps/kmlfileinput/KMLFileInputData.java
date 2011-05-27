@@ -21,13 +21,12 @@ public class KMLFileInputData extends BaseStepData implements StepDataInterface{
 	public RowMetaInterface fields;
     public ArrayList <FileObject> file_kml;
     public FileInputList files;
-    public RowMetaInterface outputRowMeta;
+    public RowMetaInterface outputRowMeta;   
+	public int fileNr;
 
-	public KMLFileInputData()
-	{
+	public KMLFileInputData(){
 		super();
 		kmlreader=null;
 		fields=null;
-		file_kml=null;
 	}
 }

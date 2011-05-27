@@ -1,10 +1,8 @@
 package org.pentaho.di.trans.steps.kmlfileinput;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.vfs.FileObject;
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
 import org.pentaho.di.core.Const;
@@ -13,13 +11,13 @@ import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.exception.KettleXMLException;
+import org.pentaho.di.core.fileinput.FileInputList;
 import org.pentaho.di.core.geospatial.KMLReader;
 import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.variables.VariableSpace;
-import org.pentaho.di.core.vfs.KettleVFS;
 import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.repository.Repository;
 import org.pentaho.di.trans.Trans;
@@ -29,7 +27,6 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
-import org.pentaho.di.trans.steps.kmlfileinput.Messages;
 import org.w3c.dom.Node;
 
 public class KMLFileInputMeta extends BaseStepMeta implements StepMetaInterface{
@@ -159,72 +156,44 @@ public class KMLFileInputMeta extends BaseStepMeta implements StepMetaInterface{
     
     @Override
     public void getFields(RowMetaInterface row, String name, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) throws KettleStepException {   	
-        FileObject fo;
-        if (!isFileNameInField()){
-			try {
-					fo = KettleVFS.getFileObject(fileName);
-			} catch (IOException e) {
-				throw new KettleStepException(Messages.getString("KMLFileInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$
-			}
-	    	if (fo == null)
-	        {
-	            throw new KettleStepException(Messages.getString("KMLFileInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$
-	        }
-	
-	        row.addRowMeta( getOutputFields(fo, name) );
+    	if (!isFileNameInField()){
+        	FileInputList fileList = getTextFileList(space);
+            if (fileList.nrOfFiles()==0)           
+                throw new KettleStepException(Messages.getString("XBaseInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$          
+            row.addRowMeta( getOutputFields(fileList, name) );
         }
 	}
     
-	public RowMetaInterface getOutputFields(FileObject fo, String name)
-	throws KettleStepException
-	{
+	public RowMetaInterface getOutputFields(FileInputList files, String name) throws KettleStepException{
 		RowMetaInterface rowMeta = new RowMeta();
-				
-	    if (fo==null)
-	    {
-	        throw new KettleStepException(Messages.getString("KMLFileInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$
-	    }
-	    
-        KMLReader gtr = null;
-		try
-		{
-			java.net.URL fileURL = fo.getURL();
-            gtr = new KMLReader(fileURL);
-            gtr.open();
-			RowMetaInterface add = gtr.getFields();
-			for (int i=0;i<add.size();i++)
-			{
+		
+        if (files.nrOfFiles()==0)
+            throw new KettleStepException(Messages.getString("KMLFileInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$
+            
+        KMLReader kmlr = null;
+		try{
+			kmlr = new KMLReader(files.getFile(0).getURL());
+			kmlr.open();
+			RowMetaInterface add = kmlr.getFields();
+			for (int i=0;i<add.size();i++){
 				ValueMetaInterface v=add.getValueMeta(i);
 				v.setOrigin(name);
 			}
 			rowMeta.addRowMeta( add );
-		}
-		catch(Exception ke)
-	    {
-			throw new KettleStepException(Messages.getString("KMLFileInputMeta.Exception.UnableToReadMetaDataFromKMLFile"), ke); //$NON-NLS-1$
-	    }
-        finally
-        {
-            if (gtr!=null) gtr.close();
+		}catch(Exception ke){
+			throw new KettleStepException(Messages.getString("KMLFileInputMeta.Exception.UnableToReadMetaDataFromGISFile"), ke); //$NON-NLS-1$
+	    }finally{
+            if (kmlr!=null) kmlr.close();
         }
 	    
-	    if (rowNrAdded && rowNrField!=null && rowNrField.length()>0)
-	    {
+	    if (rowNrAdded && rowNrField!=null && rowNrField.length()>0){
 	    	ValueMetaInterface rnr = new ValueMeta(rowNrField, ValueMetaInterface.TYPE_INTEGER);
 	    	rnr.setOrigin(name);
 	    	rowMeta.addValueMeta(rnr);
 	    }
-        
-	    if (isFileNameInField)
-        {
-            ValueMetaInterface v = new ValueMeta(fileNameField, ValueMeta.TYPE_STRING);
-            v.setLength(100, -1);
-            v.setOrigin(name);
-            rowMeta.addValueMeta(v);
-        }
-		
+
 		return rowMeta;
-	}	
+	}
 
 	public String getXML()
 	{
@@ -313,4 +282,9 @@ public class KMLFileInputMeta extends BaseStepMeta implements StepMetaInterface{
 	{
 		return new KMLFileInputData();
 	}
+	
+	public FileInputList getTextFileList(VariableSpace space)
+    {
+        return FileInputList.createFileList(space, new String[] { fileName }, new String[] { null }, new String[] { "N" });
+    }
 }

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import org.apache.commons.vfs.FileObject;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
-import org.pentaho.di.core.exception.KettleStepException;
+import org.pentaho.di.core.fileinput.FileInputList;
 import org.pentaho.di.core.geospatial.KMLReader;
 import org.pentaho.di.core.row.RowDataUtil;
 import org.pentaho.di.core.vfs.KettleVFS;
@@ -18,7 +18,6 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
-import org.pentaho.di.trans.steps.kmlfileinput.Messages;
 
 /**
  * Reads data from a KML file.
@@ -47,15 +46,6 @@ public class KMLFileInput extends BaseStep implements StepInterface{
 		return false;
 	}
 	
-	public void checkFirst() throws KettleStepException{
-        // See if we need to get a list of files from input...
-        if (first) // we just got started
-        {
-            first = false; 
-            data.outputRowMeta = meta.getOutputFields(data.file_kml.get(0), getStepname());          
-        }
-	}
-	
 	public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException
 	{
 		meta=(KMLFileInputMeta)smi;
@@ -81,7 +71,12 @@ public class KMLFileInput extends BaseStep implements StepInterface{
 					}
 					createReader(fileIndex);
 					
-					checkFirst();
+					if (first){
+				        first = false; 
+				        data.files = new FileInputList();
+						data.files.addFile(fo);						
+						data.outputRowMeta = meta.getOutputFields(data.files, getStepname());           
+				    }
 					
 					// Allocate the output row in advance, because we possibly want to add a few extra fields...
 			        Object[] row = data.kmlreader.get(fileIndex).getRow( RowDataUtil.allocateRowData(data.outputRowMeta.size()) );
@@ -109,7 +104,11 @@ public class KMLFileInput extends BaseStep implements StepInterface{
 					logBasic(Messages.getString("KMLFileInput.Log.KMLFileAlreadyRead1")+" : ["+data.kmlreader.get(fileIndex)+"]"+Messages.getString("KMLFileInput.Log.KMLFileAlreadyRead2")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 				}	
 			}else{		     	        
-				checkFirst();
+				if (first){
+			        first = false; 
+			        data.outputRowMeta = meta.getOutputFields(data.files, getStepname());          
+			    }
+				
 				incrementLinesInput();
 				Object[] row = data.kmlreader.get(0).getRow( RowDataUtil.allocateRowData(data.outputRowMeta.size()) );
 		        
@@ -124,7 +123,7 @@ public class KMLFileInput extends BaseStep implements StepInterface{
 			
 			        putRow(data.outputRowMeta, row);        // fill the rowset(s). (wait for empty)
 			        
-			        if (checkFeedback(getLinesInput())) logBasic(Messages.getString("GMLFileInput.Log.LineNr")+getLinesInput()); //$NON-NLS-1$
+			        if (checkFeedback(getLinesInput())) logBasic(Messages.getString("KMLFileInput.Log.LineNr")+getLinesInput()); //$NON-NLS-1$
 			
 			        if (meta.getRowLimit()>0 && getLinesInput()>=meta.getRowLimit())  // limit has been reached: stop now.
 			        {
@@ -157,14 +156,14 @@ public class KMLFileInput extends BaseStep implements StepInterface{
 			try {
 				data.file_kml = new ArrayList <FileObject>();
 				data.kmlreader = new ArrayList <KMLReader>();
-				if(!meta.isFileNameInField()){
-					String fileName = meta.getFileName();
-					data.file_kml.add(KettleVFS.getFileObject(fileName)); 
-				
-					// Create file if it does not exist
-					if (!data.file_kml.get(0).exists()) {// 0 -> only one file
-						data.file_kml.get(0).createFile();
-					}
+				if(!meta.isFileNameInField()){        
+					data.files  = meta.getTextFileList(this);				
+					data.fileNr = 0;		            
+					if (data.files.nrOfFiles()==0){
+						logError(Messages.getString("KMLFileInput.Log.Error.NoFilesSpecified"));
+						return false;
+					}		            
+					data.file_kml.add(data.files.getFile(0));
 					createReader(0);
 				}
 			}catch (Exception e) {
