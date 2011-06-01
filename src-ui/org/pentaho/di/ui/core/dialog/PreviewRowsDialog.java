@@ -317,7 +317,7 @@ public class PreviewRowsDialog extends Dialog
 			    for (int c = 0; c < rowMeta.size(); c++){			    	
 			        ValueMetaInterface v = rowMeta.getValueMeta(c);                        
 		            if (v.isGeometry()){
-		             	try {
+		               try {
 		             		Iterator<LayerCollection> it = layers.iterator();
 		                    while(it.hasNext()){
 		                    	LayerCollection lc = it.next();
@@ -491,6 +491,11 @@ public class PreviewRowsDialog extends Dialog
         	col.setText(v.getName());
         	col.setWidth(100);
         }
+        
+        if(layers.isEmpty())
+        	geographicTab.dispose();
+        	//wGeoCanvas.setEnabled(false);
+        	
         /////////////////
 	    // End of geographic Tab
 	    ////////////////////

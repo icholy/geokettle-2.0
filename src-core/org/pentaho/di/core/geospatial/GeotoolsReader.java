@@ -100,8 +100,7 @@ public class GeotoolsReader
             debug="allocate data types";
         	// datatype = new byte[reader.getFieldCount()];
             SimpleFeatureType ft = featSrc.getSchema();
-            List<AttributeDescriptor> attrDescriptors = ft.getAttributeDescriptors();
-            
+            List<AttributeDescriptor> attrDescriptors = ft.getAttributeDescriptors();      
             int i = 0;
             for(AttributeDescriptor ad : attrDescriptors){
               if (log.isDebug()) debug="get attribute #"+i;
@@ -146,7 +145,6 @@ public class GeotoolsReader
         }catch(Exception e){
             throw new KettleException("Error reading GIS file metadata (in part "+debug+")", e);
         }
-        
         return row;
     }
     
