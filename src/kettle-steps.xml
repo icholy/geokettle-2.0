@@ -1600,4 +1600,19 @@
 		</tooltip>
 		<image-uri>ui/images/WEB.png</image-uri>
 	</step>	
+
+	<step id="CSWInput">
+		<description>
+			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.CSWInput")
+		</description>
+		<class-name>org.pentaho.di.trans.steps.cswinput.CSWInputMeta</class-name>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@INPUT.getName()</category>
+		<tooltip>
+			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.CSWInput")
+		</tooltip>
+		<image-uri>ui/images/cswinput.png</image-uri>
+	</step>	
+	
+		
+	
 </steps>
