@@ -124,16 +124,19 @@ public class SOSReader{
 	}
 	
 	private String buildGetCapabilitiesGetQuery(String [] sections){
-		String query = SOSUrl.toString();
-		query += "?";
-		query += "service=SOS";
-		query += "&request=getcapabilities";
-		query += "&acceptversions="+SOSVersion;
-		query += "&sections=";
+		StringBuffer sb = new StringBuffer(SOSUrl.toString());
+		sb.append("?");
+		sb.append("service=SOS");
+		sb.append("&request=getcapabilities");
+		sb.append("&acceptversions=");
+		sb.append(SOSVersion);
+		sb.append("&sections=");
 		for (int i=0;i<sections.length;i++){
-			query += sections[i]+",";	
-		}		
-		return query;
+			sb.append(sections[i]);
+			sb.append(",");	
+		}
+		sb.deleteCharAt(sb.length()-1);
+		return sb.toString();
 	}
 
 	private String buildGetCapabilitiesPostQuery(String [] sections){
