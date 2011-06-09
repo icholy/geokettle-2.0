@@ -7,9 +7,13 @@ import org.pentaho.di.trans.step.StepDataInterface;
 public class CSWInputData extends BaseStepData implements StepDataInterface {
 	public RowMetaInterface fields;
     public RowMetaInterface outputRowMeta;
+    public CSWReader cswReader;
     
 	public CSWInputData() {
 		// TODO Auto-generated constructor stub
+		super();
+		fields=null;
+		cswReader=null;
 	}
 
 }

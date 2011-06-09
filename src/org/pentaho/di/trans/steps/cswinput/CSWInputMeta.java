@@ -3,12 +3,16 @@
  */
 package org.pentaho.di.trans.steps.cswinput;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletException;
+
+import org.jdom.Element;
 import org.pentaho.di.core.CheckResultInterface;
 import org.pentaho.di.core.Counter;
 import org.pentaho.di.core.database.DatabaseMeta;
@@ -28,6 +32,8 @@ import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 import org.pentaho.di.trans.steps.sosinput.Messages;
+
+
 import org.w3c.dom.Node;
 
 /**
@@ -38,6 +44,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 	
 	
 	private CSWReader cswParam;
+	private RowMetaInterface fieds;
 	private String keyword;
 	
 	/**
@@ -82,7 +89,8 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 			StepDataInterface stepDataInterface, int copyNr,
 			TransMeta transMeta, Trans trans) {
 		// TODO Auto-generated method stub
-		return null;
+		return new CSWInput(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+		//return null;
 	}
 
 	/* (non-Javadoc)
@@ -91,9 +99,15 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 	@Override
 	public StepDataInterface getStepData() {
 		// TODO Auto-generated method stub
-		return null;
+		 return new CSWInputData();
 	}
+	
+	public Object clone(){
+		CSWInputMeta retval = (CSWInputMeta)super.clone();
 
+		return retval;
+	}	
+	
 	/* (non-Javadoc)
 	 * @see org.pentaho.di.trans.step.StepMetaInterface#loadXML(org.w3c.dom.Node, java.util.List, java.util.Map)
 	 */
@@ -233,17 +247,58 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 	}
 	
 	public void getFields(RowMetaInterface row, String name, RowMetaInterface info[], StepMeta nextStep, VariableSpace space){
+    		
+			try {
+				String pattern=null;
+				if (cswParam.getElementSet().equalsIgnoreCase("brief")){
+					pattern="csw:BriefRecord";
+				}else
+				if (cswParam.getElementSet().equalsIgnoreCase("summary")){
+					pattern="csw:SummaryRecord";
+				}else
+				if(cswParam.getElementSet().equalsIgnoreCase("full")){
+					pattern="csw:Record";
+				}
+				
+				//String str=this.cswParam.GetRecords();
+				//Element rootElement=cswParam.fromStringToJDOMDocument(str).getRootElement();
+				Element el=this.cswParam.findSubElement(cswParam.fromStringToJDOMDocument(cswParam.GetRecords()).getRootElement(),pattern);
+				Iterator<Element> it=cswParam.getColumns(el).iterator();
+				while (it.hasNext()){
+					Element c=it.next();					
+					row.addValueMeta(new ValueMeta(c.getName(), ValueMetaInterface.TYPE_STRING));
+				}				
+				//
+				fieds=row;
+				
+				
+			} catch (KettleException e) {
+				
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+			} catch (ServletException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	        
     	
-	        row.addValueMeta(new ValueMeta("Procedure", ValueMetaInterface.TYPE_STRING));
-	        row.addValueMeta(new ValueMeta("Offering", ValueMetaInterface.TYPE_STRING));
-	        row.addValueMeta(new ValueMeta("Observed property", ValueMetaInterface.TYPE_STRING));
-	        row.addValueMeta(new ValueMeta("SamplingTime", ValueMetaInterface.TYPE_DATE));
-	        row.addValueMeta(new ValueMeta("Feature id", ValueMetaInterface.TYPE_STRING)); 
-	        row.addValueMeta(new ValueMeta("Feature name", ValueMetaInterface.TYPE_STRING));
-	        row.addValueMeta(new ValueMeta("Feature geometry", ValueMetaInterface.TYPE_GEOMETRY)); 
-	        row.addValueMeta(new ValueMeta("Measure", ValueMetaInterface.TYPE_NUMBER));
-	        row.addValueMeta(new ValueMeta("uom", ValueMetaInterface.TYPE_STRING)); 
-    	
+	}
+
+	/**
+	 * @param fieds the fieds to set
+	 */
+	public void setMetaInterfaceFieds(RowMetaInterface fieds) {
+		this.fieds = fieds;
+	}
+
+	/**
+	 * @return the fieds
+	 */
+	public RowMetaInterface getMetaInterfaceFieds() {
+		return fieds;
 	}
 
 }

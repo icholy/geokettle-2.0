@@ -3,8 +3,13 @@
  */
 package org.pentaho.di.ui.trans.steps.cswinput;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+
+import javax.servlet.ServletException;
 
 import org.eclipse.swt.SWT;
 
@@ -25,6 +30,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.pentaho.di.trans.TransMeta;
@@ -62,9 +68,6 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 	
 	private ComboVar wMethodCSW;
 	private FormData fdwMethod;
-	
-	private TextVar wGetCapabilitiesDoc;
-	
 	
 	private Group wRequestGroup;
 	private FormData fdRequestGroup;
@@ -134,6 +137,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 	private Group ElementSetGroup;
 	private FormData fdElementSetGroup;
 	private CSWReader cswParam;
+	private ArrayList<String> outSchemaContent;
 	
 	
 	public void setMethod(){
@@ -213,7 +217,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		props.setLook(wlUrl);
  		fdlUrl=new FormData();
 		fdlUrl.left = new FormAttachment(0, 0);
-		fdlUrl.top  = new FormAttachment(wStepname, 0);			
+		fdlUrl.top  = new FormAttachment(wStepname,margin);			
 		wlUrl.setLayoutData(fdlUrl);
 		
  		wUrl=new TextVar(transMeta, wGeneral, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
@@ -253,7 +257,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 	        
 		
 		
-		//wMethod[1].addListener(SWT.Selection, lsMethod);
+		//
 		
 		wlMethod=new Label(wGeneral, SWT.LEFT);
         wlMethod.setText(Messages.getString("CSWInputDialog.Method.Label"));
@@ -292,6 +296,10 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
         fdVersion.right= new FormAttachment(100, -1*margin);
         wVersion.setLayoutData(fdVersion);
         wVersion.add("1.0.0");
+        wVersion.add("2.0.0");
+        wVersion.add("2.0.1");
+        wVersion.add("2.0.2");
+        
         wVersion.addModifyListener(lsMod);
         
         /**
@@ -358,30 +366,75 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 
 		private void getCapabilities() {
 			cswParam=new CSWReader();
+			if (wVersion.getText().trim().length()==0){
+				MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
+				mb.setMessage(Messages.getString("CSWInputDialog.VersionRequired.DialogMessage")); //$NON-NLS-1$
+				mb.setText(Messages.getString("CSWInputDialog.VersionRequired.DialogMessage")); //$NON-NLS-1$
+				mb.open();
+				//e.printStackTrace();
+				return;
+			}
+			
 			cswParam.setVersion(wVersion.getText());
+			
+			if (wMethodCSW.getText().trim().length()==0){
+				MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
+				mb.setMessage(Messages.getString("CSWInputDialog.MethodRequired.DialogMessage")); //$NON-NLS-1$
+				mb.setText(Messages.getString("CSWInputDialog.MethodRequired.DialogMessage")); //$NON-NLS-1$
+				mb.open();
+				//e.printStackTrace();
+				return;
+			}
 			cswParam.setMethod(wMethodCSW.getText());
+			
 			try {
 				cswParam.setCatalogUrl(wUrl.getText());
 			} catch (MalformedURLException e) {
+				
+				MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
+				mb.setMessage(Messages.getString("CSWInputDialog.ErrorRequiredWellFormedCSWURL.DialogMessage")); //$NON-NLS-1$
+				mb.setText(Messages.getString("CSWInputDialog.ErrorRequiredWellFormedCSWURL.DialogMessage")); //$NON-NLS-1$
+				mb.open();
+				//e.printStackTrace();
+				return;
+				// TODO Auto-generated catch block
+				
+			}
+			try {					
+				
+				String output=cswParam.GetCapabilities();
+				outSchemaContent=cswParam.extractOutputSchemaFromCapabilitiesDocument(output);
+				//
+				Iterator<String> contentIT=outSchemaContent.iterator();
+				while (contentIT.hasNext()){
+					String item=contentIT.next();
+					wOutputSchemaLabel.add(item);
+				}
+				
+				//System.out.println(output);
+			} catch (KettleException e) {				
+				//e.printStackTrace();
+				MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
+				mb.setMessage(e.getMessage()); //$NON-NLS-1$
+				mb.setText(Messages.getString("CSWInputDialog.ErrorRetrievingOutSchema.DialogMessage")); //$NON-NLS-1$
+				mb.open();
+				return;
+			} catch (ServletException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
-			try {
-				String output=cswParam.GetCapabilities();
-				System.out.println(output);
-			} catch (KettleException e) {
+			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		};
+	};
 		wGetCapabilitiesButton.addListener(SWT.Selection, lsGetCapabilities);
 
         
         fdGetCapabilitiesButton = new FormData();
         fdGetCapabilitiesButton.left = new FormAttachment(wUrl, 3*margin);
         fdGetCapabilitiesButton.top = new FormAttachment(wStepname, margin);
-        //fdGetCapabilitiesButton.right = new FormAttachment(70, -margin);
+        //
         wGetCapabilitiesButton.setLayoutData(fdGetCapabilitiesButton);
  
 		fdGeneral = new FormData();
@@ -674,9 +727,10 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		fdwlOutputSchemaLabel.top  = new FormAttachment(ElementSetGroup, 3*margin);		
 		wlOutputSchemaLabel.setLayoutData(fdwlOutputSchemaLabel);
  		
-		wOutputSchemaLabel= new ComboVar(transMeta, wOutputGroup, SWT.BORDER | SWT.READ_ONLY);
- 			 
+		wOutputSchemaLabel= new ComboVar(transMeta, wOutputGroup, SWT.BORDER ); 			 
 		props.setLook(wOutputSchemaLabel);
+		
+		
  		fdwOutputSchemaLabel=new FormData();
  		fdwOutputSchemaLabel.left = new FormAttachment(wlOutputSchemaLabel, margin);
  		fdwOutputSchemaLabel.top  = new FormAttachment(ElementSetGroup, 3*margin);
