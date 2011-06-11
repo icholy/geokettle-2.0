@@ -36,6 +36,10 @@ public class CSWReader {
 	private String loginServiceUrl;
 	private String username;
 	private String password;
+	private String constraintLanguage;
+	private Integer startPosition;
+	private Integer maxRecords;
+	
 	private boolean simpleSearch;
 	private String keyword;
 	private String title;
@@ -94,7 +98,7 @@ public class CSWReader {
 		query += "service=CSW";
 		query += "&request=GetRecords";
 		query +="&typeNames=csw:Record";
-		query +="&constraintLanguage=CQL_TEXT";
+		query +="&constraintLanguage="+this.constraintLanguage;
 		query +="&resultType=results";
 		if (this.outputSchema!=null){
 			if (this.outputSchema.trim().length()!=0)
@@ -104,6 +108,8 @@ public class CSWReader {
 		query +="&elementSetName="+this.elementSet.toLowerCase();
 		query += "&version="+this.version;
 		query +="&constraint_language_version=2.0.2";
+		query +="&startPosition="+this.startPosition;
+		query +="&maxRecords="+this.maxRecords;
 		
 		return query;
 	}
@@ -510,6 +516,47 @@ public ArrayList<Element> findElement(Element element, String elementName)throws
 	 */
 	public void setOutputSchema(String outputSchema) {
 		this.outputSchema = outputSchema;
+	}
+	/**
+	 * @return the constraintLanguage
+	 */
+	public String getConstraintLanguage() {
+		return constraintLanguage;
+	}
+
+	/**
+	 * @param constraintLanguage the constraintLanguage to set
+	 */
+	public void setConstraintLanguage(String constraintLanguage) {
+		this.constraintLanguage = constraintLanguage;
+	}
+
+	/**
+	 * @return the startPosition
+	 */
+	public Integer getStartPosition() {
+		return startPosition;
+	}
+
+	/**
+	 * @param startPosition the startPosition to set
+	 */
+	public void setStartPosition(Integer startPosition) {
+		this.startPosition = startPosition;
+	}
+
+	/**
+	 * @return the maxRecords
+	 */
+	public Integer getMaxRecords() {
+		return maxRecords;
+	}
+
+	/**
+	 * @param maxRecords the maxRecords to set
+	 */
+	public void setMaxRecords(Integer maxRecords) {
+		this.maxRecords = maxRecords;
 	}
 	
 

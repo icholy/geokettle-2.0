@@ -45,21 +45,21 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 	
 	private CSWReader cswParam;
 	private RowMetaInterface fieds;
-	private String keyword;
+	//private String keyword;
 	
 	/**
 	 * @return the keyword
-	 */
+	 
 	public String getKeyword() {
 		return keyword;
-	}
+	}*/
 
 	/**
 	 * @param keyword the keyword to set
-	 */
+	 
 	public void setKeyword(String keyword) {
 		this.keyword = keyword;
-	}
+	}*/
 
 	/**
 	 * 
@@ -136,6 +136,23 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 			cswParam.setOutputSchema(XMLHandler.getTagValue(stepnode, "outputschema"));
 			cswParam.setTitle(XMLHandler.getTagValue(stepnode, "title"));
 			
+			cswParam.setConstraintLanguage(XMLHandler.getTagValue(stepnode, "constraintlanguage"));
+			
+			
+			try{
+				cswParam.setStartPosition(Integer.parseInt(XMLHandler.getTagValue(stepnode, "startposition")));
+			}catch(NumberFormatException e){
+				cswParam.setStartPosition(0);
+				//e.printStackTrace();
+			}
+			try{
+				cswParam.setMaxRecords(Integer.parseInt(XMLHandler.getTagValue(stepnode, "maxrecords")));
+			}catch(NumberFormatException e){
+				cswParam.setMaxRecords(10);
+				//e.printStackTrace();
+			}
+			
+			
 			Iterator<String> it= cswParam.getBBOX().keySet().iterator();
 			HashMap<String, Double> bbox=new HashMap<String, Double>();
 			while (it.hasNext()){
@@ -148,7 +165,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 			cswParam.setBBOX(bbox);
 		}
 		catch(Exception e){
-			throw new KettleXMLException(Messages.getString("SOSInputMeta.Exception.UnableToReadStepInformationFromXML"), e); //$NON-NLS-1$
+			throw new KettleXMLException(Messages.getString("CSWInputMeta.Exception.UnableToReadStepInformationFromXML"), e); //$NON-NLS-1$
 		}
 	}
 
@@ -170,6 +187,9 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 		retval.append("    " + XMLHandler.addTagValue("password", cswParam.getPassword()));
 		retval.append("    " + XMLHandler.addTagValue("loginurl", cswParam.getLoginServiceUrl()));
 		retval.append("    " + XMLHandler.addTagValue("outputschema", cswParam.getOutputSchema()));
+		retval.append("    " + XMLHandler.addTagValue("constraintlanguage", cswParam.getConstraintLanguage()));
+		retval.append("    " + XMLHandler.addTagValue("startposition", cswParam.getStartPosition()));
+		retval.append("    " + XMLHandler.addTagValue("maxrecords", cswParam.getMaxRecords()));
 		
 				
 			Iterator<String> it=cswParam.getBBOX().keySet().iterator();
