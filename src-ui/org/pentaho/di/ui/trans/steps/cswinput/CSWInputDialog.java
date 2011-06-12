@@ -321,7 +321,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
         fdwConstrainteLanguage.top  = new FormAttachment(wUrl, margin*3);
         fdwConstrainteLanguage.right= new FormAttachment(100, -1*margin);
         wConstrainteLanguage.setLayoutData(fdwConstrainteLanguage);
-        wConstrainteLanguage.add("OGC_FILTER");
+        wConstrainteLanguage.add("FILTER");
         wConstrainteLanguage.add("CQL_TEXT");
         
         

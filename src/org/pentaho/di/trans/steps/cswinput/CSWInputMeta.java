@@ -236,6 +236,10 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 		cswParam.setMethod(null);
 		cswParam.setStartDate(null);
 		cswParam.setEndDate(null);
+		cswParam.setConstraintLanguage(null);
+		cswParam.setStartPosition(1);
+		cswParam.setMaxRecords(10);
+		
 		try {
 			cswParam.setCatalogUrl("http://localhost/CSW");
 		} catch (MalformedURLException e) {

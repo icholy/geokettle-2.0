@@ -107,13 +107,28 @@ public class CSWReader {
 		
 		query +="&elementSetName="+this.elementSet.toLowerCase();
 		query += "&version="+this.version;
-		query +="&constraint_language_version=2.0.2";
+		query +="&constraint_language_version=1.0.0";
 		query +="&startPosition="+this.startPosition;
 		query +="&maxRecords="+this.maxRecords;
+		query=buildConstrainteRequest(query,"AnyText",this.keyword);
+		System.out.println(query);
+		
+		
 		
 		return query;
 	}
 	
+	/**
+	 * Build constraint query
+	 * */
+	private String buildConstrainteRequest(String query, String propertyName, String propertyValue){
+		String q;
+		q= query+"&CONSTRAINT="+propertyName+"+like+'"+propertyValue+"'";
+		/*q=query +"&CONSTRAINT=<ogc:Filter xmlns:ogc=http://www.opengis.net/ogc>";
+		q +="<ogc:PropertyIsLike wildCard=\"%\" singleChar=\"_\" escape=\"\\\"><ogc:PropertyName>"+propertyName+"</ogc:PropertyName><ogc:Literal>"+propertyValue+"</ogc:Literal></ogc:PropertyIsLike>";
+		q +="</ogc:Filter>";*/
+		return q;
+	}
 	/**
 	 * this method allows to retrieve outputschema information from capabilitie doc
 	 * @throws KettleException 
@@ -270,7 +285,7 @@ public ArrayList<Element> getColumns(Element element)throws ServletException, IO
 	// Traverse the tree
 	GetSubElement(element.getChildren()); 
 	
-	System.out.println("ParseResult--> "+parseResult.size());
+	//System.out.println("ParseResult--> "+parseResult.size());
 	
 	return parseResult;
 }
