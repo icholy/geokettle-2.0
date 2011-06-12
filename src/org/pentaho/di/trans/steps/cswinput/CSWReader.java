@@ -110,7 +110,7 @@ public class CSWReader {
 		query +="&constraint_language_version=1.0.0";
 		query +="&startPosition="+this.startPosition;
 		query +="&maxRecords="+this.maxRecords;
-		query=buildConstrainteRequest(query,"AnyText",this.keyword);
+		//query=buildConstrainteRequest(query,"AnyText",this.keyword);
 		System.out.println(query);
 		
 		
