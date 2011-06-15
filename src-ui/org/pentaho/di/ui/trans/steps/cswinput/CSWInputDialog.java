@@ -81,13 +81,10 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 	private Label wlReqLabel;
 	private FormData fdReqTextLabel;
 	
-	private Button wGetCapabilitiesButton;
-	private FormData fdGetCapabilitiesButton;
 	private Label wlOutputSchemaLabel;
 	private FormData fdwlOutputSchemaLabel;
 	private ComboVar wOutputSchemaLabel;
 	private FormData fdwOutputSchemaLabel;
-	private Listener lsGetCapabilities;
 	private Group wLoginGroup;
 	private TextVar wUser;
 	private FormData fdwUser;
@@ -161,6 +158,12 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 	private TableView wQueryElement;
 	private FormData fdwQueryElement;
 	private String output;
+	private Button wGetOutputSchemaButton;
+	private Listener lsGetOutputSchema;
+	private FormData fdGetOutputSchema;
+	private Button wGetQueryElements;
+	private Listener lsGGetQueryElements;
+	private FormData fdGGetQueryElements;
 	
 	public void setMethod(){
 		if (wMethod[0].getSelection() || wMethod[1].getSelection()){
@@ -248,7 +251,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		fdUrl=new FormData();
 		fdUrl.left = new FormAttachment(wlUrl, margin);
 		fdUrl.top  = new FormAttachment(wStepname, margin);
-		fdUrl.right= new FormAttachment(80, -1*margin);
+		fdUrl.right= new FormAttachment(100, -1*margin);
 		wUrl.setLayoutData(fdUrl);
 		
 		
@@ -413,8 +416,9 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
         
         /**getCapabilities button
          * 
-         * */
-        wGetCapabilitiesButton=new Button(wGeneral, SWT.PUSH);
+         * 
+        wGetCapabilitiesButton=new Button(wGeneral, SWT.PUSH );
+        wGetCapabilitiesButton.setVisible(false);
         wGetCapabilitiesButton.setText(Messages.getString("CSWInputDialog.Button.GetCapabilities"));
         lsGetCapabilities = new Listener()  {
 
@@ -508,7 +512,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
         fdGetCapabilitiesButton.top = new FormAttachment(wStepname, margin);
         //
         wGetCapabilitiesButton.setLayoutData(fdGetCapabilitiesButton);
- 
+ */
 		fdGeneral = new FormData();
 		fdGeneral.left  = new FormAttachment(0, margin);
 		fdGeneral.top   = new FormAttachment(wStepname, margin);
@@ -672,7 +676,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		colinfQueryElement[0]=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column1"),  
 				ColumnInfo.COLUMN_TYPE_TEXT,null, false);
  		colinfQueryElement[1]=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column2"),  
-				ColumnInfo.COLUMN_TYPE_CCOMBO,null, true);
+				ColumnInfo.COLUMN_TYPE_TEXT,null, true);
  		colinfQueryElement[2]=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column3"),  
 				ColumnInfo.COLUMN_TYPE_TEXT,null, false);
 		wQueryElement=new TableView(transMeta,wAdvancedGroup,
@@ -688,6 +692,33 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		fdwQueryElement.right = new FormAttachment(100, -margin);
 		
 		wQueryElement.setLayoutData(fdwQueryElement);
+		
+		/**
+		 * queryable Element button
+		 * */
+		
+		
+		
+ 		wGetQueryElements=new Button(wAdvancedGroup, SWT.PUSH);
+ 		wGetQueryElements.setText(Messages.getString("CSWInputDialog.Button.GetQueryElement"));
+        lsGGetQueryElements = new Listener()  {
+
+		public void handleEvent(Event e){getInformationFromCapabilitieDocument();}
+
+		
+	};
+		wGetQueryElements.addListener(SWT.Selection, lsGGetQueryElements);
+
+        
+        fdGGetQueryElements = new FormData();
+        fdGGetQueryElements.left = new FormAttachment(middle+middle, 2*margin);
+        fdGGetQueryElements.top = new FormAttachment(wQueryElement, 1*margin);
+        //
+        wGetQueryElements.setLayoutData(fdGGetQueryElements);
+		
+		/**
+		 * end queryable Element button
+		 * */
  		
 		//title
 		wlTitle=new Label(wAdvancedGroup, SWT.LEFT); 
@@ -895,19 +926,32 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		fdwOutputSchemaLabel=new FormData();
  		fdwOutputSchemaLabel.left = new FormAttachment(wlOutputSchemaLabel, margin);
  		fdwOutputSchemaLabel.top  = new FormAttachment(ElementSetGroup, 3*margin);
- 		fdwOutputSchemaLabel.right= new FormAttachment(100, -1*margin);
+ 		fdwOutputSchemaLabel.right= new FormAttachment(75, -1*margin);
  		wOutputSchemaLabel.setLayoutData(fdwOutputSchemaLabel);
  		
+ 		/**
+ 		 * Get output schema button
+ 		 * */
+ 		wGetOutputSchemaButton=new Button(wOutputGroup, SWT.PUSH);
+ 		wGetOutputSchemaButton.setText(Messages.getString("CSWInputDialog.Button.GetOuputSchema"));
+        lsGetOutputSchema = new Listener()  {
+
+		public void handleEvent(Event e){getInformationFromCapabilitieDocument();}		
+	};
+	wGetOutputSchemaButton.addListener(SWT.Selection, lsGetOutputSchema);
+
+        
+        fdGetOutputSchema = new FormData();
+        fdGetOutputSchema.left = new FormAttachment(wOutputSchemaLabel, 2*margin);
+        fdGetOutputSchema.top = new FormAttachment(ElementSetGroup, 3*margin);
+        //
+        wGetOutputSchemaButton.setLayoutData(fdGetOutputSchema);
+        
+        ///
+ 		
  		
 		
 		
-		
-		/*
-		wQueryElement.add("Titre");
-		wQueryElement.add("Abstract");		
-		wQueryElement.remove(0);
-		wQueryElement.setRowNums();*/
-		////
 		
 		
 		
@@ -1035,6 +1079,89 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		this.output=input.getCswParam().getCapabilitiesDoc();
 	
 		
+	}
+	
+	private void getInformationFromCapabilitieDocument() {
+		//if (cswParam==null){
+			cswParam=new CSWReader();
+		//}
+		
+		if (wVersion.getText().trim().length()==0){
+			MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
+			mb.setMessage(Messages.getString("CSWInputDialog.VersionRequired.DialogMessage")); //$NON-NLS-1$
+			mb.setText(Messages.getString("CSWInputDialog.VersionRequired.DialogMessage")); //$NON-NLS-1$
+			mb.open();
+			//e.printStackTrace();
+			return;
+		}
+		
+		cswParam.setVersion(wVersion.getText());
+		
+		if (wMethodCSW.getText().trim().length()==0){
+			MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
+			mb.setMessage(Messages.getString("CSWInputDialog.MethodRequired.DialogMessage")); //$NON-NLS-1$
+			mb.setText(Messages.getString("CSWInputDialog.MethodRequired.DialogMessage")); //$NON-NLS-1$
+			mb.open();
+			//e.printStackTrace();
+			return;
+		}
+		cswParam.setMethod(wMethodCSW.getText());
+		
+		try {
+			cswParam.setCatalogUrl(wUrl.getText());
+		} catch (MalformedURLException e) {
+			
+			MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
+			mb.setMessage(Messages.getString("CSWInputDialog.ErrorRequiredWellFormedCSWURL.DialogMessage")); //$NON-NLS-1$
+			mb.setText(Messages.getString("CSWInputDialog.ErrorRequiredWellFormedCSWURL.DialogMessage")); //$NON-NLS-1$
+			mb.open();
+			//e.printStackTrace();
+			return;
+			// TODO Auto-generated catch block
+			
+		}
+		try {					
+			
+			//output=cswParam.getCapabilitiesDoc();
+			//if (output==null){
+				output=cswParam.GetCapabilities();
+				//output=cswParam.getCapabilitiesDoc();
+				//System.out.println("nouvelle recharge");
+		//	}
+				
+			String[] queryElement=cswParam.getQueryableElement(cswParam.fromStringToJDOMDocument(output));
+			String[] comparisonOps=cswParam.getComparisonOperator(cswParam.fromStringToJDOMDocument(output));				
+			ColumnInfo col=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column1"),  
+					ColumnInfo.COLUMN_TYPE_CCOMBO,queryElement, true);
+			wQueryElement.setColumnInfo(0, col);
+			
+			col=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column2"),  
+					ColumnInfo.COLUMN_TYPE_CCOMBO,comparisonOps, true);
+			wQueryElement.setColumnInfo(1, col);
+			
+			outSchemaContent=cswParam.extractOutputSchemaFromCapabilitiesDocument(output);
+			//
+			Iterator<String> contentIT=outSchemaContent.iterator();
+			while (contentIT.hasNext()){
+				String item=contentIT.next();
+				wOutputSchemaLabel.add(item);
+			}
+			
+			//System.out.println(output);
+		} catch (KettleException e) {				
+			//e.printStackTrace();
+			MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
+			mb.setMessage(e.getMessage()); //$NON-NLS-1$
+			mb.setText(Messages.getString("CSWInputDialog.ErrorRetrievingOutSchema.DialogMessage")); //$NON-NLS-1$
+			mb.open();
+			return;
+		} catch (ServletException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private void cancel()
