@@ -18,6 +18,7 @@ import javax.servlet.ServletException;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.jdom.DataConversionException;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
@@ -49,7 +50,12 @@ public class CSWReader {
 	private String elementSet;
 	private String outputSchema;
 	private ArrayList<Element> parseResult;
+	private ArrayList<String[]> advancedRequestParam;
+	
+	private Document XMLRequestResult;
 	public Element el;
+	private String capabilitiesDoc;
+	
 	
 	//private String profile; 
 	
@@ -110,25 +116,136 @@ public class CSWReader {
 		query +="&constraint_language_version=1.0.0";
 		query +="&startPosition="+this.startPosition;
 		query +="&maxRecords="+this.maxRecords;
-		//query=buildConstrainteRequest(query,"AnyText",this.keyword);
-		System.out.println(query);
-		
-		
+		query=buildConstrainteRequest(query);
+		System.out.println(query);		
 		
 		return query;
 	}
 	
 	/**
+	 * return number of records return by a GetRecord request
+	 * */
+	
+	public int getNumberOfRecord(Document doc,String pattern) throws KettleException{
+		Element el2;
+		int nb=-1;
+		try {
+			el2 = findSubElement(doc.getRootElement(),pattern);
+			nb=el2.getAttribute("numberOfRecordsReturned").getIntValue();
+			
+		} catch (ServletException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (DataConversionException e) {
+			// TODO Auto-generated catch block
+			throw new KettleException(e);
+			//e.printStackTrace();
+		}
+		//System.out.println("nb result"+nb);
+		return nb;
+		
+	}
+	
+	/**
 	 * Build constraint query
 	 * */
-	private String buildConstrainteRequest(String query, String propertyName, String propertyValue){
-		String q;
-		q= query+"&CONSTRAINT="+propertyName+"+like+'"+propertyValue+"'";
-		/*q=query +"&CONSTRAINT=<ogc:Filter xmlns:ogc=http://www.opengis.net/ogc>";
-		q +="<ogc:PropertyIsLike wildCard=\"%\" singleChar=\"_\" escape=\"\\\"><ogc:PropertyName>"+propertyName+"</ogc:PropertyName><ogc:Literal>"+propertyValue+"</ogc:Literal></ogc:PropertyIsLike>";
-		q +="</ogc:Filter>";*/
+	private String buildConstrainteRequest(String query){
+		String q=query;
+		if (this.simpleSearch==false){
+			if (keyword.trim().length()>0)
+				q += "&CONSTRAINT=AnyText"+"+like+'"+this.keyword+"'";
+		}else{
+			q +="&CONSTRAINT=";
+			
+			for(int i=0;i<this.advancedRequestParam.size();i++){
+				String[] s=advancedRequestParam.get(i);
+				//
+				String temp="";
+				for (int j=0;j<3;j++){
+					String tmpValue=s[j];
+					if (j==1){
+						if (tmpValue.equalsIgnoreCase("EqualTo")){
+							tmpValue="=";
+						}
+					}
+					if (j==2){
+						temp +="'"+tmpValue+"'+";
+					}else{
+						temp +=tmpValue+"+";
+					}					
+				}
+				q +=temp;
+				if (i!=advancedRequestParam.size()-1){
+					q +="+AND+";
+				}
+				
+			}
+		}	
+		
 		return q;
 	}
+	
+	/**
+	 * extract Comparison operators from capabilities doc
+	 * */
+	public String[] getComparisonOperator(Document doc){
+		ArrayList<String> queryableElement=new ArrayList<String>();
+		ArrayList<Element> SectionComparisonOp;
+		try {
+			SectionComparisonOp = findElement(doc.getRootElement(), "ComparisonOperator");
+			for(Element e:SectionComparisonOp){
+				queryableElement.add(e.getText());
+				//System.out.println("zarbi "+e.getText());
+			}
+		} catch (ServletException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		return queryableElement.toArray(new String[queryableElement.size()]);
+	}
+	
+	/**
+	 * extract queryable element from capabilities document
+	 * */
+	
+	public String[] getQueryableElement(Document doc){
+		ArrayList<String> queryableElement=new ArrayList<String>();
+		try {
+			ArrayList<Element> SectionOperation=findElement(doc.getRootElement(), "Operation");
+			for(Element el:SectionOperation){
+				if (el.getAttribute("name").getValue().equalsIgnoreCase("GetRecords")){
+					System.out.println("oooook");
+					ArrayList<Element> sectionConstraint=findElement(el, "Constraint");
+					for(Element s:sectionConstraint){
+						Iterator<?> it=s.getChildren().iterator();
+						while (it.hasNext()){
+							Element c=(Element)it.next();
+							queryableElement.add(c.getText());
+							//System.out.println("element "+c.getText());
+						}
+						
+					}
+					
+				}
+			}
+		} catch (ServletException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return queryableElement.toArray(new String[queryableElement.size()]);
+		
+	}
+	
 	/**
 	 * this method allows to retrieve outputschema information from capabilitie doc
 	 * @throws KettleException 
@@ -139,7 +256,7 @@ public class CSWReader {
 		try {
 			rootElement = fromStringToJDOMDocument(capabilitiesDoc).getRootElement();
 		} catch (KettleException e) {
-			throw new KettleException("Error parsing CSW response...", e);
+			throw new KettleException("Error parsing CSW capabilities document...", e);
 			//e.printStackTrace();
 		}
 		
@@ -195,7 +312,8 @@ public class CSWReader {
 			pattern="Record";
 		}
 		
-		Element rootElement=fromStringToJDOMDocument(GetRecords()).getRootElement();
+		//Element rootElement=fromStringToJDOMDocument(GetRecords()).getRootElement();
+		Element rootElement=this.XMLRequestResult.getRootElement();
 		ArrayList<Element> el=this.findElement(rootElement,pattern);
 		Iterator<?> it=el.iterator();
 		while (it.hasNext()){
@@ -205,7 +323,7 @@ public class CSWReader {
 			while (it2.hasNext()){
 				Element c=it2.next();					
 				o.add(c.getText());
-				System.out.println(c.getText());
+				//System.out.println(c.getText());
 			}	
 			recordList.add(o);
 		}
@@ -236,7 +354,7 @@ public class CSWReader {
 		catch (KettleException e) {
 			throw new KettleException("Error parsing CSW GetRecord...", e);
 		}
-		System.out.println(response);
+		System.out.println(response);		
 		return response;
 	}
 	
@@ -251,6 +369,7 @@ public class CSWReader {
 		}catch(Exception e){
 			throw new KettleException("Error parsing CSW response...", e);
 		}
+		setXMLRequestResult(doc);
 		return doc;		
 	}
 	
@@ -258,13 +377,15 @@ public class CSWReader {
 	 * GetCapabilities method
 	 * */
 	public String GetCapabilities()throws KettleException {
-		return CSWGET(buildGetCapabilitiesGETQuery());
+		capabilitiesDoc=CSWGET(buildGetCapabilitiesGETQuery());
+		return capabilitiesDoc;
 	}
 
 public Element findSubElement(Element element, String elementName)throws ServletException, IOException{		
 		boolean trouve=false;
 		List<?> list=element.getChildren();	
 		Iterator<?> it=list.iterator();
+		
 		while (it.hasNext()&& (trouve==false)){
 			Element courant=(Element)it.next();
 			if (courant.getQualifiedName().equalsIgnoreCase(elementName)){
@@ -572,6 +693,48 @@ public ArrayList<Element> findElement(Element element, String elementName)throws
 	 */
 	public void setMaxRecords(Integer maxRecords) {
 		this.maxRecords = maxRecords;
+	}
+
+	/**
+	 * @param xMLRequestResult the xMLRequestResult to set
+	 */
+	public void setXMLRequestResult(Document xMLRequestResult) {
+		XMLRequestResult = xMLRequestResult;
+	}
+
+	/**
+	 * @return the xMLRequestResult
+	 */
+	public Document getXMLRequestResult() {
+		return XMLRequestResult;
+	}
+
+	/**
+	 * @param advancedRequestParam the advancedRequestParam to set
+	 */
+	public void setAdvancedRequestParam(ArrayList<String[]> advancedRequestParam) {
+		this.advancedRequestParam = advancedRequestParam;
+	}
+
+	/**
+	 * @return the advancedRequestParam
+	 */
+	public ArrayList<String[]> getAdvancedRequestParam() {
+		return advancedRequestParam;
+	}
+
+	/**
+	 * @return the capabilitiesDoc
+	 */
+	public String getCapabilitiesDoc() {
+		return capabilitiesDoc;
+	}
+
+	/**
+	 * @param capabilitiesDoc the capabilitiesDoc to set
+	 */
+	public void setCapabilitiesDoc(String capabilitiesDoc) {
+		this.capabilitiesDoc = capabilitiesDoc;
 	}
 	
 

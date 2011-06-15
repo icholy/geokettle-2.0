@@ -5,6 +5,7 @@ package org.pentaho.di.trans.steps.cswinput;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -14,6 +15,7 @@ import javax.servlet.ServletException;
 
 import org.jdom.Element;
 import org.pentaho.di.core.CheckResultInterface;
+import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Counter;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
@@ -163,6 +165,27 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 				
 			}
 			cswParam.setBBOX(bbox);
+			
+			
+			///
+			Node queriesNode = XMLHandler.getSubNode(stepnode, "queries");
+			int nrQuery = XMLHandler.countNodes(queriesNode, "query");
+
+			//allocateObsProps(nrObsProps);
+			ArrayList<String[]> queryList= new ArrayList<String[]>();
+			
+
+			for (int i = 0; i < nrQuery; i++) {
+				String[] s=new String[3];
+				Node onode = XMLHandler.getSubNodeByNr(queriesNode, "query", i);
+				s[0]=XMLHandler.getTagValue(onode, "operand");
+				s[1]=XMLHandler.getTagValue(onode, "operator");
+				s[2]=XMLHandler.getTagValue(onode, "value");
+				queryList.add(s);
+				//observedProperties[i] = XMLHandler.getTagValue(onode, "id");
+			}
+			
+			cswParam.setAdvancedRequestParam(queryList);
 		}
 		catch(Exception e){
 			throw new KettleXMLException(Messages.getString("CSWInputMeta.Exception.UnableToReadStepInformationFromXML"), e); //$NON-NLS-1$
@@ -192,12 +215,38 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 		retval.append("    " + XMLHandler.addTagValue("maxrecords", cswParam.getMaxRecords()));
 		
 				
-			Iterator<String> it=cswParam.getBBOX().keySet().iterator();
-			while(it.hasNext()) {
-				String bbName=it.next();				
-				retval.append("    " +XMLHandler.addTagValue("BBOX_"+bbName, cswParam.getBBOX().get(bbName)));
+		Iterator<String> it=cswParam.getBBOX().keySet().iterator();
+		while(it.hasNext()) {
+			String bbName=it.next();				
+			retval.append("    " +XMLHandler.addTagValue("BBOX_"+bbName, cswParam.getBBOX().get(bbName)));
+			
+		}
+		
+		//
+		retval.append("    <queries>").append(Const.CR);
+        if (cswParam.getAdvancedRequestParam()!=null){
+			for (String[] s:cswParam.getAdvancedRequestParam()) {
+				retval.append("      <query>").append(Const.CR);
+				int j=0;
+				String tagName=null;
+				for (String c:s){
+					if (j==0){
+						tagName="operand";
+					}else
+					if (j==1){
+						tagName="operator";
+					}else
+					if (j==2){
+						tagName="value";
+					}
+					retval.append("        ").append(XMLHandler.addTagValue(tagName, c));
+					j++;
+				}
 				
+				retval.append("      </query>").append(Const.CR);
 			}
+        }
+		retval.append("    </queries>").append(Const.CR);
         
 		//retval.append("    </BBOX>").append(Const.CR);		
 		return retval.toString();
@@ -232,27 +281,30 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 	public void setDefault() {
 		// TODO Auto-generated method stub
 		cswParam.setKeyword(null);
-		cswParam.setVersion(null);
-		cswParam.setMethod(null);
+		cswParam.setVersion("2.0.0");
+		cswParam.setMethod("GET");
 		cswParam.setStartDate(null);
 		cswParam.setEndDate(null);
-		cswParam.setConstraintLanguage(null);
+		cswParam.setConstraintLanguage("CQL_TEXT");
 		cswParam.setStartPosition(1);
 		cswParam.setMaxRecords(10);
+		cswParam.setAdvancedRequestParam(null);
 		
 		try {
-			cswParam.setCatalogUrl("http://localhost/CSW");
+			cswParam.setCatalogUrl("http://catalog-server/CSW");
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 		HashMap<String,Double> bbox=new HashMap<String, Double>();
-		bbox.put("NORTH", new Double(0));
-		bbox.put("SOUTH", new Double(0));
-		bbox.put("EAST", new Double(0));
-		bbox.put("WEST", new Double(0));
+		bbox.put("NORTH", new Double(90));
+		bbox.put("SOUTH", new Double(-90));
+		bbox.put("EAST", new Double(180));
+		bbox.put("WEST", new Double(-180));
 		cswParam.setBBOX(bbox);
+		
+		cswParam.setElementSet("Brief");
 
 	}
 
@@ -284,17 +336,27 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 					pattern="csw:Record";
 				}
 				
-				//String str=this.cswParam.GetRecords();
-				//Element rootElement=cswParam.fromStringToJDOMDocument(str).getRootElement();
-				Element el=this.cswParam.findSubElement(cswParam.fromStringToJDOMDocument(cswParam.GetRecords()).getRootElement(),pattern);
-				Iterator<Element> it=cswParam.getColumns(el).iterator();
-				while (it.hasNext()){
-					Element c=it.next();					
-					row.addValueMeta(new ValueMeta(c.getName(), ValueMetaInterface.TYPE_STRING));
-				}				
+				cswParam.setXMLRequestResult(cswParam.fromStringToJDOMDocument(cswParam.GetRecords()));
+				
+				//int p=cswParam.getNumberOfRecord(cswParam.getXMLRequestResult(), "csw:SearchResults");
+				//System.out.println("<--->"+p);
+				
+				/*//String str=this.cswParam.GetRecords();
+				Element el2=this.cswParam.findSubElement(cswParam.fromStringToJDOMDocument(cswParam.GetRecords()).getRootElement(),"csw:SearchResults");
+				System.out.println(el2.toString());
+				System.out.println(el2.getAttribute("numberOfRecordsReturned").getValue());*/
+				//
+				//Element el=this.cswParam.findSubElement(cswParam.fromStringToJDOMDocument(cswParam.GetRecords()).getRootElement(),pattern);
+				if (cswParam.getNumberOfRecord(cswParam.getXMLRequestResult(), "csw:SearchResults")>0){
+					Element el=this.cswParam.findSubElement(cswParam.getXMLRequestResult().getRootElement(),pattern);
+					Iterator<Element> it=cswParam.getColumns(el).iterator();
+					while (it.hasNext()){
+						Element c=it.next();					
+						row.addValueMeta(new ValueMeta(c.getName(), ValueMetaInterface.TYPE_STRING));
+					}				
 				//
 				fieds=row;
-				
+				}				
 				
 			} catch (KettleException e) {
 				

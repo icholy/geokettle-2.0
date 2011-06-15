@@ -32,6 +32,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+
+
 import org.eclipse.swt.widgets.Text;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.BaseStepMeta;
@@ -39,7 +41,9 @@ import org.pentaho.di.trans.step.StepDialogInterface;
 import org.pentaho.di.trans.steps.cswinput.CSWInputMeta;
 import org.pentaho.di.trans.steps.cswinput.CSWReader;
 import org.pentaho.di.trans.steps.cswinput.Messages;
+import org.pentaho.di.ui.core.widget.ColumnInfo;
 import org.pentaho.di.ui.core.widget.ComboVar;
+import org.pentaho.di.ui.core.widget.TableView;
 import org.pentaho.di.ui.core.widget.TextVar;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 import org.pentaho.di.core.Const;
@@ -154,7 +158,9 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 	private FormData fdwMaxRecord;
 	private Group wDateGroup;
 	private FormData fdDateGroup;
-	
+	private TableView wQueryElement;
+	private FormData fdwQueryElement;
+	private String output;
 	
 	public void setMethod(){
 		if (wMethod[0].getSelection() || wMethod[1].getSelection()){
@@ -353,6 +359,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		
 		
         wLoginGroup = new Group(wGeneral, SWT.SHADOW_NONE);
+        
 		props.setLook(wLoginGroup);
 		wLoginGroup.setText(Messages.getString("CSWInputDialog.Login.Group"));
 		FormLayout LoginGroupLayout = new FormLayout();
@@ -381,7 +388,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		fdwUser=new FormData();
 		fdwUser.left = new FormAttachment(wlUser, margin);
 		fdwUser.top  = new FormAttachment(0, margin);
-		fdwUser.right= new FormAttachment(100, -1*margin);
+		fdwUser.right= new FormAttachment(middle, -1*margin);
 		wUser.setLayoutData(fdwUser); 
 		
 		wlPassword= new Label(wLoginGroup, SWT.LEFT);
@@ -389,8 +396,8 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		props.setLook(wlPassword);
  		
 		fdwlPassword=new FormData();
-		fdwlPassword.left = new FormAttachment(0, margin);
-		fdwlPassword.top  = new FormAttachment(wUser, margin);		
+		fdwlPassword.left = new FormAttachment(wUser, 10*margin);
+		fdwlPassword.top  = new FormAttachment(0, margin);		
 		wlPassword.setLayoutData(fdwlPassword); 
 		
 		wPassword=new TextVar(transMeta, wLoginGroup, SWT.SINGLE | SWT.PASSWORD |SWT.LEFT | SWT.BORDER);
@@ -398,8 +405,8 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		wPassword.addModifyListener(lsMod);
 		fdwPassword=new FormData();
 		fdwPassword.left = new FormAttachment(wlPassword, margin);
-		fdwPassword.top  = new FormAttachment(wUser, margin);
-		fdwPassword.right= new FormAttachment(100, -1*margin);
+		fdwPassword.top  = new FormAttachment(0, margin);
+		fdwPassword.right= new FormAttachment(100, -30*margin);
 		wPassword.setLayoutData(fdwPassword); 
 		
 		
@@ -409,7 +416,9 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
          * */
         wGetCapabilitiesButton=new Button(wGeneral, SWT.PUSH);
         wGetCapabilitiesButton.setText(Messages.getString("CSWInputDialog.Button.GetCapabilities"));
-        lsGetCapabilities = new Listener()  {public void handleEvent(Event e){getCapabilities();}
+        lsGetCapabilities = new Listener()  {
+
+		public void handleEvent(Event e){getCapabilities();}
 
 		private void getCapabilities() {
 			cswParam=new CSWReader();
@@ -449,7 +458,23 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 			}
 			try {					
 				
-				String output=cswParam.GetCapabilities();
+				//output=cswParam.getCapabilitiesDoc();
+				if (output==null){
+					output=cswParam.GetCapabilities();
+					//output=cswParam.getCapabilitiesDoc();
+					System.out.println("nouvelle recharge");
+				}
+					
+				String[] queryElement=cswParam.getQueryableElement(cswParam.fromStringToJDOMDocument(output));
+				String[] comparisonOps=cswParam.getComparisonOperator(cswParam.fromStringToJDOMDocument(output));				
+				ColumnInfo col=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column1"),  
+						ColumnInfo.COLUMN_TYPE_CCOMBO,queryElement, true);
+				wQueryElement.setColumnInfo(0, col);
+				
+				col=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column2"),  
+						ColumnInfo.COLUMN_TYPE_CCOMBO,comparisonOps, true);
+				wQueryElement.setColumnInfo(1, col);
+				
 				outSchemaContent=cswParam.extractOutputSchemaFromCapabilitiesDocument(output);
 				//
 				Iterator<String> contentIT=outSchemaContent.iterator();
@@ -532,28 +557,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		fdReqText.right= new FormAttachment(100, -60*margin);
  		wReqText.setLayoutData(fdReqText);
  		
- 		/**
- 		 * getRecord button
- 		 * **/
- 		/*wGetRecordButton=new Button(wRequestGroup, SWT.PUSH);
- 		wGetRecordButton.setText(Messages.getString("CSWInputDialog.Button.GetRecord"));
-        lsGetCapabilities = new Listener()  {public void handleEvent(Event e){setObservedProperties();}
-
-		private void setObservedProperties() {
-			// TODO Auto-generated method stub
-			
-			
-			
-		}	};
-		wGetRecordButton.addListener(SWT.Selection, lsGetCapabilities);*/
-
-        
-       /* fdwGetRecordButton = new FormData();
-        fdwGetRecordButton.left = new FormAttachment(wReqText, 3*margin);
-        fdwGetRecordButton.top = new FormAttachment(0, margin);
-        fdwGetRecordButton.right = new FormAttachment(100, -margin);
-        wGetRecordButton.setLayoutData(fdwGetRecordButton);
-        wGetRecordButton.setVisible(false);*/
+ 	
         //
         
         /**
@@ -631,10 +635,13 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
             public void widgetSelected(SelectionEvent e) 
             {
             	input.setChanged();
-            	if (wChkAdvanced.getSelection()==true)
+            	if (wChkAdvanced.getSelection()==true){
             		wAdvancedGroup.setEnabled(true);
-            	else
+            	}else
+            	if (wChkAdvanced.getSelection()==false){
             		wAdvancedGroup.setEnabled(false);
+            	}           	
+            		
             }
         }
  		);
@@ -643,7 +650,8 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		 * advanced query group
  		 * **/
  		wAdvancedGroup = new Group(wRequestGroup, SWT.SHADOW_NONE);
- 		wAdvancedGroup.setEnabled(false);
+ 		
+ 		//
  		props.setLook(wAdvancedGroup);
  		wAdvancedGroup.setText(Messages.getString("CSWInputDialog.AdvancedQuery.Tab"));
 		FormLayout AdvancedGroupLayout = new FormLayout();
@@ -656,6 +664,30 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		fdAvancedGroup.top   = new FormAttachment(wChkAdvanced, 4*margin);
 		fdAvancedGroup.right = new FormAttachment(100, -margin);
 		wAdvancedGroup.setLayoutData(fdAvancedGroup);
+		
+		
+////
+ 		
+ 		ColumnInfo[] colinfQueryElement=new ColumnInfo[3];
+ 		colinfQueryElement[0]=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column1"),  
+				ColumnInfo.COLUMN_TYPE_TEXT,null, false);
+ 		colinfQueryElement[1]=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column2"),  
+				ColumnInfo.COLUMN_TYPE_CCOMBO,null, true);
+ 		colinfQueryElement[2]=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column3"),  
+				ColumnInfo.COLUMN_TYPE_TEXT,null, false);
+		wQueryElement=new TableView(transMeta,wAdvancedGroup,
+							  SWT.BORDER | SWT.MULTI | SWT.V_SCROLL, 
+							  colinfQueryElement, 
+							  3,  
+							  lsMod,
+							  props
+							  );
+		fdwQueryElement=new FormData();
+		fdwQueryElement.left  = new FormAttachment(0, 0);
+		fdwQueryElement.top   = new FormAttachment(0, 2*margin);
+		fdwQueryElement.right = new FormAttachment(100, -margin);
+		
+		wQueryElement.setLayoutData(fdwQueryElement);
  		
 		//title
 		wlTitle=new Label(wAdvancedGroup, SWT.LEFT); 
@@ -663,16 +695,19 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		props.setLook(wlTitle);
  		fdwlTitle=new FormData();
  		fdwlTitle.left = new FormAttachment(0, margin);
- 		fdwlTitle.top  = new FormAttachment(0, margin); 		
+ 		fdwlTitle.top  = new FormAttachment(wQueryElement, 2*margin); 		
  		wlTitle.setLayoutData(fdwlTitle);
+ 		wlTitle.setVisible(false);
+ 		
  		
 		wTitle=new TextVar(transMeta, wAdvancedGroup, SWT.BORDER | SWT.SINGLE); 
 		props.setLook(wTitle);
  		fdTitle=new FormData();
  		fdTitle.left = new FormAttachment(wlTitle, margin);
- 		fdTitle.top  = new FormAttachment(0, margin);
+ 		fdTitle.top  = new FormAttachment(wQueryElement, 2*margin);
  		fdTitle.right= new FormAttachment(100, -1*margin);
  		wTitle.setLayoutData(fdTitle);
+ 		wTitle.setVisible(false);
 		
  		/**
  		 * 
@@ -862,7 +897,16 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		fdwOutputSchemaLabel.top  = new FormAttachment(ElementSetGroup, 3*margin);
  		fdwOutputSchemaLabel.right= new FormAttachment(100, -1*margin);
  		wOutputSchemaLabel.setLayoutData(fdwOutputSchemaLabel);
+ 		
+ 		
 		
+		
+		
+		/*
+		wQueryElement.add("Titre");
+		wQueryElement.add("Abstract");		
+		wQueryElement.remove(0);
+		wQueryElement.setRowNums();*/
 		////
 		
 		
@@ -958,6 +1002,8 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		
 		wChkAdvanced.setSelection(input.getCswParam().isSimpleSearch());
 		
+		wAdvancedGroup.setEnabled(wChkAdvanced.getSelection());
+		
 			
 		if (!Const.isEmpty(input.getCswParam().getElementSet())){
 			String value=input.getCswParam().getElementSet();
@@ -976,6 +1022,17 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		wBoxSouth.setText(input.getCswParam().getBBOX().get("SOUTH").toString());
 		wBoxEast.setText(input.getCswParam().getBBOX().get("EAST").toString());
 		wBoxWest.setText(input.getCswParam().getBBOX().get("WEST").toString());
+		
+		ArrayList<String[]> advancedElementArrayList=input.getCswParam().getAdvancedRequestParam();
+		if (advancedElementArrayList!=null){
+			wQueryElement.removeAll();
+			for(String[]s:advancedElementArrayList){
+				wQueryElement.add(s);
+			}
+			wQueryElement.remove(0);
+			wQueryElement.setRowNums();
+		}
+		this.output=input.getCswParam().getCapabilitiesDoc();
 	
 		
 	}
@@ -1023,6 +1080,20 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		bbox.put("EAST", Double.parseDouble(wBoxEast.getText()));
 		bbox.put("WEST", Double.parseDouble(wBoxWest.getText()));
 		cswParam.setBBOX(bbox);
+		cswParam.setCapabilitiesDoc(this.output);
+		
+		/**
+		 * */
+		wQueryElement.removeEmptyRows();
+		ArrayList<String[]> advancedElementArrayList=new ArrayList<String[]>();		
+		for (int i=0;i<wQueryElement.getItemCount();i++){
+			String []s=wQueryElement.getItem(i);
+			advancedElementArrayList.add(s);		
+		}
+		cswParam.setAdvancedRequestParam(advancedElementArrayList);
+		
+		/**
+		 * */
 		
 		try {
 			cswParam.setCatalogUrl(wUrl.getText());
@@ -1034,6 +1105,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		
 		if (Const.isEmpty(wStepname.getText())) return;
 		stepname = wStepname.getText(); // return value
+		
 		
 		
 		//input.setKeyword(wReqText.getText());

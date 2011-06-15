@@ -64,7 +64,7 @@
 	
 	  <target name="compile-core" depends="init" description="compile the core source code " >
 	  	<echo>Compiling GeoKettle CORE...</echo>
-        <javac fork="true"
+        <javac 
             destdir="${classes-core}"
             target="5"
             source="5"
@@ -84,7 +84,7 @@
 	
 	  <target name="compile-db" depends="compile-core" description="compile the db source code " >
 	  	<echo>Compiling GeoKettle DB...</echo>
-      <javac fork="true"
+      <javac 
           destdir="${classes-db}"
           target="5"
           source="5"
@@ -106,7 +106,7 @@
 
 	  <target name="compile" depends="compile-db" description="compile the source " >
 	  	<echo>Compiling GeoKettle ...</echo>
-        <javac fork="true"
+        <javac 
             destdir="${classes}"
             target="5"
             source="5"
@@ -137,7 +137,7 @@
                optimize="${optimize}"
 	    	   excludes="be/ibridge/kettle/schema/**/* be/ibridge/kettle/menu/**/*"
 	    	   memorymaximumsize="256M"
-	    	   fork="true"
+	    	   fork="false"
 	    	>
 	    	<src path="${src-ui}"/>
 	    	
