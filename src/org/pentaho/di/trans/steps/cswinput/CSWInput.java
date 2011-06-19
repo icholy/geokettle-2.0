@@ -17,7 +17,7 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
-import org.pentaho.di.trans.steps.sosinput.Messages;
+
 
 
 
@@ -41,10 +41,17 @@ public class CSWInput extends BaseStep implements StepInterface {
 		if (first){ 
         	// we just got started
             first = false;
-
-            data.outputRowMeta = new RowMeta();
-            data.outputRowMeta=meta.getMetaInterfaceFieds();
-           // meta.getFields(data.outputRowMeta, getStepname(), null, null, this);                       		                          
+           
+           
+           data.outputRowMeta=meta.getMetaInterfaceFieds();
+           
+            if (data.outputRowMeta==null){
+            	data.outputRowMeta = new RowMeta();
+            	 meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
+            }else{
+            	//
+            }
+                                  		                          
         }
 		
 		try {
@@ -53,7 +60,7 @@ public class CSWInput extends BaseStep implements StepInterface {
 	    		
 	    		for(ArrayList<Object> objectList:rows){
 	    			Object[] row=objectList.toArray(new Object[data.outputRowMeta.size()]);
-	    			System.out.println("taille "+row.length);
+	    			//
 	    			putRow(data.outputRowMeta, row);	    			
 	    		}  
 	    	}
@@ -85,7 +92,7 @@ public class CSWInput extends BaseStep implements StepInterface {
 			while (!isStopped() && processRow(meta, data) );
 		}
 		catch(Exception e){
-			logError(Messages.getString("SOSInput.Log.Error.UnexpectedError")+" : "+e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
+			logError(Messages.getString("CSWInput.Log.Error.UnexpectedError")+" : "+e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
             logError(Const.getStackTracker(e));
             setErrors(1);
 			stopAll();

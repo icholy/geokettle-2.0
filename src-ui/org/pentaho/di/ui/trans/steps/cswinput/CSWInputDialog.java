@@ -55,6 +55,7 @@ import org.pentaho.di.core.exception.KettleException;
  */
 public class CSWInputDialog extends BaseStepDialog implements StepDialogInterface
 {
+	
 	private CSWInputMeta input;
 	private Group wGeneral;
 	private Label wlUrl;
@@ -1208,6 +1209,8 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		bbox.put("WEST", Double.parseDouble(wBoxWest.getText()));
 		cswParam.setBBOX(bbox);
 		cswParam.setCapabilitiesDoc(this.output);
+		
+		
 		
 		/**
 		 * */

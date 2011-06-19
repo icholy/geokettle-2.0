@@ -44,6 +44,12 @@ import org.w3c.dom.Node;
  */
 public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 	
+	public static final String DEFAULT_PROFILE = "http://www.opengis.net/cat/csw/2.0.2";
+	private static final String CSWBRIEFRECORD = "csw:BriefRecord";
+	private static final String CSWSUMMARYRECORD = "csw:SummaryRecord";
+	private static final String CSWFULLRECORD = "csw:Record";
+	public static final String ISOTC211_2005_PROFILE = "http://www.isotc211.org/2005/gmd";
+	private static final String GMD_MD_Metadata = "gmd:MD_Metadata";
 	
 	private CSWReader cswParam;
 	private RowMetaInterface fieds;
@@ -322,68 +328,121 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 		return cswParam;
 	}
 	
-	public void getFields(RowMetaInterface row, String name, RowMetaInterface info[], StepMeta nextStep, VariableSpace space){
-    		
-			try {
-				String pattern=null;
+	/**
+	 * 
+	 * */
+	private void setProfileBasedOnOutputSchemaValue(){
+		if(cswParam.getOutputSchema()!=null){
+			String outputText=cswParam.getOutputSchema();
+			
+			//if output schema is default CSW profile 
+			if (outputText.equalsIgnoreCase(DEFAULT_PROFILE)){
 				if (cswParam.getElementSet().equalsIgnoreCase("brief")){
-					pattern="csw:BriefRecord";
+					cswParam.setProfile(CSWBRIEFRECORD);
 				}else
 				if (cswParam.getElementSet().equalsIgnoreCase("summary")){
-					pattern="csw:SummaryRecord";
+					cswParam.setProfile(CSWSUMMARYRECORD);
 				}else
 				if(cswParam.getElementSet().equalsIgnoreCase("full")){
-					pattern="csw:Record";
+					cswParam.setProfile(CSWFULLRECORD);
 				}
-				
-				cswParam.setXMLRequestResult(cswParam.fromStringToJDOMDocument(cswParam.GetRecords()));
-				
-				//int p=cswParam.getNumberOfRecord(cswParam.getXMLRequestResult(), "csw:SearchResults");
-				//System.out.println("<--->"+p);
-				
-				/*//String str=this.cswParam.GetRecords();
-				Element el2=this.cswParam.findSubElement(cswParam.fromStringToJDOMDocument(cswParam.GetRecords()).getRootElement(),"csw:SearchResults");
-				System.out.println(el2.toString());
-				System.out.println(el2.getAttribute("numberOfRecordsReturned").getValue());*/
-				//
-				//Element el=this.cswParam.findSubElement(cswParam.fromStringToJDOMDocument(cswParam.GetRecords()).getRootElement(),pattern);
-				if (cswParam.getNumberOfRecord(cswParam.getXMLRequestResult(), "csw:SearchResults")>0){
-					Element el=this.cswParam.findSubElement(cswParam.getXMLRequestResult().getRootElement(),pattern);
-					Iterator<Element> it=cswParam.getColumns(el).iterator();
-					while (it.hasNext()){
-						Element c=it.next();					
-						row.addValueMeta(new ValueMeta(c.getName(), ValueMetaInterface.TYPE_STRING));
-					}				
-				//
-				fieds=row;
-				}				
-				
-			} catch (KettleException e) {
-				
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
-			} catch (ServletException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			}else
+			if(outputText.equalsIgnoreCase(ISOTC211_2005_PROFILE)){
+				cswParam.setProfile(GMD_MD_Metadata);
 			}
+		}
+	}
+	
+	public void getFields(RowMetaInterface row, String name, RowMetaInterface info[], StepMeta nextStep, VariableSpace space){
+    		
+		RowMetaInterface columnField=null;
+		setProfileBasedOnOutputSchemaValue();
+		String pattern=cswParam.getProfile();
+		try {
+						
+			cswParam.setXMLRequestResult(cswParam.fromStringToJDOMDocument(cswParam.GetRecords()));
+			if (cswParam.getOutputSchema().equalsIgnoreCase(DEFAULT_PROFILE)){
+				columnField=getFieldsFromDefaultProfileDocument(row,pattern);
+			}else
+			if(cswParam.getOutputSchema().equalsIgnoreCase(ISOTC211_2005_PROFILE)){
+				columnField=getFieldsFromISOTC2112005ProfileDocument(row,pattern);
+			}
+			
+			//
+			cswParam.setColumnField(columnField);
+			
+		} catch (KettleException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+		} catch (ServletException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	        
     	
+	}
+	
+	/**
+	 * this method retrieve metaField from document formatted using csw default profile
+	 * */
+	private RowMetaInterface getFieldsFromDefaultProfileDocument(RowMetaInterface row, String profile) throws KettleException, ServletException, IOException{
+		ArrayList<String> colName;
+		int nbrRecords=cswParam.getNumberOfRecord(cswParam.getXMLRequestResult(), "csw:SearchResults");
+		if (nbrRecords>0){
+			colName=new ArrayList<String>();
+			Element el=this.cswParam.findSubElement(cswParam.getXMLRequestResult().getRootElement(),profile);
+			Iterator<Element> it=cswParam.getColumns(el).iterator();
+			while (it.hasNext()){
+				Element c=it.next();					
+				row.addValueMeta(new ValueMeta(c.getName(), ValueMetaInterface.TYPE_STRING));
+				colName.add(c.getName());
+			}				
+		//
+			fieds=row;
+			cswParam.setColsName(colName);
+		}else{
+			throw new KettleException("Zero Records return");
+		}
+		return fieds;
+	}
+	
+	private RowMetaInterface getFieldsFromISOTC2112005ProfileDocument(RowMetaInterface row, String profile) throws KettleException, ServletException, IOException{
+		ArrayList<String> colName;
+		int nbrRecords=cswParam.getNumberOfRecord(cswParam.getXMLRequestResult(), "csw:SearchResults");
+		if (nbrRecords>0){
+			colName=new ArrayList<String>();
+			Element el=this.cswParam.findSubElement(cswParam.getXMLRequestResult().getRootElement(),profile);
+			Iterator<Element> it=cswParam.getColumns(el).iterator();
+			while (it.hasNext()){
+				Element c=it.next();					
+				row.addValueMeta(new ValueMeta(c.getParentElement().getName(), ValueMetaInterface.TYPE_STRING));
+				colName.add(c.getParentElement().getName());
+			}				
+		//
+			fieds=row;
+			cswParam.setColsName(colName);
+		}else{
+			throw new KettleException("Zero Records return");
+		}
+		return fieds;
 	}
 
 	/**
 	 * @param fieds the fieds to set
 	 */
 	public void setMetaInterfaceFieds(RowMetaInterface fieds) {
-		this.fieds = fieds;
+		this.fieds = fieds; 
+		
 	}
 
 	/**
 	 * @return the fieds
 	 */
 	public RowMetaInterface getMetaInterfaceFieds() {
+		
 		return fieds;
 	}
 
