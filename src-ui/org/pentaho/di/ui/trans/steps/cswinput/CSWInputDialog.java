@@ -128,8 +128,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 	private FormData fdwBoxEast;
 	private TextVar wBoxSouth;
 	private FormData fdwBoxSouth;
-	/*private Button wGetRecordButton;
-	private FormData fdwGetRecordButton;*/
+	
 	private Button wOptResultType;
 	private FormData fdwOptResultType;
 	private Button wOptResultTypeBrief;
@@ -165,6 +164,12 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 	private Button wGetQueryElements;
 	private Listener lsGGetQueryElements;
 	private FormData fdGGetQueryElements;
+	private Button wChkLoginService;
+	private FormData fdwChkLoginService;
+	private ComboVar wSpatialOperator;
+	private FormData fdwSpatialOperator;
+	private Label wlSpatialOp;
+	private FormData fdwlSpatialOp;
 	
 	public void setMethod(){
 		if (wMethod[0].getSelection() || wMethod[1].getSelection()){
@@ -335,35 +340,39 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
         wConstrainteLanguage.add("CQL_TEXT");
         
         
-        
+        //checkbox enable login service
+ 		wChkLoginService= new Button(wGeneral, SWT.CHECK);
+ 		props.setLook(wChkLoginService);
+ 		wChkLoginService.setText(Messages.getString("CSWInputDialog.Login.Activate"));
+ 		fdwChkLoginService=new FormData();
+ 		fdwChkLoginService.left = new FormAttachment(0, margin);
+ 		fdwChkLoginService.top  = new FormAttachment(wConstrainteLanguage, 3*margin);
+ 		fdwChkLoginService.right= new FormAttachment(100, -1*margin);
+ 		wChkLoginService.setLayoutData(fdwChkLoginService);
+ 		//listener
+ 		wChkLoginService.addSelectionListener(new SelectionAdapter() 
+        {
+            public void widgetSelected(SelectionEvent e) 
+            {
+            	input.setChanged();
+            	if (wChkLoginService.getSelection()==true){
+            		wLoginGroup.setEnabled(true);
+            	}else
+            	if (wChkLoginService.getSelection()==false){
+            		wLoginGroup.setEnabled(false);
+            	}           	
+            		
+            }
+        }
+ 		);
         
         
         /**
          * Login parameters
          * **/
         
-      ///
-		wlLoginURL=new Label(wGeneral, SWT.LEFT);
-		wlLoginURL.setText(Messages.getString("CSWInputDialog.LoginURL.Label"));
-        props.setLook(wlLoginURL);
-        fdlwlLoginURL=new FormData();
-        fdlwlLoginURL.left = new FormAttachment(0, margin);
-        fdlwlLoginURL.top  = new FormAttachment(wMethodCSW, margin*3);        
-        wlLoginURL.setLayoutData(fdlwlLoginURL);
-		
-		
-		wLoginUrl=new TextVar(transMeta, wGeneral, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
- 		props.setLook(wLoginUrl);
- 		
-		fdLoginUrl=new FormData();
-		fdLoginUrl.left = new FormAttachment(wlLoginURL, margin);
-		fdLoginUrl.top  = new FormAttachment(wMethodCSW, margin*3);
-		fdLoginUrl.right= new FormAttachment(100, -1*margin);
-		wLoginUrl.setLayoutData(fdLoginUrl); 
-		
-		
         wLoginGroup = new Group(wGeneral, SWT.SHADOW_NONE);
-        
+        //wLoginGroup.setEnabled(false);
 		props.setLook(wLoginGroup);
 		wLoginGroup.setText(Messages.getString("CSWInputDialog.Login.Group"));
 		FormLayout LoginGroupLayout = new FormLayout();
@@ -373,9 +382,30 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		
 		fdLoginGroup=new FormData();
 		fdLoginGroup.left = new FormAttachment(0, margin);
-		fdLoginGroup.top  = new FormAttachment(wLoginUrl, 3*margin);
+		fdLoginGroup.top  = new FormAttachment(wChkLoginService, 2*margin);
 		fdLoginGroup.right= new FormAttachment(100, -1*margin);
 		wLoginGroup.setLayoutData(fdLoginGroup); 
+		
+		//login url
+		
+		 ///
+		wlLoginURL=new Label(wLoginGroup, SWT.LEFT);
+		wlLoginURL.setText(Messages.getString("CSWInputDialog.LoginURL.Label"));
+        props.setLook(wlLoginURL);
+        fdlwlLoginURL=new FormData();
+        fdlwlLoginURL.left = new FormAttachment(0, margin);
+        fdlwlLoginURL.top  = new FormAttachment(0, margin);        
+        wlLoginURL.setLayoutData(fdlwlLoginURL);
+        
+		wLoginUrl=new TextVar(transMeta, wLoginGroup, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+ 		props.setLook(wLoginUrl);
+ 		
+		fdLoginUrl=new FormData();
+		fdLoginUrl.left = new FormAttachment(wlLoginURL, margin);
+		fdLoginUrl.top  = new FormAttachment(0, margin);
+		fdLoginUrl.right= new FormAttachment(100, -1*margin);
+		wLoginUrl.setLayoutData(fdLoginUrl); 
+		
 		
 		wlUser= new Label(wLoginGroup, SWT.LEFT);
 		wlUser.setText(Messages.getString("CSWInputDialog.Username.Label"));
@@ -383,7 +413,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		
 		fdwlUser=new FormData();
 		fdwlUser.left = new FormAttachment(0, margin);
-		fdwlUser.top  = new FormAttachment(0, margin);		
+		fdwlUser.top  = new FormAttachment(wLoginUrl, margin);		
 		wlUser.setLayoutData(fdwlUser); 
 		
 		wUser=new TextVar(transMeta, wLoginGroup, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
@@ -391,7 +421,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		wUser.addModifyListener(lsMod);
 		fdwUser=new FormData();
 		fdwUser.left = new FormAttachment(wlUser, margin);
-		fdwUser.top  = new FormAttachment(0, margin);
+		fdwUser.top  = new FormAttachment(wLoginUrl, margin);
 		fdwUser.right= new FormAttachment(middle, -1*margin);
 		wUser.setLayoutData(fdwUser); 
 		
@@ -401,7 +431,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		
 		fdwlPassword=new FormData();
 		fdwlPassword.left = new FormAttachment(wUser, 10*margin);
-		fdwlPassword.top  = new FormAttachment(0, margin);		
+		fdwlPassword.top  = new FormAttachment(wLoginUrl, margin);		
 		wlPassword.setLayoutData(fdwlPassword); 
 		
 		wPassword=new TextVar(transMeta, wLoginGroup, SWT.SINGLE | SWT.PASSWORD |SWT.LEFT | SWT.BORDER);
@@ -409,111 +439,13 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		wPassword.addModifyListener(lsMod);
 		fdwPassword=new FormData();
 		fdwPassword.left = new FormAttachment(wlPassword, margin);
-		fdwPassword.top  = new FormAttachment(0, margin);
+		fdwPassword.top  = new FormAttachment(wLoginUrl, margin);
 		fdwPassword.right= new FormAttachment(100, -30*margin);
 		wPassword.setLayoutData(fdwPassword); 
 		
 		
         
-        /**getCapabilities button
-         * 
-         * 
-        wGetCapabilitiesButton=new Button(wGeneral, SWT.PUSH );
-        wGetCapabilitiesButton.setVisible(false);
-        wGetCapabilitiesButton.setText(Messages.getString("CSWInputDialog.Button.GetCapabilities"));
-        lsGetCapabilities = new Listener()  {
 
-		public void handleEvent(Event e){getCapabilities();}
-
-		private void getCapabilities() {
-			cswParam=new CSWReader();
-			if (wVersion.getText().trim().length()==0){
-				MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
-				mb.setMessage(Messages.getString("CSWInputDialog.VersionRequired.DialogMessage")); //$NON-NLS-1$
-				mb.setText(Messages.getString("CSWInputDialog.VersionRequired.DialogMessage")); //$NON-NLS-1$
-				mb.open();
-				//e.printStackTrace();
-				return;
-			}
-			
-			cswParam.setVersion(wVersion.getText());
-			
-			if (wMethodCSW.getText().trim().length()==0){
-				MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
-				mb.setMessage(Messages.getString("CSWInputDialog.MethodRequired.DialogMessage")); //$NON-NLS-1$
-				mb.setText(Messages.getString("CSWInputDialog.MethodRequired.DialogMessage")); //$NON-NLS-1$
-				mb.open();
-				//e.printStackTrace();
-				return;
-			}
-			cswParam.setMethod(wMethodCSW.getText());
-			
-			try {
-				cswParam.setCatalogUrl(wUrl.getText());
-			} catch (MalformedURLException e) {
-				
-				MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
-				mb.setMessage(Messages.getString("CSWInputDialog.ErrorRequiredWellFormedCSWURL.DialogMessage")); //$NON-NLS-1$
-				mb.setText(Messages.getString("CSWInputDialog.ErrorRequiredWellFormedCSWURL.DialogMessage")); //$NON-NLS-1$
-				mb.open();
-				//e.printStackTrace();
-				return;
-				// TODO Auto-generated catch block
-				
-			}
-			try {					
-				
-				//output=cswParam.getCapabilitiesDoc();
-				if (output==null){
-					output=cswParam.GetCapabilities();
-					//output=cswParam.getCapabilitiesDoc();
-					System.out.println("nouvelle recharge");
-				}
-					
-				String[] queryElement=cswParam.getQueryableElement(cswParam.fromStringToJDOMDocument(output));
-				String[] comparisonOps=cswParam.getComparisonOperator(cswParam.fromStringToJDOMDocument(output));				
-				ColumnInfo col=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column1"),  
-						ColumnInfo.COLUMN_TYPE_CCOMBO,queryElement, true);
-				wQueryElement.setColumnInfo(0, col);
-				
-				col=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column2"),  
-						ColumnInfo.COLUMN_TYPE_CCOMBO,comparisonOps, true);
-				wQueryElement.setColumnInfo(1, col);
-				
-				outSchemaContent=cswParam.extractOutputSchemaFromCapabilitiesDocument(output);
-				//
-				Iterator<String> contentIT=outSchemaContent.iterator();
-				while (contentIT.hasNext()){
-					String item=contentIT.next();
-					wOutputSchemaLabel.add(item);
-				}
-				
-				//System.out.println(output);
-			} catch (KettleException e) {				
-				//e.printStackTrace();
-				MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
-				mb.setMessage(e.getMessage()); //$NON-NLS-1$
-				mb.setText(Messages.getString("CSWInputDialog.ErrorRetrievingOutSchema.DialogMessage")); //$NON-NLS-1$
-				mb.open();
-				return;
-			} catch (ServletException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	};
-		wGetCapabilitiesButton.addListener(SWT.Selection, lsGetCapabilities);
-
-        
-        fdGetCapabilitiesButton = new FormData();
-        fdGetCapabilitiesButton.left = new FormAttachment(wUrl, 3*margin);
-        fdGetCapabilitiesButton.top = new FormAttachment(wStepname, margin);
-        //
-        wGetCapabilitiesButton.setLayoutData(fdGetCapabilitiesButton);
- */
 		fdGeneral = new FormData();
 		fdGeneral.left  = new FormAttachment(0, margin);
 		fdGeneral.top   = new FormAttachment(wStepname, margin);
@@ -683,7 +615,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		wQueryElement=new TableView(transMeta,wAdvancedGroup,
 							  SWT.BORDER | SWT.MULTI | SWT.V_SCROLL, 
 							  colinfQueryElement, 
-							  3,  
+							  2,  
 							  lsMod,
 							  props
 							  );
@@ -741,6 +673,86 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		wTitle.setLayoutData(fdTitle);
  		wTitle.setVisible(false);
 		
+
+ 		
+ 		/**
+ 		 * spatial search
+ 		 * **/
+ 		wlSpatialOp= new Label(wAdvancedGroup, SWT.LEFT);
+ 		wlSpatialOp.setText(Messages.getString("CSWInputDialog.SpatialOperator.Label"));
+ 		props.setLook(wlSpatialOp);
+ 		
+		fdwlSpatialOp=new FormData();
+		fdwlSpatialOp.left = new FormAttachment(0,margin);
+		fdwlSpatialOp.top  = new FormAttachment(wTitle, margin);		
+		wlSpatialOp.setLayoutData(fdwlSpatialOp); 
+		
+ 		
+        wSpatialOperator=new ComboVar(transMeta, wAdvancedGroup, SWT.BORDER | SWT.READ_ONLY);
+        wSpatialOperator.setEditable(false);
+        props.setLook(wSpatialOperator);
+        fdwSpatialOperator=new FormData();
+        fdwSpatialOperator.left = new FormAttachment(wlSpatialOp, 2*margin);
+        fdwSpatialOperator.top  = new FormAttachment(wTitle, margin);
+        //fdwSpatialOperator.right= new FormAttachment(100, -40*margin);
+        wSpatialOperator.setLayoutData(fdwSpatialOperator);
+        wSpatialOperator.add("BBOX");
+        wSpatialOperator.add("WITHIN");
+        wSpatialOperator.add("CONTAINS");
+        wSpatialOperator.add("INTERSECTS");
+        wSpatialOperator.add("EQUALS");
+        wSpatialOperator.add("OVERLAPS");
+        wSpatialOperator.add("DISJOINT");
+        wSpatialOperator.add("TOUCHES");
+        wSpatialOperator.add("CROSSES");
+        
+ 		wSpatialGroup = new Group(wAdvancedGroup, SWT.SHADOW_NONE);
+ 		props.setLook(wSpatialGroup);
+ 		wSpatialGroup.setText(Messages.getString("CSWInputDialog.SpatialSearchGroup.Title"));
+		FormLayout SpatialGroupLayout = new FormLayout();
+		SpatialGroupLayout.marginWidth = 5;
+		SpatialGroupLayout.marginHeight = 5;
+		wSpatialGroup.setLayout(SpatialGroupLayout);
+		
+		fdSpatialGroup = new FormData();
+		fdSpatialGroup.left  = new FormAttachment(0, margin);
+		fdSpatialGroup.top   = new FormAttachment(wSpatialOperator, margin);
+		fdSpatialGroup.right = new FormAttachment(100, -margin);
+		wSpatialGroup.setLayoutData(fdSpatialGroup);
+		
+		wBoxNorth=new TextVar(transMeta, wSpatialGroup, SWT.BORDER | SWT.SINGLE); 
+		props.setLook(wBoxNorth);
+ 		fdwBoxNorth=new FormData();
+ 		fdwBoxNorth.left = new FormAttachment(middle, margin);
+ 		fdwBoxNorth.top  = new FormAttachment(0, margin);
+ 		fdwBoxNorth.right= new FormAttachment(100, -40*margin);
+ 		wBoxNorth.setLayoutData(fdwBoxNorth);
+ 		
+ 		wBoxWest=new TextVar(transMeta, wSpatialGroup, SWT.BORDER | SWT.SINGLE); 
+		props.setLook(wBoxWest);
+ 		fdwBoxWest=new FormData();
+ 		fdwBoxWest.left = new FormAttachment(0, margin);
+ 		fdwBoxWest.top  = new FormAttachment(wBoxNorth, margin);
+ 		fdwBoxWest.right= new FormAttachment(middle, -margin);
+ 		wBoxWest.setLayoutData(fdwBoxWest);
+ 		
+ 		wBoxEast=new TextVar(transMeta, wSpatialGroup, SWT.BORDER | SWT.SINGLE); 
+ 		
+		props.setLook(wBoxEast);
+ 		fdwBoxEast=new FormData();
+ 		fdwBoxEast.left = new FormAttachment(wBoxNorth, margin);
+ 		fdwBoxEast.top  = new FormAttachment(wBoxNorth, margin);
+ 		fdwBoxEast.right= new FormAttachment(100, -margin);
+ 		wBoxEast.setLayoutData(fdwBoxEast);
+ 		
+ 		wBoxSouth=new TextVar(transMeta, wSpatialGroup, SWT.BORDER | SWT.SINGLE); 
+		props.setLook(wBoxSouth);
+ 		fdwBoxSouth=new FormData();
+ 		fdwBoxSouth.left = new FormAttachment(middle, margin);
+ 		fdwBoxSouth.top  = new FormAttachment(wBoxEast, margin);
+ 		fdwBoxSouth.right= new FormAttachment(100, -40*margin);
+ 		wBoxSouth.setLayoutData(fdwBoxSouth);
+ 		
  		/**
  		 * 
  		 * */
@@ -757,7 +769,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		fdDateGroup.top   = new FormAttachment(wTitle, margin);
 		fdDateGroup.right = new FormAttachment(middle, -margin);
 		wDateGroup.setLayoutData(fdDateGroup);
- 		
+		wDateGroup.setVisible(false);
  		
  		//date deb et date fin
  		wlDateDeb=new Label(wDateGroup, SWT.LEFT); 
@@ -792,55 +804,6 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		fdwDateFin.top  = new FormAttachment(wDateDeb, margin);
  		//fdwDateFin.right= new FormAttachment(100, -1*margin);
  		wDateFin.setLayoutData(fdwDateFin);
- 		
- 		/**
- 		 * spatial search
- 		 * **/
- 		wSpatialGroup = new Group(wAdvancedGroup, SWT.SHADOW_NONE);
- 		props.setLook(wSpatialGroup);
- 		wSpatialGroup.setText(Messages.getString("CSWInputDialog.SpatialSearchGroup.Title"));
-		FormLayout SpatialGroupLayout = new FormLayout();
-		SpatialGroupLayout.marginWidth = 5;
-		SpatialGroupLayout.marginHeight = 5;
-		wSpatialGroup.setLayout(SpatialGroupLayout);
-		
-		fdSpatialGroup = new FormData();
-		fdSpatialGroup.left  = new FormAttachment(middle, 3*margin);
-		fdSpatialGroup.top   = new FormAttachment(wTitle, margin);
-		fdSpatialGroup.right = new FormAttachment(100, -margin);
-		wSpatialGroup.setLayoutData(fdSpatialGroup);
-		
-		wBoxNorth=new TextVar(transMeta, wSpatialGroup, SWT.BORDER | SWT.SINGLE); 
-		props.setLook(wBoxNorth);
- 		fdwBoxNorth=new FormData();
- 		fdwBoxNorth.left = new FormAttachment(middle, margin);
- 		fdwBoxNorth.top  = new FormAttachment(0, margin);
- 		//fdwBoxNorth.right= new FormAttachment(100, -margin);
- 		wBoxNorth.setLayoutData(fdwBoxNorth);
- 		
- 		wBoxWest=new TextVar(transMeta, wSpatialGroup, SWT.BORDER | SWT.SINGLE); 
-		props.setLook(wBoxWest);
- 		fdwBoxWest=new FormData();
- 		fdwBoxWest.left = new FormAttachment(0, margin);
- 		fdwBoxWest.top  = new FormAttachment(wBoxNorth, margin);
- 		fdwBoxWest.right= new FormAttachment(middle, -margin);
- 		wBoxWest.setLayoutData(fdwBoxWest);
- 		
- 		wBoxEast=new TextVar(transMeta, wSpatialGroup, SWT.BORDER | SWT.SINGLE); 
-		props.setLook(wBoxEast);
- 		fdwBoxEast=new FormData();
- 		fdwBoxEast.left = new FormAttachment(wBoxNorth, margin);
- 		fdwBoxEast.top  = new FormAttachment(wBoxNorth, margin);
- 		fdwBoxEast.right= new FormAttachment(100, -margin);
- 		wBoxEast.setLayoutData(fdwBoxEast);
- 		
- 		wBoxSouth=new TextVar(transMeta, wSpatialGroup, SWT.BORDER | SWT.SINGLE); 
-		props.setLook(wBoxSouth);
- 		fdwBoxSouth=new FormData();
- 		fdwBoxSouth.left = new FormAttachment(middle, margin);
- 		fdwBoxSouth.top  = new FormAttachment(wBoxEast, margin);
- 		//fdwBoxSouth.right= new FormAttachment(100, -50*margin);
- 		wBoxSouth.setLayoutData(fdwBoxSouth);
  		
  		//outputSchema and resultType (brief,Summary,full)
  		
@@ -1043,12 +1006,15 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		if (!Const.isEmpty(input.getCswParam().getMaxRecords().toString())){
 			wMaxRecord.setText(input.getCswParam().getMaxRecords().toString());
 		}
-		
+		if (!Const.isEmpty(input.getCswParam().getSpatialOperator())){
+			wSpatialOperator.setText(input.getCswParam().getSpatialOperator().toString());
+		}
 		
 		wChkAdvanced.setSelection(input.getCswParam().isSimpleSearch());
+		wChkLoginService.setSelection(input.getCswParam().isUseLoginService());
 		
 		wAdvancedGroup.setEnabled(wChkAdvanced.getSelection());
-		
+		wLoginGroup.setEnabled(wChkLoginService.getSelection());
 			
 		if (!Const.isEmpty(input.getCswParam().getElementSet())){
 			String value=input.getCswParam().getElementSet();
@@ -1063,10 +1029,12 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 			}
 	
 		}//end element set
-		wBoxNorth.setText(input.getCswParam().getBBOX().get("NORTH").toString());
-		wBoxSouth.setText(input.getCswParam().getBBOX().get("SOUTH").toString());
-		wBoxEast.setText(input.getCswParam().getBBOX().get("EAST").toString());
-		wBoxWest.setText(input.getCswParam().getBBOX().get("WEST").toString());
+		if (!Const.isEmpty(input.getCswParam().getBBOX().keySet().toArray())){
+			wBoxNorth.setText(input.getCswParam().getBBOX().get("NORTH").toString());
+			wBoxSouth.setText(input.getCswParam().getBBOX().get("SOUTH").toString());
+			wBoxEast.setText(input.getCswParam().getBBOX().get("EAST").toString());
+			wBoxWest.setText(input.getCswParam().getBBOX().get("WEST").toString());
+		}
 		
 		ArrayList<String[]> advancedElementArrayList=input.getCswParam().getAdvancedRequestParam();
 		if (advancedElementArrayList!=null){
@@ -1092,7 +1060,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 			mb.setMessage(Messages.getString("CSWInputDialog.VersionRequired.DialogMessage")); //$NON-NLS-1$
 			mb.setText(Messages.getString("CSWInputDialog.VersionRequired.DialogMessage")); //$NON-NLS-1$
 			mb.open();
-			//e.printStackTrace();
+			//
 			return;
 		}
 		
@@ -1118,17 +1086,21 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 			mb.open();
 			//e.printStackTrace();
 			return;
-			// TODO Auto-generated catch block
+			
 			
 		}
+		
 		try {					
 			
-			//output=cswParam.getCapabilitiesDoc();
-			//if (output==null){
-				output=cswParam.GetCapabilities();
-				//output=cswParam.getCapabilitiesDoc();
-				//System.out.println("nouvelle recharge");
-		//	}
+			
+			output=cswParam.GetCapabilities();
+			if (output!=null){
+				String err=cswParam.checkIfReponseReturnException(cswParam.fromStringToJDOMDocument(output).getRootElement());
+				if (err!=null){
+					throw new KettleException(err);
+				}
+				
+			}			
 				
 			String[] queryElement=cswParam.getQueryableElement(cswParam.fromStringToJDOMDocument(output));
 			String[] comparisonOps=cswParam.getComparisonOperator(cswParam.fromStringToJDOMDocument(output));				
@@ -1150,26 +1122,29 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 			
 			//System.out.println(output);
 		} catch (KettleException e) {				
-			//e.printStackTrace();
+			//
 			MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
 			mb.setMessage(e.getMessage()); //$NON-NLS-1$
 			mb.setText(Messages.getString("CSWInputDialog.ErrorRetrievingOutSchema.DialogMessage")); //$NON-NLS-1$
 			mb.open();
 			return;
 		} catch (ServletException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
+			mb.setMessage(e.getMessage()); //$NON-NLS-1$
+			mb.setText(Messages.getString("CSWInputDialog.ErrorRetrievingOutSchema.DialogMessage")); //$NON-NLS-1$
+			mb.open();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
+			mb.setMessage(e.getMessage()); //
+			mb.setText(Messages.getString("CSWInputDialog.ErrorRetrievingOutSchema.DialogMessage")); //$NON-NLS-1$
+			mb.open();
 		}
 	}
 	
 	private void cancel()
 	{
 		stepname=null;
-		input.setChanged(changed);
-		
+		input.setChanged(changed);		
 		dispose();
 	}
 	
@@ -1191,12 +1166,14 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		cswParam.setStartDate(wDateDeb.getText());
 		cswParam.setEndDate(wDateFin.getText());
 		cswParam.setSimpleSearch(wChkAdvanced.getSelection());
+		cswParam.setUseLoginService(wChkLoginService.getSelection());
 		cswParam.setKeyword(wReqText.getText());
 		cswParam.setUsername(wUser.getText());
 		cswParam.setPassword(wPassword.getText());
 		cswParam.setLoginServiceUrl(wLoginUrl.getText());
 		cswParam.setOutputSchema(wOutputSchemaLabel.getText());
 		cswParam.setTitle(wTitle.getText());
+		cswParam.setSpatialOperator(wSpatialOperator.getText());
 		cswParam.setElementSet(elementSet);
 		cswParam.setConstraintLanguage(wConstrainteLanguage.getText());
 		cswParam.setStartPosition(Integer.parseInt(wStartPosition.getText()));
@@ -1229,6 +1206,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 			cswParam.setCatalogUrl(wUrl.getText());
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 		input.setCswParam(cswParam);

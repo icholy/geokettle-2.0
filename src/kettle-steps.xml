@@ -1613,6 +1613,18 @@
 		<image-uri>ui/images/cswinput.png</image-uri>
 	</step>	
 	
+	<step id="CSWOutput">
+		<description>
+			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.CSWOutput")
+		</description>
+		<class-name>org.pentaho.di.trans.steps.cswoutput.CSWOutputMeta</class-name>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@OUTPUT.getName()</category>
+		<tooltip>
+			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.CSWOutput")
+		</tooltip>
+		<image-uri>ui/images/cswoutput.png</image-uri>
+	</step>	
+	
 		
 	
 </steps>

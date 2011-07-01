@@ -12,10 +12,12 @@ import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 
@@ -40,6 +42,7 @@ import org.xml.sax.InputSource;
  */
 public class CSWReader {
 	
+	private static final String EXCEPTION_CODE = "ows:Exception";
 	private URL catalogUrl;
 	private String version;
 	private String method;
@@ -62,14 +65,16 @@ public class CSWReader {
 	private ArrayList<String[]> advancedRequestParam;
 	
 	private Document XMLRequestResult;
-	public Element el;
+	public Element el=null;
 	private String capabilitiesDoc;
 	
 	private String profile;
 	private RowMetaInterface columnField;
 	private ArrayList<String> ColsName;
+	private boolean useLoginService;
+	private String spatialOperator;
 	
-	//private String profile; 
+	 
 	
 	
 	/**
@@ -124,7 +129,27 @@ public class CSWReader {
 	}
 	
 	/**
-	 * 
+	 * build a GetCapabilities query based on SOAP method
+	 * */
+	private String buildGetCapabilitiesSOAPQuery(){
+		String query="<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+		query +="<env:Envelope xmlns:env=\"http://www.w3.org/2003/05/soap-envelope\">";
+		query +="<env:Body>";
+		query +="<csw:GetCapabilities xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\" service=\"CSW\">";
+		query +="<ows:AcceptVersions xmlns:ows=\"http://www.opengis.net/ows\">";
+		query +="<ows:Version>"+ this.version +"</ows:Version>";
+		query +="</ows:AcceptVersions>";
+		query +="<ows:AcceptFormats xmlns:ows=\"http://www.opengis.net/ows\">";
+		query +="<ows:OutputFormat>application/xml</ows:OutputFormat>";
+		query +="</ows:AcceptFormats>";
+		query +="</csw:GetCapabilities>";
+		query +="</env:Body>";
+		query +="</env:Envelope>";
+		return query;
+	}
+	
+	/**
+	 * build a GetRecords query using POST method
 	 * */
 	private String buildGetRecordsPOSTQuery(){
 		String query="<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
@@ -163,6 +188,7 @@ public class CSWReader {
 		query +="&startPosition="+this.startPosition;
 		query +="&maxRecords="+this.maxRecords;
 		query=buildConstrainteRequest(query);
+		//
 		System.out.println(query);		
 		
 		return query;
@@ -191,66 +217,42 @@ public class CSWReader {
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (DataConversionException e) {
-			// TODO Auto-generated catch block
-			throw new KettleException(e);
 			//e.printStackTrace();
+		} catch (DataConversionException e) {			
+			throw new KettleException(e);			
 		}
-		//System.out.println("nb result"+nb);
+		
 		return nb;
 		
 	}
 	
 	/**
-	 * Build constraint query
+	 * build constraint request when method is POST
 	 * */
-	private String buildConstrainteRequest(String query){
-		String q=query;
-		if (this.method.equalsIgnoreCase("GET")){
-			if (this.simpleSearch==false){
-				if (keyword!=null && keyword.trim().length()>0)
-					q += "&CONSTRAINT=AnyText"+"+like+'"+this.keyword+"'";
+	
+	private String buildPOSTConstraintRequest(String query){
+		String q="";
+		
+		if (this.simpleSearch==false){
+			
+			if (keyword!=null && keyword.trim().length()>0){
+				q="<csw:CqlText>";
+				q +="AnyText like '%"+ this.keyword+"%'";
+				q +="</csw:CqlText>";
 			}else{
-				q +="&CONSTRAINT=";
+				q="<csw:CqlText>AnyText like '*'</csw:CqlText>";
+			}
 				
-				for(int i=0;i<this.advancedRequestParam.size();i++){
-					String[] s=advancedRequestParam.get(i);
-					//
-					String temp="";
-					for (int j=0;j<3;j++){
-						String tmpValue=s[j];
-						if (j==1){
-							if (tmpValue.equalsIgnoreCase("EqualTo")){
-								tmpValue="=";
-							}
-						}
-						if (j==2){
-							temp +="'"+tmpValue+"'+";
-						}else{
-							temp +=tmpValue+"+";
-						}					
-					}
-					q +=temp;
-					if (i!=advancedRequestParam.size()-1){
-						q +="+AND+";
-					}
-					
-				}
-			}	
-		}//GET
-		if (this.method.equalsIgnoreCase("POST")){
+		}else{
 			q="<csw:CqlText>";
-			if (this.simpleSearch==false){
-				if (keyword!=null && keyword.trim().length()>0){
-					q +="AnyText like '%"+ this.keyword+"%'";
-				}
-					
-			}else{
-				for(int i=0;i<this.advancedRequestParam.size();i++){
-					String[] s=advancedRequestParam.get(i);
-					//
-					String temp="";
+			boolean ok=false;
+			for(int i=0;i<this.advancedRequestParam.size();i++){
+				String[] s=advancedRequestParam.get(i);
+				//
+				String temp="";
+				
+				if (s.length>0 && (s[0]!=null) && (s[0].trim().length()>0)){
+					ok=true;
 					for (int j=0;j<3;j++){
 						String tmpValue=s[j];
 						if (j==1){
@@ -269,11 +271,70 @@ public class CSWReader {
 						q +=" AND ";
 					}					
 				}
-			}//fin else
+			}
+			if (ok){
+				q+=" AND ";
+			}
+			q+=buildSpatialQuery();
 			q +="</csw:CqlText>";
+		}//fin else
+		
+		return q;
+	}
+	
+	/**
+	 * build Constraint request when method is GET
+	 * */
+	
+	private String buildGETConstraintRequest(String query){
+		String q=query;
+		if (this.method.equalsIgnoreCase("GET")){
+			if (this.simpleSearch==false){
+				if (keyword!=null && keyword.trim().length()>0)
+					q += "&CONSTRAINT=AnyText"+"+like+'"+this.keyword+"'";
+			}else{
+				q +="&CONSTRAINT=";
+				
+				for(int i=0;i<this.advancedRequestParam.size();i++){
+					String[] s=advancedRequestParam.get(i);
+					String temp="";
+					if (s[0].trim().length()>0){
+					for (int j=0;j<3;j++){
+						String tmpValue=s[j];
+						if (j==1){
+							if (tmpValue.equalsIgnoreCase("EqualTo")){
+								tmpValue="=";
+							}
+						}
+						if (j==2){
+							temp +="'"+tmpValue+"'+";
+						}else{
+							temp +=tmpValue+"+";
+						}					
+					}
+					q +=temp;
+					if (i!=advancedRequestParam.size()-1){
+						q +="+AND+";
+					}
+				}
+					
+				}
+			}			
 		}
-		
-		
+		return q;
+	}
+	
+	/**
+	 * Build constraint query
+	 * */
+	private String buildConstrainteRequest(String query){
+		String q=null;
+		if (this.method.equalsIgnoreCase("GET")){
+			q=buildGETConstraintRequest(query);
+		}//GET
+		if (this.method.equalsIgnoreCase("POST")){
+			q=buildPOSTConstraintRequest(query);
+		}			
 		return q;
 	}
 	
@@ -301,7 +362,7 @@ public class CSWReader {
 	}
 	
 	/**
-	 * extract queryable element from capabilities document
+	 * extract queryable elements from capabilities document
 	 * */
 	
 	public String[] getQueryableElement(Document doc){
@@ -317,8 +378,7 @@ public class CSWReader {
 							Iterator<?> it=s.getChildren().iterator();
 							while (it.hasNext()){
 								Element c=(Element)it.next();
-								queryableElement.add(c.getText());
-								//System.out.println("element "+c.getText());
+								queryableElement.add(c.getText());								
 							}
 						}
 						
@@ -329,7 +389,7 @@ public class CSWReader {
 			}
 		} catch (ServletException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -348,7 +408,7 @@ public class CSWReader {
 		try {
 			rootElement = fromStringToJDOMDocument(capabilitiesDoc).getRootElement();
 		} catch (KettleException e) {
-			throw new KettleException("Error parsing CSW capabilities document...", e);
+			throw new KettleException("Error while parsing CSW capabilities document...", e);
 			//e.printStackTrace();
 		}
 		
@@ -392,14 +452,22 @@ public class CSWReader {
 	 * **/
 	public ArrayList<ArrayList<Object>> getCatalogRecords() throws ServletException, IOException, KettleException{
 		ArrayList<ArrayList<Object>> recordList = null;	
-		
+		String err=null;
 		String pattern=profile;	
+		err=checkIfReponseReturnException(this.XMLRequestResult.getRootElement());
+		
+		if (err!=null){
+			throw new KettleException(err);
+			
+		}
 		if (this.outputSchema.equalsIgnoreCase(CSWInputMeta.DEFAULT_PROFILE)){
 			recordList=getCatalogRecordFormattedInDefaultProfile(pattern);
 		}else
 		if (this.outputSchema.equalsIgnoreCase(CSWInputMeta.ISOTC211_2005_PROFILE)){
 			recordList=getCatalogRecordFormattedUsingTC211Profile(pattern);
-		}	
+		}else{
+			recordList=getCatalogRecordFormattedUsingTC211Profile(pattern);
+		}
 		
 		return recordList;
 	}
@@ -410,37 +478,37 @@ public class CSWReader {
 	private ArrayList<ArrayList<Object>> getCatalogRecordFormattedInDefaultProfile(String profile) throws ServletException, IOException{
 		ArrayList<ArrayList<Object>> recordList=new ArrayList<ArrayList<Object>>();
 		Element rootElement=null;
+		
 		try{
 			 rootElement=this.XMLRequestResult.getRootElement();
+			 
+			 ArrayList<Element> el=this.findElement(rootElement,profile);
 		
-		
-		ArrayList<Element> el=this.findElement(rootElement,profile);
-		
-		String[] colName=this.ColsName.toArray(new String[ColsName.size()]);
-			//columnField.getFieldNames();
-		Iterator<?> it=el.iterator();
-		while (it.hasNext()){
-			Element courant=(Element)it.next();
-			ArrayList<Element> tempCour=getColumns(courant);
-			//Iterator<Element> it2=tempCour.iterator();
-			ArrayList<Object> o=new ArrayList<Object>();
-			int taille=tempCour.size();
-			if (colName.length<taille){
-				taille=colName.length;
-			}
-			for(int i=0;i<taille;i++){
-				Element e=tempCour.get(i);
-				if (e.getName().equalsIgnoreCase(colName[i])){
-					o.add(e.getText());	
-					System.out.print(e.getText());
-				}else{
-					//o.add("Toto");	
-					//System.out.print("toto");
+			String[] colName=this.ColsName.toArray(new String[ColsName.size()]);
+				//columnField.getFieldNames();
+			Iterator<?> it=el.iterator();
+			while (it.hasNext()){
+				Element courant=(Element)it.next();
+				ArrayList<Element> tempCour=getColumns(courant);
+				//
+				ArrayList<Object> o=new ArrayList<Object>();
+				int taille=tempCour.size();
+				if (colName.length<taille){
+					taille=colName.length;
 				}
-			}
-			//System.out.println();
-				
-			recordList.add(o);
+				for(int i=0;i<taille;i++){
+					Element e=tempCour.get(i);
+					if (e.getName().equalsIgnoreCase(colName[i])){
+						o.add(e.getText());	
+						//System.out.print(e.getText());
+					}else{
+						//o.add("Toto");	
+						//System.out.print("toto");
+					}
+				}
+				//System.out.println();
+					
+				recordList.add(o);
 		}
 		}catch(Exception e){
 			
@@ -455,33 +523,39 @@ public class CSWReader {
 	
 	private ArrayList<ArrayList<Object>> getCatalogRecordFormattedUsingTC211Profile(String profile) throws ServletException, IOException{
 		ArrayList<ArrayList<Object>> recordList=new ArrayList<ArrayList<Object>>();
-		Element rootElement=this.XMLRequestResult.getRootElement();
-		ArrayList<Element> el=this.findElement(rootElement,profile);
-		String[] colName=this.ColsName.toArray(new String[ColsName.size()]);
-			//columnField.getFieldNames();
-		Iterator<?> it=el.iterator();
-		while (it.hasNext()){
-			Element courant=(Element)it.next();
-			ArrayList<Element> tempCour=getColumns(courant);
-			//Iterator<Element> it2=tempCour.iterator();
-			ArrayList<Object> o=new ArrayList<Object>();
-			int taille=tempCour.size();
-			if (colName.length<taille){
-				taille=colName.length;
-			}
-			for(int i=0;i<taille;i++){
-				Element e=tempCour.get(i);
-				if (e.getParentElement().getName().equalsIgnoreCase(colName[i])){
-					o.add(e.getText());	
-					//System.out.print(e.getText());
-				}else{
-					//System.out.print("toto");
+		Element rootElement=null;
+		try{
+			rootElement=this.XMLRequestResult.getRootElement();
+			ArrayList<Element> el=this.findElement(rootElement,profile);
+			String[] colName=this.ColsName.toArray(new String[ColsName.size()]);
+				//columnField.getFieldNames();
+			Iterator<?> it=el.iterator();
+			while (it.hasNext()){
+				Element courant=(Element)it.next();
+				ArrayList<Element> tempCour=getColumns(courant);
+				//Iterator<Element> it2=tempCour.iterator();
+				ArrayList<Object> o=new ArrayList<Object>();
+				int taille=tempCour.size();
+				if (colName.length<taille){
+					taille=colName.length;
 				}
+				for(int i=0;i<taille;i++){
+					Element e=tempCour.get(i);
+					if (e.getParentElement().getName().equalsIgnoreCase(colName[i])){
+						o.add(e.getText());	
+						//System.out.print(e.getText());
+					}else{
+						
+					}
+				}
+				//System.out.println();
+					
+				recordList.add(o);
 			}
-			//System.out.println();
-				
-			recordList.add(o);
+		}catch(Exception e){
+			throw new IOException(Messages.getString("CSWInput.Exception.ZeroRecord"));
 		}
+		
 		return recordList;
 	}
 	
@@ -493,13 +567,14 @@ public class CSWReader {
 		String response = null;
 		try {
 			if (this.method.equalsIgnoreCase("GET")){
-			
+				 
 				response=CSWGET(buildGetRecordsGETQuery());
 			} 
 			else
 			if (this.method.equalsIgnoreCase("POST")){
+				
 				response=CSWPOST(buildGetRecordsPOSTQuery(), this.catalogUrl);
-				System.out.println("POST Method");
+				//System.out.println("POST Method");
 			}else
 				if(this.method.equalsIgnoreCase("SOAP")){
 					//TODO
@@ -508,6 +583,7 @@ public class CSWReader {
 		catch (KettleException e) {
 			throw new KettleException("Error parsing CSW GetRecord...", e);
 		}
+		
 		System.out.println(response);		
 		return response;
 	}
@@ -536,9 +612,28 @@ public class CSWReader {
 		}else
 		if (this.method.equalsIgnoreCase("POST")){
 			capabilitiesDoc=CSWPOST(this.buildGetCapabilitiesPOSTQuery(), this.catalogUrl);
-		}		
+		}else
+		if (this.method.equalsIgnoreCase("SOAP")){
+			//TODO
+			//capabilitiesDoc=CSWSOAP(this.buildGetCapabilitiesSOAPQuery(), this.catalogUrl);
+		}
 		return capabilitiesDoc;
 	}
+
+/**
+ * this method look for any exception in response return by csw server
+ * */
+public String checkIfReponseReturnException(Element rootElement) throws ServletException, IOException{
+	Element el=null;
+	String s=null;
+	this.el=null;
+	el=findSubElement(rootElement,EXCEPTION_CODE);
+	if (el!=null){
+		XMLOutputter sortie = new XMLOutputter(Format.getPrettyFormat());
+		s=sortie.outputString(el);
+	}	
+	return s;
+}
 
 public Element findSubElement(Element element, String elementName)throws ServletException, IOException{		
 		boolean trouve=false;
@@ -557,7 +652,7 @@ public Element findSubElement(Element element, String elementName)throws Servlet
 		}		
 		
 		return el;
-	}
+}
 
 public ArrayList<Element> getColumns(Element element)throws ServletException, IOException{		
 	
@@ -611,13 +706,16 @@ public ArrayList<Element> findElement(Element element, String elementName)throws
 	
 	private String CSWGET(String query) throws KettleException{    	   	
 		HttpMethod httpMethod = new GetMethod(query);
+		if (useLoginService==true)
+			httpMethod.setRequestHeader("Cookie", this.CatalogAuthentication());
+				
 		try { 			
 			 //Prepare HTTP Get		
     		 HttpClient httpclient = new HttpClient();
     		    		
-    		 //Execute request
+    		 
     		 httpclient.executeMethod(httpMethod);
-             
+    		 
              // the response
              InputStream inputStream = httpMethod.getResponseBodyAsStream();
              StringBuffer bodyBuffer = new StringBuffer();
@@ -627,20 +725,82 @@ public ArrayList<Element> findElement(Element element, String elementName)throws
 
     		 return bodyBuffer.toString();
 		}catch (IOException e) { 
-			throw new KettleException("Error connecting to catalog...", e);
+			throw new KettleException("Error connecting to catalog using GET method...", e);
 		}finally{
 			 httpMethod.releaseConnection();
 		}
+	}
+	
+	
+	/**
+	 * this method allow connection to csw catalog using login service 
+	 * */
+	private String CatalogAuthentication() throws KettleException{  
+		String cookieInformation=null;
+		
+		try {
+			URL url=new URL(this.loginServiceUrl);
+			// Send request
+    		String userPassword=URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(username, "UTF-8");
+    		userPassword+="&"+URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(password, "UTF-8");
+    		    					
+    		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod(method);			
+						
+			conn.setDoOutput(true);
+
+			OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream()); 
+			wr.write(userPassword); 
+			wr.flush(); 			
+			     
+			// Get the response 
+			InputStreamReader valTemp=new InputStreamReader(conn.getInputStream());
+			BufferedReader rd = new BufferedReader(valTemp); 
+			String response = "";
+			String line; 	
+			while ((line = rd.readLine()) != null) 
+				response += line;			 			
+			wr.close(); 
+			rd.close();
+			cookieInformation=getCookieInformation(conn);
+			return cookieInformation;
+		}catch (Exception e) { 
+			throw new KettleException("Error while connecting to catalog using authentication service...", e);
+		}
+	}
+	
+	/**
+	 * this method retrive cookie value from an HTTP response
+	 * */
+	private String getCookieInformation(HttpURLConnection conn){
+		String headerField=null;		
+		Map<String,List<String>>headerList=conn.getHeaderFields();
+		int i=0;
+		boolean trouve=false;
+		while (i<headerList.size()&& trouve==false){
+			String headerFieldName=conn.getHeaderFieldKey(i);
+			if (headerFieldName!=null && headerFieldName.equalsIgnoreCase("Set-Cookie")){
+				trouve=true;
+				headerField=conn.getHeaderField(i);
+			}
+			i++;
+		}
+		return headerField;
 	}
 	/**
 	 * */
 	
 	private String CSWPOST(String query, URL url) throws KettleException{    	   	
     	try { 			
-			// Send request			
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection(); 
+			// Send request		 
+    			
+    		HttpURLConnection conn=(HttpURLConnection) url.openConnection();			
 			conn.setRequestMethod(method);
-			conn.setRequestProperty("Content-Type", "text/xml; charset=\"utf-8\"");
+			if (useLoginService==true){
+				conn.setRequestProperty("Cookie", CatalogAuthentication());
+			}
+			
+			conn.setRequestProperty("Content-Type", "text/xml; charset=\"utf-8\"");			
 			conn.setDoOutput(true);
 
 			OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream()); 
@@ -656,9 +816,57 @@ public ArrayList<Element> findElement(Element element, String elementName)throws
 			rd.close();
 			return response;
 		}catch (Exception e) { 
-			throw new KettleException("Error connecting to CSW catalog...", e);
+			throw new KettleException("Error connecting to CSW catalog using POST method...", e);
 		}
 	}
+	
+	
+	private String CSWSOAP(String query, URL url) throws KettleException{    	   	
+    	try { 			
+			// Send request			
+			HttpURLConnection conn = (HttpURLConnection) url.openConnection(); 
+			conn.setRequestMethod("POST");
+			conn.setRequestProperty("Content-Type", "soap+xml; charset=\"utf-8\"");
+			conn.setDoOutput(true);
+
+			OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream()); 
+			wr.write(query); 
+			wr.flush(); 
+				      
+			// Get the response 
+			BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream())); 
+			String response = "";
+			String line; 	
+			while ((line = rd.readLine()) != null) response += line;			 			
+			wr.close(); 
+			rd.close();
+			return response;
+		}catch (Exception e) { 
+			throw new KettleException("Error connecting to CSW catalog using SOAP method...", e);
+		}
+	}
+	
+	/**
+	 * build spatial query
+	 * */
+	private String buildSpatialQuery(){
+		//WITHIN(ows:BoundingBox,ENVELOPE(3.19,7.26,53.59,50.67))
+		String q=null;
+		double xmin=BBOX.get("WEST");
+		double ymin=BBOX.get("NORTH");
+		double xmax=BBOX.get("EAST");
+		double ymax=BBOX.get("SOUTH");
+		if (spatialOperator.equalsIgnoreCase("bbox")){			
+			q=spatialOperator+"(BoundingBox,"+xmin+","+ymin+","+xmax+","+ymax+")";
+		}else{
+			q=spatialOperator+"(BoundingBox,ENVELOPE("+xmin+","+ymin+","+xmax+","+ymax+"))";
+		}
+		
+		//
+		
+		return q;
+	}
+	
 	
 	/**
 	 * @throws IOException 
@@ -967,6 +1175,34 @@ public ArrayList<Element> findElement(Element element, String elementName)throws
 	 */
 	public ArrayList<String> getColsName() {
 		return ColsName;
+	}
+
+	/**
+	 * @return the useLoginService
+	 */
+	public boolean isUseLoginService() {
+		return useLoginService;
+	}
+
+	/**
+	 * @param useLoginService the useLoginService to set
+	 */
+	public void setUseLoginService(boolean useLoginService) {
+		this.useLoginService = useLoginService;
+	}
+
+	/**
+	 * @param spatialOperator the spatialOperator to set
+	 */
+	public void setSpatialOperator(String spatialOperator) {
+		this.spatialOperator = spatialOperator;
+	}
+
+	/**
+	 * @return the spatialOperator
+	 */
+	public String getSpatialOperator() {
+		return spatialOperator;
 	}
 	
 
