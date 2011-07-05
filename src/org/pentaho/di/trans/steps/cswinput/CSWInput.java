@@ -46,15 +46,15 @@ public class CSWInput extends BaseStep implements StepInterface {
 		if (first){ 
         	// we just got started
             first = false;
+            data.outputRowMeta=meta.getCswParam().getColumnField();
+          /* if (data.outputRowMeta==null){
+        	   data.outputRowMeta=meta.getMetaInterfaceFieds(); 
+           }*/
            
-           
-           data.outputRowMeta=meta.getMetaInterfaceFieds();
            
             if (data.outputRowMeta==null){
             	data.outputRowMeta = new RowMeta();
             	 meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
-            }else{
-            	//
             }
                                   		                          
         }

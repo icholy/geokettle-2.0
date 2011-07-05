@@ -9,22 +9,21 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import javax.servlet.ServletException;
-
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
-
 import org.jdom.DataConversionException;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -33,8 +32,11 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.row.RowMetaInterface;
-
 import org.xml.sax.InputSource;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * @author Ouattara Mamadou
@@ -52,6 +54,9 @@ public class CSWReader {
 	private String constraintLanguage;
 	private Integer startPosition;
 	private Integer maxRecords;
+	private String[] outputSchemaList;
+	private String[] queryableElement;
+	private String[] comparisonOperator;
 	
 	private boolean simpleSearch;
 	private String keyword;
@@ -131,7 +136,7 @@ public class CSWReader {
 	/**
 	 * build a GetCapabilities query based on SOAP method
 	 * */
-	private String buildGetCapabilitiesSOAPQuery(){
+	/*private String buildGetCapabilitiesSOAPQuery(){
 		String query="<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 		query +="<env:Envelope xmlns:env=\"http://www.w3.org/2003/05/soap-envelope\">";
 		query +="<env:Body>";
@@ -146,7 +151,7 @@ public class CSWReader {
 		query +="</env:Body>";
 		query +="</env:Envelope>";
 		return query;
-	}
+	}*/
 	
 	/**
 	 * build a GetRecords query using POST method
@@ -394,6 +399,7 @@ public class CSWReader {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		Collections.sort(queryableElement);
 		return queryableElement.toArray(new String[queryableElement.size()]);
 		
 	}
@@ -454,10 +460,13 @@ public class CSWReader {
 		ArrayList<ArrayList<Object>> recordList = null;	
 		String err=null;
 		String pattern=profile;	
+		if (XMLRequestResult==null)
+			return null;
 		err=checkIfReponseReturnException(this.XMLRequestResult.getRootElement());
 		
 		if (err!=null){
-			throw new KettleException(err);
+			//throw new KettleException(err);
+			return null;
 			
 		}
 		if (this.outputSchema.equalsIgnoreCase(CSWInputMeta.DEFAULT_PROFILE)){
@@ -483,6 +492,8 @@ public class CSWReader {
 			 rootElement=this.XMLRequestResult.getRootElement();
 			 
 			 ArrayList<Element> el=this.findElement(rootElement,profile);
+			 if (this.ColsName==null)
+				 return null;
 		
 			String[] colName=this.ColsName.toArray(new String[ColsName.size()]);
 				//columnField.getFieldNames();
@@ -499,11 +510,15 @@ public class CSWReader {
 				for(int i=0;i<taille;i++){
 					Element e=tempCour.get(i);
 					if (e.getName().equalsIgnoreCase(colName[i])){
+						if ((e.getName().equalsIgnoreCase("lowercorner"))||(e.getName().equalsIgnoreCase("uppercorner"))){
+							String[] coordinate=e.getText().split(" ");							
+							Geometry g1=new  GeometryFactory().createPoint(new Coordinate(Double.parseDouble(coordinate[0]), Double.parseDouble(coordinate[1])));
+							o.add(g1);
+						}else
 						o.add(e.getText());	
-						//System.out.print(e.getText());
+						
 					}else{
-						//o.add("Toto");	
-						//System.out.print("toto");
+						o.add("N/A");						
 					}
 				}
 				//System.out.println();
@@ -545,7 +560,7 @@ public class CSWReader {
 						o.add(e.getText());	
 						//System.out.print(e.getText());
 					}else{
-						
+						o.add("N/A");
 					}
 				}
 				//System.out.println();
@@ -562,13 +577,15 @@ public class CSWReader {
 	/**
 	 * Getrecords method
 	 * @throws KettleException 
+	 * @throws UnsupportedEncodingException 
 	 * */
-	public String GetRecords() throws KettleException{
+	public String GetRecords() throws KettleException, UnsupportedEncodingException{
 		String response = null;
+		
 		try {
 			if (this.method.equalsIgnoreCase("GET")){
 				 
-				response=CSWGET(buildGetRecordsGETQuery());
+				response=CSWGET(buildGetRecordsGETQuery());				
 			} 
 			else
 			if (this.method.equalsIgnoreCase("POST")){
@@ -584,6 +601,9 @@ public class CSWReader {
 			throw new KettleException("Error parsing CSW GetRecord...", e);
 		}
 		
+			
+		byte[] b =response.getBytes();
+		response=new String (b,"UTF-8");		
 		System.out.println(response);		
 		return response;
 	}
@@ -592,13 +612,13 @@ public class CSWReader {
 	 * parse string to JDOM document
 	 * */
 	public Document fromStringToJDOMDocument(String str)  throws KettleException{
-		SAXBuilder parser = new SAXBuilder();
+		SAXBuilder parser = new SAXBuilder();		
 		Document doc;
 		try{
 			doc = parser.build(new InputSource(new StringReader(str)));
 		}catch(Exception e){
 			throw new KettleException("Error parsing CSW response...", e);
-		}
+		}		
 		setXMLRequestResult(doc);
 		return doc;		
 	}
@@ -708,19 +728,21 @@ public ArrayList<Element> findElement(Element element, String elementName)throws
 		HttpMethod httpMethod = new GetMethod(query);
 		if (useLoginService==true)
 			httpMethod.setRequestHeader("Cookie", this.CatalogAuthentication());
+			//
 				
 		try { 			
 			 //Prepare HTTP Get		
     		 HttpClient httpclient = new HttpClient();
-    		    		
+    		  		
     		 
     		 httpclient.executeMethod(httpMethod);
     		 
              // the response
              InputStream inputStream = httpMethod.getResponseBodyAsStream();
              StringBuffer bodyBuffer = new StringBuffer();
-             int c;
-             while ( (c=inputStream.read())!=-1) bodyBuffer.append((char)c);
+             int c; 
+             while ( (c=inputStream.read())!=-1) 
+            	 bodyBuffer.append((char)c);
              inputStream.close();
 
     		 return bodyBuffer.toString();
@@ -821,7 +843,7 @@ public ArrayList<Element> findElement(Element element, String elementName)throws
 	}
 	
 	
-	private String CSWSOAP(String query, URL url) throws KettleException{    	   	
+	/*private String CSWSOAP(String query, URL url) throws KettleException{    	   	
     	try { 			
 			// Send request			
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection(); 
@@ -844,7 +866,7 @@ public ArrayList<Element> findElement(Element element, String elementName)throws
 		}catch (Exception e) { 
 			throw new KettleException("Error connecting to CSW catalog using SOAP method...", e);
 		}
-	}
+	}*/
 	
 	/**
 	 * build spatial query
@@ -1203,6 +1225,48 @@ public ArrayList<Element> findElement(Element element, String elementName)throws
 	 */
 	public String getSpatialOperator() {
 		return spatialOperator;
+	}
+
+	/**
+	 * @param outputSchemaList the outputSchemaList to set
+	 */
+	public void setOutputSchemaList(String[] outputSchemaList) {
+		this.outputSchemaList = outputSchemaList;
+	}
+
+	/**
+	 * @return the outputSchemaList
+	 */
+	public String[] getOutputSchemaList() {
+		return outputSchemaList;
+	}
+
+	/**
+	 * @param queryableElement the queryableElement to set
+	 */
+	public void setQueryableElement(String[] queryableElement) {
+		this.queryableElement = queryableElement;
+	}
+
+	/**
+	 * @return the queryableElement
+	 */
+	public String[] getQueryableElement() {
+		return queryableElement;
+	}
+
+	/**
+	 * @param comparisonOperator the comparisonOperator to set
+	 */
+	public void setComparisonOperator(String[] comparisonOperator) {
+		this.comparisonOperator = comparisonOperator;
+	}
+
+	/**
+	 * @return the comparisonOperator
+	 */
+	public String[] getComparisonOperator() {
+		return comparisonOperator;
 	}
 	
 

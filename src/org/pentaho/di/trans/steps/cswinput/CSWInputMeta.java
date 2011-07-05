@@ -131,7 +131,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 	@Override
 	public void loadXML(Node stepnode, List<DatabaseMeta> databases,
 			Map<String, Counter> counters) throws KettleXMLException {
-		// TODO Auto-generated method stub
+		
 		readData(stepnode);
 
 	}
@@ -177,13 +177,11 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 			while (it.hasNext()){
 				String courant=it.next();
 				String chaine=XMLHandler.getTagValue(stepnode, "BBOX_"+courant);
-				//Double.parseDouble(chaine);
+				//
 				bbox.put(courant, Double.parseDouble(chaine));
 				
 			}
-			cswParam.setBBOX(bbox);
-			
-			
+			cswParam.setBBOX(bbox);			
 			///
 			Node queriesNode = XMLHandler.getSubNode(stepnode, "queries");
 			int nrQuery = XMLHandler.countNodes(queriesNode, "query");
@@ -203,6 +201,46 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 			}
 			
 			cswParam.setAdvancedRequestParam(queryList);
+			///
+			
+			Node outputlistNode = XMLHandler.getSubNode(stepnode, "outputschemalist");
+			int nrOutput = XMLHandler.countNodes(outputlistNode, "outputschema");
+
+			//
+			String[] outputSchemaList= new String[nrOutput];
+			for (int i = 0; i < nrOutput; i++) {				
+				Node onode = XMLHandler.getSubNodeByNr(outputlistNode, "outputschema", i);
+				String s=XMLHandler.getTagValue(onode, "id");				
+				outputSchemaList[i]=s;				
+			}
+			cswParam.setOutputSchemaList(outputSchemaList);
+			
+			//query element list
+			Node queryElementlistNode = XMLHandler.getSubNode(stepnode, "queryelementlist");
+			int nrqueryelement = XMLHandler.countNodes(queryElementlistNode, "queryelement");
+
+			//
+			String[] queryElementList= new String[nrqueryelement];
+			for (int i = 0; i < nrqueryelement; i++) {				
+				Node onode = XMLHandler.getSubNodeByNr(queryElementlistNode, "queryelement", i);
+				String s=XMLHandler.getTagValue(onode, "id");				
+				queryElementList[i]=s;				
+			}
+			cswParam.setQueryableElement(queryElementList);
+			
+			//comparison element list
+			Node comparisonOperatorlistNode = XMLHandler.getSubNode(stepnode, "comparisonoperators");
+			int nrcomparisonoperator = XMLHandler.countNodes(comparisonOperatorlistNode, "operator");
+
+			//
+			String[] operatorList= new String[nrcomparisonoperator];
+			for (int i = 0; i < nrcomparisonoperator; i++) {				
+				Node onode = XMLHandler.getSubNodeByNr(comparisonOperatorlistNode, "operator", i);
+				String s=XMLHandler.getTagValue(onode, "id");				
+				operatorList[i]=s;				
+			}
+			cswParam.setComparisonOperator(operatorList);
+			
 		}
 		catch(Exception e){
 			throw new KettleXMLException(Messages.getString("CSWInputMeta.Exception.UnableToReadStepInformationFromXML"), e); //$NON-NLS-1$
@@ -241,7 +279,41 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 			
 		}
 		
-		//
+		//Writing outputschema list
+		retval.append("    <outputschemalist>").append(Const.CR);
+		if (cswParam.getOutputSchemaList()!=null){
+			for(String s:cswParam.getOutputSchemaList()){
+				retval.append("      <outputschema>").append(Const.CR);
+				retval.append("        ").append(XMLHandler.addTagValue("id", s));
+				retval.append("      </outputschema>").append(Const.CR);
+			}
+		}
+		retval.append("    </outputschemalist>").append(Const.CR);
+		
+		//queryelement list
+		retval.append("    <queryelementlist>").append(Const.CR);
+		if (cswParam.getQueryableElement()!=null){
+			for(String s:cswParam.getQueryableElement()){
+				retval.append("      <queryelement>").append(Const.CR);
+				retval.append("        ").append(XMLHandler.addTagValue("id", s));
+				retval.append("      </queryelement>").append(Const.CR);
+			}
+		}
+		retval.append("    </queryelementlist>").append(Const.CR);
+		
+		
+		//comparison operator
+		retval.append("    <comparisonoperators>").append(Const.CR);
+		if (cswParam.getComparisonOperator()!=null){
+			for(String s:cswParam.getComparisonOperator()){
+				retval.append("      <operator>").append(Const.CR);
+				retval.append("        ").append(XMLHandler.addTagValue("id", s));
+				retval.append("      </operator>").append(Const.CR);
+			}
+		}
+		retval.append("    </comparisonoperators>").append(Const.CR);
+		
+		//queries
 		retval.append("    <queries>").append(Const.CR);
         if (cswParam.getAdvancedRequestParam()!=null){
 			for (String[] s:cswParam.getAdvancedRequestParam()) {
@@ -425,6 +497,9 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 		cswParam.setUseLoginService(false);
 		cswParam.setSpatialOperator("BBOX");
 		cswParam.setOutputSchema("http://www.opengis.net/cat/csw/2.0.2");
+		cswParam.setOutputSchemaList(null);
+		cswParam.setQueryableElement(null);
+		cswParam.setComparisonOperator(null);
 		
 		try {
 			cswParam.setCatalogUrl("http://catalog-server/CSW");
@@ -492,34 +567,41 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 		
 		setProfileBasedOnOutputSchemaValue();
 		String pattern=cswParam.getProfile();
-		try {
-						
-			cswParam.setXMLRequestResult(cswParam.fromStringToJDOMDocument(cswParam.GetRecords()));
-			err=cswParam.checkIfReponseReturnException(cswParam.getXMLRequestResult().getRootElement());
-			//System.out.println(err);
-			if (err!=null){
-				throw new KettleException(err);
+		
+		
+			try {
+				if (this.getCswParam().getXMLRequestResult()==null){								
+				cswParam.setXMLRequestResult(cswParam.fromStringToJDOMDocument(cswParam.GetRecords()));
+				}
+				err=cswParam.checkIfReponseReturnException(cswParam.getXMLRequestResult().getRootElement());
+				//System.out.println(err);
+				if (err!=null){
+					throw new KettleException(err);
+					
+				}
+				if (cswParam.getOutputSchema().equalsIgnoreCase(DEFAULT_PROFILE)){
+					columnField=getFieldsFromDefaultProfileDocument(row,pattern);
+				}else
+				if(cswParam.getOutputSchema().equalsIgnoreCase(ISOTC211_2005_PROFILE)){
+					columnField=getFieldsFromISOTC2112005ProfileDocument(row,pattern);
+				}else{
+					columnField=getFieldsFromISOTC2112005ProfileDocument(row,pattern);
+				}
+				//
+				//columnField.addValueMeta(new ValueMeta("Geom",ValueMetaInterface.TYPE_GEOMETRY));
+				//
+				//this.fieds=columnField;
+				cswParam.setColumnField(columnField);
+				
+				
+			} catch (KettleException e) {
+				
+			} catch (ServletException e) {
+				
+			} catch (IOException e) {
 				
 			}
-			if (cswParam.getOutputSchema().equalsIgnoreCase(DEFAULT_PROFILE)){
-				columnField=getFieldsFromDefaultProfileDocument(row,pattern);
-			}else
-			if(cswParam.getOutputSchema().equalsIgnoreCase(ISOTC211_2005_PROFILE)){
-				columnField=getFieldsFromISOTC2112005ProfileDocument(row,pattern);
-			}else{
-				columnField=getFieldsFromISOTC2112005ProfileDocument(row,pattern);
-			}
-			
-			//
-			cswParam.setColumnField(columnField);
-			
-		} catch (KettleException e) {
-			
-		} catch (ServletException e) {
-			
-		} catch (IOException e) {
-			
-		}
+		
 	        
     	
 	}
@@ -535,8 +617,12 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 			Element el=this.cswParam.findSubElement(cswParam.getXMLRequestResult().getRootElement(),profile);
 			Iterator<Element> it=cswParam.getColumns(el).iterator();
 			while (it.hasNext()){
-				Element c=it.next();					
+				Element c=it.next();
+				if ((c.getName().equalsIgnoreCase("lowercorner"))||(c.getName().equalsIgnoreCase("uppercorner"))){
+					row.addValueMeta(new ValueMeta(c.getName(),ValueMetaInterface.TYPE_GEOMETRY));
+				}else
 				row.addValueMeta(new ValueMeta(c.getName(), ValueMetaInterface.TYPE_STRING));
+				
 				colName.add(c.getName());
 			}				
 		//
@@ -545,6 +631,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 		}else{
 			throw new KettleException("Zero Records return");
 		}
+		
 		return fieds;
 	}
 	

@@ -170,6 +170,8 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 	private FormData fdwSpatialOperator;
 	private Label wlSpatialOp;
 	private FormData fdwlSpatialOp;
+	private String[] queryElement;
+	private String[] comparisonOps;
 	
 	public void setMethod(){
 		if (wMethod[0].getSelection() || wMethod[1].getSelection()){
@@ -287,7 +289,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
         wMethodCSW.setLayoutData(fdwMethod);
         wMethodCSW.add("POST");
         wMethodCSW.add("GET");
-        wMethodCSW.add("SOAP");
+       // wMethodCSW.add("SOAP");
         
        
 
@@ -336,7 +338,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
         fdwConstrainteLanguage.top  = new FormAttachment(wUrl, margin*3);
         fdwConstrainteLanguage.right= new FormAttachment(100, -1*margin);
         wConstrainteLanguage.setLayoutData(fdwConstrainteLanguage);
-        wConstrainteLanguage.add("FILTER");
+        //wConstrainteLanguage.add("FILTER");
         wConstrainteLanguage.add("CQL_TEXT");
         
         
@@ -356,10 +358,12 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
             {
             	input.setChanged();
             	if (wChkLoginService.getSelection()==true){
-            		wLoginGroup.setEnabled(true);
+            		//wLoginGroup.setEnabled(true);
+            		EnableDisableLoginGroup(true);
             	}else
             	if (wChkLoginService.getSelection()==false){
-            		wLoginGroup.setEnabled(false);
+            		//wLoginGroup.setEnabled(false);
+            		EnableDisableLoginGroup(false);
             	}           	
             		
             }
@@ -574,9 +578,11 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
             	input.setChanged();
             	if (wChkAdvanced.getSelection()==true){
             		wAdvancedGroup.setEnabled(true);
+            		EnableDisableAdvancedQueryGroup(true);
             	}else
             	if (wChkAdvanced.getSelection()==false){
-            		wAdvancedGroup.setEnabled(false);
+            		//wAdvancedGroup.setEnabled(false);
+            		EnableDisableAdvancedQueryGroup(false);
             	}           	
             		
             }
@@ -989,9 +995,38 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		if (!Const.isEmpty(input.getCswParam().getLoginServiceUrl())){
 			wLoginUrl.setText(input.getCswParam().getLoginServiceUrl());
 		}
+		
+		if (!Const.isEmpty(input.getCswParam().getOutputSchemaList())){			
+			String [] outputlist=input.getCswParam().getOutputSchemaList();
+			for (String chaine:outputlist){
+				wOutputSchemaLabel.add(chaine);
+			}
+		}
+		//queryelement
+		if (!Const.isEmpty(input.getCswParam().getQueryableElement())){			
+			
+			this.queryElement=input.getCswParam().getQueryableElement();
+			ColumnInfo col=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column1"),  
+					ColumnInfo.COLUMN_TYPE_CCOMBO,queryElement, true);
+			
+			wQueryElement.setColumnInfo(0, col);			
+		}
+		
+		//comparisonop
+		if (!Const.isEmpty(input.getCswParam().getComparisonOperator())){			
+			
+			this.comparisonOps=input.getCswParam().getComparisonOperator();
+			ColumnInfo col=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column2"),  
+					ColumnInfo.COLUMN_TYPE_CCOMBO,comparisonOps, true);			
+					wQueryElement.setColumnInfo(1, col);			
+		}
+		
+		//
+		
 		if (!Const.isEmpty(input.getCswParam().getOutputSchema())){
 			wOutputSchemaLabel.setText(input.getCswParam().getOutputSchema());
 		}
+		
 		if (!Const.isEmpty(input.getCswParam().getTitle())){
 			wTitle.setText(input.getCswParam().getTitle());
 		}
@@ -1013,8 +1048,10 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		wChkAdvanced.setSelection(input.getCswParam().isSimpleSearch());
 		wChkLoginService.setSelection(input.getCswParam().isUseLoginService());
 		
-		wAdvancedGroup.setEnabled(wChkAdvanced.getSelection());
-		wLoginGroup.setEnabled(wChkLoginService.getSelection());
+		//wAdvancedGroup.setEnabled(wChkAdvanced.getSelection());
+		EnableDisableAdvancedQueryGroup(wChkAdvanced.getSelection());
+		//wLoginGroup.setEnabled(wChkLoginService.getSelection());
+		EnableDisableLoginGroup(wChkLoginService.getSelection());
 			
 		if (!Const.isEmpty(input.getCswParam().getElementSet())){
 			String value=input.getCswParam().getElementSet();
@@ -1075,6 +1112,8 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 			return;
 		}
 		cswParam.setMethod(wMethodCSW.getText());
+		cswParam.setOutputSchema(wOutputSchemaLabel.getText());
+		cswParam.setOutputSchemaList(wOutputSchemaLabel.getItems());
 		
 		try {
 			cswParam.setCatalogUrl(wUrl.getText());
@@ -1084,7 +1123,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 			mb.setMessage(Messages.getString("CSWInputDialog.ErrorRequiredWellFormedCSWURL.DialogMessage")); //$NON-NLS-1$
 			mb.setText(Messages.getString("CSWInputDialog.ErrorRequiredWellFormedCSWURL.DialogMessage")); //$NON-NLS-1$
 			mb.open();
-			//e.printStackTrace();
+			
 			return;
 			
 			
@@ -1102,8 +1141,10 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 				
 			}			
 				
-			String[] queryElement=cswParam.getQueryableElement(cswParam.fromStringToJDOMDocument(output));
-			String[] comparisonOps=cswParam.getComparisonOperator(cswParam.fromStringToJDOMDocument(output));				
+			queryElement=cswParam.getQueryableElement(cswParam.fromStringToJDOMDocument(output));
+			cswParam.setQueryableElement(queryElement);
+			comparisonOps=cswParam.getComparisonOperator(cswParam.fromStringToJDOMDocument(output));
+			cswParam.setComparisonOperator(comparisonOps);
 			ColumnInfo col=new ColumnInfo(Messages.getString("CSWInputDialog.QueryElement.Column1"),  
 					ColumnInfo.COLUMN_TYPE_CCOMBO,queryElement, true);
 			wQueryElement.setColumnInfo(0, col);
@@ -1114,13 +1155,16 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 			
 			outSchemaContent=cswParam.extractOutputSchemaFromCapabilitiesDocument(output);
 			//
+			wOutputSchemaLabel.removeAll();
 			Iterator<String> contentIT=outSchemaContent.iterator();
 			while (contentIT.hasNext()){
 				String item=contentIT.next();
 				wOutputSchemaLabel.add(item);
 			}
+			if (cswParam.getOutputSchema()!=null)
+			wOutputSchemaLabel.setText(cswParam.getOutputSchema());
 			
-			//System.out.println(output);
+			//
 		} catch (KettleException e) {				
 			//
 			MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
@@ -1160,6 +1204,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 				elementSet=wOptResultTypeFull.getText();
 		}
 		
+		
 		cswParam=new CSWReader();
 		cswParam.setVersion(wVersion.getText());
 		cswParam.setMethod(wMethodCSW.getText());
@@ -1187,6 +1232,8 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		cswParam.setBBOX(bbox);
 		cswParam.setCapabilitiesDoc(this.output);
 		
+		cswParam.setQueryableElement(queryElement);
+		cswParam.setComparisonOperator(comparisonOps);
 		
 		
 		/**
@@ -1198,6 +1245,9 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 			advancedElementArrayList.add(s);		
 		}
 		cswParam.setAdvancedRequestParam(advancedElementArrayList);
+		
+		cswParam.setOutputSchemaList(wOutputSchemaLabel.getItems());
+		
 		
 		/**
 		 * */
@@ -1219,5 +1269,22 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		//input.setKeyword(wReqText.getText());
 		
 		dispose();
+	}
+	
+	private void EnableDisableLoginGroup(boolean ok){
+		wLoginUrl.setEnabled(ok);
+		wPassword.setEnabled(ok);
+		wUser.setEnabled(ok);
+		
+	}
+	
+	private void EnableDisableAdvancedQueryGroup(boolean ok){
+		wQueryElement.setEnabled(ok);
+		wBoxEast.setEnabled(ok);
+		wBoxNorth.setEnabled(ok);
+		wBoxSouth.setEnabled(ok);
+		wBoxWest.setEnabled(ok);
+		wSpatialOperator.setEnabled(ok);
+		wGetQueryElements.setEnabled(ok);
 	}
 }
