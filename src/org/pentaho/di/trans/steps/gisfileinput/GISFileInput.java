@@ -113,10 +113,9 @@ public class GISFileInput extends BaseStep implements StepInterface
                 data.outputRowMeta = meta.getOutputFields(data.files, getStepname());
                 data.readerRowSize = data.outputRowMeta.size();
                 for(int i = data.outputRowMeta.size()-1; i>=0;i--){
-                	if(data.outputRowMeta.getFieldNames()[i]==null)
-                		 data.readerRowSize--;
-                	else
-                		break;         	
+                	if(data.outputRowMeta.getFieldNames()[i]!=null)
+                		break;
+                	data.readerRowSize--;       	
                 }           
             }
 

@@ -1,14 +1,18 @@
 package org.pentaho.di.trans.steps.gmlfileinput;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.vfs.FileObject;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
-import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.fileinput.FileInputList;
 import org.pentaho.di.core.geospatial.GMLReader;
 import org.pentaho.di.core.row.RowDataUtil;
+import org.pentaho.di.core.row.RowMeta;
+import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.vfs.KettleVFS;
 import org.pentaho.di.trans.Trans;
 import org.pentaho.di.trans.TransMeta;
@@ -17,6 +21,7 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
+import org.pentaho.di.trans.steps.gmlfileinput.Messages;
 
 /**
  * Reads data from a GML file.
@@ -29,210 +34,227 @@ public class GMLFileInput extends BaseStep implements StepInterface{
 	private GMLFileInputMeta meta;
 	private GMLFileInputData data;
 		
+	private TransMeta transmeta;
+	private GMLReader gmlReader;
+	
 	public GMLFileInput(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta, Trans trans)
 	{
 		super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+		this.transmeta = transMeta;	
 	}
 	
 	public boolean isFileAlreadyRead(FileObject fo){
-		if (data.file_gml.isEmpty())
-			return false;
-		for (int i=0;i<data.file_gml.size();i++){
-			if (fo.equals(data.file_gml.get(i)))
-				return true;
-		}	
+		List<FileObject> fos = data.files.getFiles();
+		if (!fos.isEmpty()){	
+			for (int i=0;i<data.fileIndex;i++){
+				if (fo.getName().equals(fos.get(i).toString()))
+					return true;
+			}	
+		}
 		return false;
 	}
 	
-	public void checkFirst() throws KettleStepException{
-        // See if we need to get a list of files from input...
-        if (first){
-            first = false; 
-            data.outputRowMeta = meta.getOutputFields(data.files, getStepname());          
-        }
-	}
-	
-	public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException
-	{
+	public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException{
 		meta=(GMLFileInputMeta)smi;
-		data=(GMLFileInputData)sdi;       
+		data=(GMLFileInputData)sdi;
+	
+		if (first){
+            first = false;        
+            Object[] r;
+            
+            data.outputRowMeta = new RowMeta();
+            RowMetaInterface[] infoStep = null;
+            
+            if (meta.isFileNameInField()){
+                // Read the files from the specified input stream...
+                data.files.getFiles().clear();
+                
+                int idx = -1;
+                data.rowSet = findInputRowSet(meta.getAcceptingStepName());
+                
+                r = getRowFrom(data.rowSet);
+                while (r!=null){
+                    RowMetaInterface prevInfoFields = data.rowSet.getRowMeta();
+                    if (idx<0){
+                        if (meta.isPassingThruFields()){
+                            data.passThruFields = new HashMap<FileObject, Object[]>();
+                            infoStep = new RowMetaInterface[] { prevInfoFields };
+                            data.nrPassThruFields = prevInfoFields.size();
+                        }
+                        idx = prevInfoFields.indexOfValue(meta.getFileNameField());
+                        if (idx<0){
+                            logError(Messages.getString("GMLFileInput.Log.Error.UnableToFindFilenameField", meta.getFileNameField()));
+                            setErrors(1);
+                            stopAll();
+                            return false;
+                        }
+                    }
+                    String fileValue = prevInfoFields.getString(r, idx);
+                    try{
+                        FileObject fileObject = KettleVFS.getFileObject(fileValue);
+                        data.files.addFile(fileObject);
+                        if (meta.isPassingThruFields())
+                            data.passThruFields.put(fileObject, r);
+                    }catch(IOException e){
+                        logError(Messages.getString("GMLFileInput.Log.Error.UnableToCreateFileObject", fileValue));
+                    }
+                    
+                    // Grab another row
+                    r = getRowFrom(data.rowSet);
+                }
+                
+                if (data.files.nrOfFiles()==0){
+                    if (log.isDetailed()) logDetailed(Messages.getString("GMLFileInput.Log.Error.NoFilesSpecified"));
+                    setOutputDone();
+                    return false;
+                }
+                data.outputRowMeta = meta.getOutputFields(data.files, getStepname());
+                data.readerRowSize = data.outputRowMeta.size();
+                for(int i = data.outputRowMeta.size()-1; i>=0;i--){
+                	if(data.outputRowMeta.getFieldNames()[i]==null)
+                		 data.readerRowSize--;
+                	else
+                		break;         	
+                }           
+            }
+
+            meta.getFields(data.outputRowMeta, getStepname(), infoStep, null, this); // get the metadata populated.  Simple and easy.
+            
+            handleMissingFiles();
+		}
 		
-		int fileIndex = 0;
-
-		try {
-			if(meta.isFileNameInField()){	
-				Object[] r = getRow(); // this also waits for a previous step to be finished.
-				if (r == null){ // no more input to be expected...
-					setOutputDone();
-		            return false;
-				}
-				String fileName = (String) r[getInputRowMeta().indexOfValue(meta.getFileNameField())];
-				FileObject fo = KettleVFS.getFileObject(fileName);
-				if(!isFileAlreadyRead(fo)){
-					data.file_gml.add(fo); 
-					fileIndex = data.file_gml.indexOf(fo);
-					// Create file if it does not exist
-					if (!data.file_gml.get(fileIndex).exists()) {
-						data.file_gml.get(fileIndex).createFile();
-					}
-					createReader(fileIndex);
-					
-					if (first){
-				        first = false; 
-				        data.files = new FileInputList();
-						data.files.addFile(fo);						
-						data.outputRowMeta = meta.getOutputFields(data.files, getStepname());           
-				    }
-					
-					// Allocate the output row in advance, because we possibly want to add a few extra fields...
-			        Object[] row = data.gmlreader.get(fileIndex).getRow( RowDataUtil.allocateRowData(data.outputRowMeta.size()) );
-			        
-			        while (row!=null){
-						int outputIndex = data.fields.size();
-						
-						// Possibly add a row number...
-				        if (meta.isRowNrAdded()){
-				            row[outputIndex++] = new Long(getLinesInput());
-				        }
-				
-				        putRow(data.outputRowMeta, RowDataUtil.addValueData(row, outputIndex, (String) r[getInputRowMeta().indexOfValue(meta.getFileNameField())]));        // fill the rowset(s). (wait for empty)			     
-			        	
-				        if (checkFeedback(getLinesInput())) logBasic(Messages.getString("GMLFileInput.Log.LineNr")+getLinesInput()); //$NON-NLS-1$
-				
-				        if (meta.getRowLimit()>0 && getLinesInput()>=meta.getRowLimit())  // limit has been reached: stop now.
-				        {
-				            setOutputDone();
-				            return false;
-				        }
-				        row = data.gmlreader.get(fileIndex).getRow( RowDataUtil.allocateRowData(data.outputRowMeta.size()) );
-			        }
-				}else{
-					logBasic(Messages.getString("GMLFileInput.Log.GMLFileAlreadyRead1")+" : ["+data.gmlreader.get(fileIndex)+"]"+Messages.getString("GMLFileInput.Log.GMLFileAlreadyRead2")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				}	
-			}else{
-				if (first){
-			        first = false; 
-			        data.outputRowMeta = meta.getOutputFields(data.files, getStepname());          
-			    }
-				
-				incrementLinesInput();
-				Object[] row = data.gmlreader.get(0).getRow( RowDataUtil.allocateRowData(data.outputRowMeta.size()) );
-		        
-				while (row!=null){
-					// OK, so we have read a line: increment the input counter
-
-					int outputIndex = data.fields.size();
-			
-			        // Possibly add a row number...
-			        if (meta.isRowNrAdded()){
-			            row[outputIndex++] = new Long(getLinesInput());
-			        }
-			
-			        putRow(data.outputRowMeta, row);        // fill the rowset(s). (wait for empty)
-
-			        if (checkFeedback(getLinesInput())) logBasic(Messages.getString("GMLFileInput.Log.LineNr")+getLinesInput()); //$NON-NLS-1$
-			
-			        if (meta.getRowLimit()>0 && getLinesInput()>=meta.getRowLimit())  // limit has been reached: stop now.
-			        {
-			            setOutputDone();
-			            return false;
-			        }
-			        
-			        row = data.gmlreader.get(0).getRow( RowDataUtil.allocateRowData(data.outputRowMeta.size()) );
-				}      
-		        setOutputDone();  // signal end to receiver(s)
-		        return false; // end of data or error.	        
+		try {			
+			if (data.fileIndex >= data.files.getFiles().size()){ // no more input to be expected...
+				setOutputDone();
+				return false;
 			}
+
+			FileObject fo = data.files.getFile(data.fileIndex);
+			if(!isFileAlreadyRead(fo)){			
+				createReader(data.fileIndex);
+				incrementLinesInput();						
+
+				Object[] gtRow = gmlReader.getRow(RowDataUtil.allocateRowData(data.outputRowMeta.size()));
+				while (gtRow!=null){
+					int outputIndex = data.fields.size();
+
+					Object[] row;
+
+					if(meta.isPassingThruFields() && meta.isFileNameInField()){
+						Object[] gtRowTemp = new Object[data.readerRowSize];
+						for(int i = 0; i< data.readerRowSize;i++){
+							gtRowTemp[i] = gtRow[i];
+						}
+						row = (Object[]) ArrayUtils.addAll(gtRowTemp, data.passThruFields.get(data.files.getFile(data.fileIndex)));					
+					}else
+						row = gtRow;
+					
+					// Possibly add a row number...
+					if (meta.isRowNrAdded())
+						row[outputIndex++] = new Long(getLinesInput());
+					
+					putRow(data.outputRowMeta, row);
+					data.rowRead++;
+					
+					if (checkFeedback(getLinesInput())) 
+						logBasic(Messages.getString("GMLFileInput.Log.LineNr")+data.rowRead);
+
+					if (meta.getRowLimit()>0 && data.rowRead>=meta.getRowLimit()){
+						setOutputDone();
+						return false;
+					}
+				
+					gtRow = gmlReader.getRow(RowDataUtil.allocateRowData(data.outputRowMeta.size()));
+				}
+			}else
+				logBasic(Messages.getString("GMLFileInput.Log.GMLFileAlreadyRead1")+" : ["+gmlReader+"]"+Messages.getString("GMLFileInput.Log.GMLFileAlreadyRead2"));
+			
+			data.files.getFile(data.fileIndex).close();
+			
+			if (!meta.isFileNameInField()){ // no more input to be expected...
+				setOutputDone();
+				return false;
+			}
+			
+			data.fileIndex++;
 		}catch (Exception e) {
 			logError("Error reading gml file from field value", e);
-			closeFiles();
 			setErrors(1);
 			stopAll();
 			setOutputDone(); // signal end to receiver(s)
 			return false;
-		}        	
+		}      			
 		return true;
 	}
 	
-	public boolean init(StepMetaInterface smi, StepDataInterface sdi)
-	{
+	public boolean init(StepMetaInterface smi, StepDataInterface sdi){
 		meta=(GMLFileInputMeta)smi;
 		data=(GMLFileInputData)sdi;
-		
-		if (super.init(smi, sdi)) {
-			try {
-				data.file_gml = new ArrayList <FileObject>();
-				data.gmlreader = new ArrayList <GMLReader>();
-				if(!meta.isFileNameInField()){        
-					data.files  = meta.getTextFileList(this);				
-					data.fileNr = 0;		            
-					if (data.files.nrOfFiles()==0){
-						logError(Messages.getString("GMLFileInput.Log.Error.NoFilesSpecified"));
-						return false;
-					}		            
-					data.file_gml.add(data.files.getFile(0));
-					createReader(0);
-				}
-			}catch (Exception e) {
-				logError("Cannot open/create file " + data.file_gml.get(0).getName().toString(), e);
+
+		if (super.init(smi, sdi)){
+			try{
+				data.files = meta.getFileList(this);
+				if ((transmeta.getPreviousResult()==null || transmeta.getPreviousResult().getResultFiles()==null || transmeta.getPreviousResult().getResultFiles().size()==0) && 
+	                  data.files.nrOfMissingFiles() > 0 && !meta.isFileNameInField()){
+					logError(Messages.getString("GMLFileInput.Log.Error.NoFilesSpecified"));
+					return false;
+				}	
+			}catch (Exception e){
+				logError("Cannot open/create file ", e);
 				return false;
 			} 
 			return true;
 		}
 		return false;
 	}
+
+	private void handleMissingFiles() throws KettleException{
+		List<FileObject> nonExistantFiles = data.files.getNonExistantFiles();
+		if (nonExistantFiles.size() != 0){
+			String message = FileInputList.getRequiredFilesDescription(nonExistantFiles);
+			if(log.isBasic()) 
+				log.logBasic("Required files", "WARNING: Missing " + message);
+			throw new KettleException("Following required files are missing: " + message);		
+		}
+
+		List<FileObject> nonAccessibleFiles = data.files.getNonAccessibleFiles();
+		if (nonAccessibleFiles.size() != 0){
+			String message = FileInputList.getRequiredFilesDescription(nonAccessibleFiles);
+			if(log.isBasic()) 
+				log.logBasic("Required files", "WARNING: Not accessible " + message);		
+			throw new KettleException("Following required files are not accessible: " + message);			
+		}
+	}
 	
-	private void createReader(int fileIndex) throws KettleException
-    {                
-        try
-        {
-        	data.gmlreader.add(new GMLReader(data.file_gml.get(fileIndex).getURL()));
-        	data.gmlreader.get(fileIndex).open();
+	private void createReader(int fileIndex) throws KettleException{                
+		try{
+			gmlReader = new GMLReader(data.files.getFile(fileIndex).getURL());
+			gmlReader.open();
+			logBasic(Messages.getString("GMLFileInput.Log.OpenedGMLFile")+" : " + data.files.getFile(fileIndex).getName().toString()); 
+			data.fields = gmlReader.getFields();
+		}catch(Exception e){
+			logError(Messages.getString("GMLFileInput.Log.Error.CouldNotOpenGMLFile1") + " : " + data.files.getFile(fileIndex).getName().toString() + Messages.getString("GMLFileInput.Log.Error.CouldNotOpenGMLFile2")+e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
+			throw new KettleException(e);
+		}
+	}
 
-        	logBasic(Messages.getString("GMLFileInput.Log.OpenedGMLFile")+" : ["+data.gmlreader.get(fileIndex)+"]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        	data.fields = data.gmlreader.get(fileIndex).getFields();
-        }
-        catch(Exception e)
-        {
-            logError(Messages.getString("GMLFileInput.Log.Error.CouldNotOpenGMLFile1")+data.file_gml.get(fileIndex)+Messages.getString("GMLFileInput.Log.Error.CouldNotOpenGMLFile2")+e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
-            throw new KettleException(e);
-        }
-    }
-
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi)
-	{
-        closeFiles();      
+	public void dispose(StepMetaInterface smi, StepDataInterface sdi){    
 		super.dispose(smi, sdi);
 	}
 
-	private void closeFiles()
-    {
-        logBasic(Messages.getString("GMLFileInput.Log.FinishedReadingRecords")); //$NON-NLS-1$       
-    }
-
-    //
-	// Run is were the action happens!
-	//
-	public void run()
-	{
-		try
-		{
-			logBasic(Messages.getString("GMLFileInput.Log.StartingToRun"));		 //$NON-NLS-1$
+	public void run(){
+		try{
+			logBasic(Messages.getString("GMLFileInput.Log.StartingToRun"));	
 			while (!isStopped() && processRow(meta, data) );
-		}
-		catch(Exception e)
-		{
-			logError(Messages.getString("GMLFileInput.Log.Error.UnexpectedError")+" : "+e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
-            logError(Const.getStackTracker(e));
-            setErrors(1);
+		}catch(Exception e){
+			logError(Messages.getString("GMLFileInput.Log.Error.UnexpectedError")+" : "+e.toString());
+			logError(Const.getStackTracker(e));
+			setErrors(1);
 			stopAll();
-		}
-		finally
-		{
-		    dispose(meta, data);
+		}finally{
+			dispose(meta, data);
 			markStop();
-		    logSummary();
+			logSummary();
 		}
 	}
-	
 }

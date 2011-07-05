@@ -16,6 +16,10 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.MultiPoint;
 
 import de.micromata.opengis.kml.v_2_2_0.Coordinate;
 import de.micromata.opengis.kml.v_2_2_0.Document;
@@ -32,7 +36,7 @@ import de.micromata.opengis.kml.v_2_2_0.Placemark;
  * 
  */
 
-//TODO Translate all comments in English
+// TODO Translate all comments in English
 public class KMLWriter {
 	private boolean error;
 	private java.net.URL kmlURL;
@@ -46,15 +50,13 @@ public class KMLWriter {
 	private int geomcolumn;
 
 	public KMLWriter(java.net.URL fileURL) {
-		this.kmlURL = fileURL;
-		this.file = new File(kmlURL.getPath());
+		kmlURL = fileURL;
+		file = new File(kmlURL.getPath());
+		kml = KmlFactory.createKml();
+		doc = kml.createAndSetDocument();
 		error = false;
-
-		this.kml = KmlFactory.createKml();
-		this.doc = kml.createAndSetDocument();
-
-		this.testdesc=false;
-		this.testname=false;
+		testdesc = false;
+		testname = false;
 	}
 
 	public void open() throws KettleException {
@@ -67,121 +69,130 @@ public class KMLWriter {
 			// implementation (to support file formats other than Shapefile)
 
 			// TODO: make charset configurable (in the step dialog box?)
-			if (!kmlURL.toString().substring(kmlURL.toString().length() - 3, kmlURL.toString().length()).equalsIgnoreCase("KML"))
-				throw new KettleException("The output specified is not in kml file format (.kml)");			
+			if (!kmlURL
+					.toString()
+					.substring(kmlURL.toString().length() - 3,
+							kmlURL.toString().length()).equalsIgnoreCase("KML"))
+				throw new KettleException(
+						"The output specified is not in kml file format (.kml)");
 		} catch (Exception e) {
-			throw new KettleException("Error opening KML file at URL: " + kmlURL, e);
+			throw new KettleException("Error opening KML file at URL: "
+					+ kmlURL, e);
 		}
 	}
 
-	//en fonction de la geometrie JTS en entree cette metode cree un placemark contenant la geometrie JAK correspondante.
+	// en fonction de la geometrie JTS en entree cette metode cree un placemark
+	// contenant la geometrie JAK correspondante.
 	public void createNewPlacemark(Object[] r) throws FileNotFoundException {
-		//extraction de la geometrie JTS
-		com.vividsolutions.jts.geom.Geometry geomJTS = (Geometry) r[geomcolumn];
-		//creation du placemark dans un document
+		Geometry geomJTS = (Geometry) r[geomcolumn];
+
+		// creation du placemark dans un document
 		Placemark pl = doc.createAndAddPlacemark();
-		//si il existe des champ name et desciption on attribut leur valeur  au placemark
-		if(testname)
+
+		// si il existe des champ name et desciption on attribut leur valeur au
+		// placemark
+		if (testname)
 			pl.withName(r[namecolumn].toString());
-		if(testdesc)
+		if (testdesc)
 			pl.withDescription(r[desccolumn].toString());
 
-		//si la geometrie JTS est un point
-		if (geomJTS instanceof com.vividsolutions.jts.geom.Point) {
-			com.vividsolutions.jts.geom.Point ptJTS = (com.vividsolutions.jts.geom.Point) geomJTS;
-			//on extrait ses coordonnees que l'on change en coordionnees JAK
-			List<de.micromata.opengis.kml.v_2_2_0.Coordinate> coord = this.changerCoordinates(ptJTS.getCoordinate());
-			//on cree un point JAK que l'on place dans le placemark
-			pl.createAndSetPoint().withCoordinates(coord);
-			//si la geometrie est une ligne
-		} else if (geomJTS instanceof com.vividsolutions.jts.geom.LineString) {
-			com.vividsolutions.jts.geom.LineString lsJTS = (com.vividsolutions.jts.geom.LineString) geomJTS;
-			List<de.micromata.opengis.kml.v_2_2_0.Coordinate> coord = this.changerCoordinates(lsJTS.getCoordinates());
-			pl.createAndSetLineString().withCoordinates(coord);
-			//si la geometrie est un anneau
-		} else if (geomJTS instanceof com.vividsolutions.jts.geom.LinearRing) {
-			com.vividsolutions.jts.geom.LinearRing lrJTS = (com.vividsolutions.jts.geom.LinearRing) geomJTS;
-			List<de.micromata.opengis.kml.v_2_2_0.Coordinate> coord = this.changerCoordinates(lrJTS.getCoordinates());
-			pl.createAndSetLinearRing().withCoordinates(coord);
-			//si la geometrie est un polygone (on passe par les anneaux qui le constituent)
-		} else if (geomJTS instanceof com.vividsolutions.jts.geom.Polygon) {
-			com.vividsolutions.jts.geom.Polygon polyJTS = (com.vividsolutions.jts.geom.Polygon) geomJTS;
-			com.vividsolutions.jts.geom.LineString extlsJTS = polyJTS.getExteriorRing();
-			com.vividsolutions.jts.geom.LinearRing extlrJTS = this.changerLineStringenLineRing(extlsJTS);
-			de.micromata.opengis.kml.v_2_2_0.LinearRing extlrJAK = KmlFactory.createLinearRing().withCoordinates(
-					this.changerCoordinates(extlrJTS.getCoordinates()));
+		if (geomJTS instanceof Point || geomJTS instanceof MultiPoint){
+			Point pJTS = geomJTS instanceof MultiPoint?(Point) ((MultiPoint) geomJTS).getGeometryN(0):(Point) geomJTS;
+			pl.createAndSetPoint().withCoordinates(
+					changerCoordinates(pJTS.getCoordinate()));
+		}else if (geomJTS instanceof LineString || geomJTS instanceof MultiLineString){
+			LineString lJTS = geomJTS instanceof MultiLineString?(LineString) ((MultiLineString) geomJTS).getGeometryN(0):(LineString) geomJTS;
+			pl.createAndSetLineString()
+					.withCoordinates(
+							changerCoordinates(lJTS
+									.getCoordinates()));
+		}else if (geomJTS instanceof LinearRing){
+			pl.createAndSetLinearRing()
+					.withCoordinates(
+							changerCoordinates(((LinearRing) geomJTS)
+									.getCoordinates()));
+		}else if (geomJTS instanceof Polygon || geomJTS instanceof MultiPolygon) {
+			Polygon polyJTS = geomJTS instanceof MultiPolygon?(Polygon) ((MultiPolygon) geomJTS).getGeometryN(0):(Polygon) geomJTS;
+			de.micromata.opengis.kml.v_2_2_0.LinearRing extlrJAK = KmlFactory
+					.createLinearRing()
+					.withCoordinates(
+							changerCoordinates(changerLineStringenLineRing(
+									polyJTS.getExteriorRing()).getCoordinates()));
 
-			de.micromata.opengis.kml.v_2_2_0.Polygon polyJAK = pl.createAndSetPolygon();
+			de.micromata.opengis.kml.v_2_2_0.Polygon polyJAK = pl
+					.createAndSetPolygon();
 			polyJAK.createAndSetOuterBoundaryIs().withLinearRing(extlrJAK);
 			int noir = polyJTS.getNumInteriorRing();
 			for (int i = 0; i < noir; i++) {
-				com.vividsolutions.jts.geom.LineString intlsJTS = polyJTS.getInteriorRingN(i);
-				com.vividsolutions.jts.geom.LinearRing intlrJTS = this.changerLineStringenLineRing(intlsJTS);
-				de.micromata.opengis.kml.v_2_2_0.LinearRing intlrJAK = KmlFactory.createLinearRing().withCoordinates(
-						this.changerCoordinates(intlrJTS.getCoordinates()));
+				de.micromata.opengis.kml.v_2_2_0.LinearRing intlrJAK = KmlFactory
+						.createLinearRing().withCoordinates(
+								changerCoordinates(changerLineStringenLineRing(
+										polyJTS.getInteriorRingN(i))
+										.getCoordinates()));
 				polyJAK.createAndAddInnerBoundaryIs().withLinearRing(intlrJAK);
-
 			}
-		}
-
-		//si la geometrie est une collection de geometries
-		else if (geomJTS instanceof com.vividsolutions.jts.geom.GeometryCollection) {
-			com.vividsolutions.jts.geom.GeometryCollection gc = (GeometryCollection) geomJTS;
-
+		}else if (geomJTS instanceof GeometryCollection) {
+			GeometryCollection gc = (GeometryCollection) geomJTS;
 			MultiGeometry mg = pl.createAndSetMultiGeometry();
 
 			int nog = gc.getNumGeometries();
 			for (int j = 0; j < nog; j++) {
 				Geometry gJTS = gc.getGeometryN(j);
-				if (gJTS instanceof Point) {
-					com.vividsolutions.jts.geom.Point ptJTS = (com.vividsolutions.jts.geom.Point) gJTS;
-					List<de.micromata.opengis.kml.v_2_2_0.Coordinate> coord = this.changerCoordinates(ptJTS.getCoordinate());
-					mg.createAndAddPoint().withCoordinates(coord);
-				} else if (gJTS instanceof com.vividsolutions.jts.geom.LineString) {
-					com.vividsolutions.jts.geom.LineString lsJTS = (com.vividsolutions.jts.geom.LineString) gJTS;
-					List<de.micromata.opengis.kml.v_2_2_0.Coordinate> coord = this.changerCoordinates(lsJTS.getCoordinates());
-					mg.createAndAddLineString().withCoordinates(coord);
-				} else if (gJTS instanceof com.vividsolutions.jts.geom.LinearRing) {
-					com.vividsolutions.jts.geom.LinearRing lrJTS = (com.vividsolutions.jts.geom.LinearRing) gJTS;
-					List<de.micromata.opengis.kml.v_2_2_0.Coordinate> coord = this.changerCoordinates(lrJTS.getCoordinates());
-					mg.createAndAddLinearRing().withCoordinates(coord);
-				} else if (gJTS instanceof com.vividsolutions.jts.geom.Polygon) {
-					com.vividsolutions.jts.geom.Polygon polyJTS = (com.vividsolutions.jts.geom.Polygon) gJTS;
-					com.vividsolutions.jts.geom.LineString extlsJTS = polyJTS.getExteriorRing();
-					com.vividsolutions.jts.geom.LinearRing extlrJTS = this.changerLineStringenLineRing(extlsJTS);
-					de.micromata.opengis.kml.v_2_2_0.LinearRing extlrJAK = KmlFactory.createLinearRing().withCoordinates(this.changerCoordinates(extlrJTS.getCoordinates()));
-
-					de.micromata.opengis.kml.v_2_2_0.Polygon polyJAK = mg.createAndAddPolygon();
-					polyJAK.createAndSetOuterBoundaryIs().withLinearRing(extlrJAK);
+				if (gJTS instanceof Point)
+					mg.createAndAddPoint().withCoordinates(
+							changerCoordinates(((Point) gJTS).getCoordinate()));
+				else if (gJTS instanceof LineString)
+					mg.createAndAddLineString().withCoordinates(
+							changerCoordinates(((LineString) gJTS)
+									.getCoordinates()));
+				else if (gJTS instanceof LinearRing)
+					mg.createAndAddLinearRing().withCoordinates(
+							changerCoordinates(((LinearRing) gJTS)
+									.getCoordinates()));
+				else if (gJTS instanceof Polygon) {
+					Polygon polyJTS = (Polygon) gJTS;
+					de.micromata.opengis.kml.v_2_2_0.LinearRing extlrJAK = KmlFactory
+							.createLinearRing()
+							.withCoordinates(
+									changerCoordinates(changerLineStringenLineRing(
+											polyJTS.getExteriorRing())
+											.getCoordinates()));
+					de.micromata.opengis.kml.v_2_2_0.Polygon polyJAK = mg
+							.createAndAddPolygon();
+					polyJAK.createAndSetOuterBoundaryIs().withLinearRing(
+							extlrJAK);
 					int noir = polyJTS.getNumInteriorRing();
 					for (int l = 0; l < noir; l++) {
-						com.vividsolutions.jts.geom.LineString intlsJTS = polyJTS.getInteriorRingN(l);
-						com.vividsolutions.jts.geom.LinearRing intlrJTS = this.changerLineStringenLineRing(intlsJTS);
-						de.micromata.opengis.kml.v_2_2_0.LinearRing intlrJAK = KmlFactory.createLinearRing().withCoordinates(this.changerCoordinates(intlrJTS.getCoordinates()));
-						polyJAK.createAndAddInnerBoundaryIs().withLinearRing(intlrJAK);
+						de.micromata.opengis.kml.v_2_2_0.LinearRing intlrJAK = KmlFactory
+								.createLinearRing()
+								.withCoordinates(
+										changerCoordinates(changerLineStringenLineRing(
+												polyJTS.getInteriorRingN(l))
+												.getCoordinates()));
+						polyJAK.createAndAddInnerBoundaryIs().withLinearRing(
+								intlrJAK);
 					}
 				}
 			}
 		}
 	}
 
-	//fonction speciale compte tenu des methode de JTS qui ne retourne pas les anneaux des polygones mais plutot les lignes correspondantes qu'il nous faut passer en anneau
+	// fonction speciale compte tenu des methode de JTS qui ne retourne pas les
+	// anneaux des polygones mais plutot les lignes correspondantes qu'il nous
+	// faut passer en anneau
 	private LinearRing changerLineStringenLineRing(LineString ls) {
 		GeometryFactory JTSFactory = new GeometryFactory();
-		LinearRing lr;
 		com.vividsolutions.jts.geom.Coordinate[] coordls = ls.getCoordinates();
 		com.vividsolutions.jts.geom.Coordinate[] coordlr = new com.vividsolutions.jts.geom.Coordinate[coordls.length];
 		for (int i = 0; i < coordls.length; i++) {
 			coordlr[i] = coordls[i];
 		}
-
-		lr = JTSFactory.createLinearRing(coordlr);
-		// TODO Auto-generated method stub
-		return lr;
+		return JTSFactory.createLinearRing(coordlr);
 	}
 
-	//methode de changement de coordonee de JTS a JAK
-	private List<Coordinate> changerCoordinates(com.vividsolutions.jts.geom.Coordinate[] coord) {
+	// methode de changement de coordonee de JTS a JAK
+	private List<Coordinate> changerCoordinates(
+			com.vividsolutions.jts.geom.Coordinate[] coord) {
 		List<Coordinate> list = new ArrayList<Coordinate>();
 		for (int i = 0; i < coord.length; i++) {
 			Coordinate c = KmlFactory.createCoordinate(0, 0, 0);
@@ -193,8 +204,9 @@ public class KMLWriter {
 		return list;
 	}
 
-	//idem
-	private List<Coordinate> changerCoordinates(com.vividsolutions.jts.geom.Coordinate coord) {
+	// idem
+	private List<Coordinate> changerCoordinates(
+			com.vividsolutions.jts.geom.Coordinate coord) {
 		List<Coordinate> list = new ArrayList<Coordinate>();
 		Coordinate c = KmlFactory.createCoordinate(0, 0, 0);
 		c.setLongitude(coord.x);
@@ -204,41 +216,45 @@ public class KMLWriter {
 		return list;
 	}
 
-	//verifie la presence d'un champ de type geometry
+	// verifie la presence d'un champ de type geometry
 	public boolean checkKmlPossibility(RowMetaInterface fields) {
 		boolean test = false;
 		for (int i = 0; i < fields.size(); i++) {
-			ValueMetaInterface value = fields.getValueMeta(i);
-			if (value.getType() == ValueMeta.TYPE_GEOMETRY)
-				test = true;			
+			if (fields.getValueMeta(i).getType() == ValueMeta.TYPE_GEOMETRY)
+				test = true;
 		}
 		return test;
 	}
 
-	//verifie qu'il y a bien un chmap de type geometrie
-	//et repere la position des champs interessants
+	// verifie qu'il y a bien un chmap de type geometrie
+	// et repere la position des champs interessants
 	public void visionTable(RowMetaInterface fields) throws KettleException {
-		boolean testgeom = this.checkKmlPossibility(fields);
+		if (checkKmlPossibility(fields) == false)
+			throw new KettleException(
+					"There is no geometric attribute, so there is no possibility to create a Kml file");
 
-		if (testgeom == true) {
-			for (int i = 0; i < fields.size(); i++) {
-				ValueMetaInterface value = fields.getValueMeta(i);
-				if (value.getType() == ValueMeta.TYPE_GEOMETRY)
-					geomcolumn = i;				
-			}
-		}else
-			throw new KettleException("There is no geometric attribute, so there is no possibility to create a Kml file");
+		for (int i = 0; i < fields.size(); i++) {
+			if (fields.getValueMeta(i).getType() == ValueMeta.TYPE_GEOMETRY)
+				geomcolumn = i;
+		}
+
 		for (int i = 0; i < fields.size(); i++) {
 			ValueMetaInterface value = fields.getValueMeta(i);
-			if (value.getType() == ValueMeta.TYPE_STRING && value.getName() == "name")
-				namecolumn = i; testname=true;		
-				if (value.getType() == ValueMeta.TYPE_STRING && value.getName() == "description")
-					desccolumn = i;testdesc=true;
+			if (value.getType() == ValueMeta.TYPE_STRING
+					&& value.getName() == "name"){
+				namecolumn = i;
+				testname = true;
+			}
+			if (value.getType() == ValueMeta.TYPE_STRING
+					&& value.getName() == "description"){
+				desccolumn = i;
+				testdesc = true;
+			}
 		}
 	}
 
-
-	public void write() throws KettleException {}
+	public void write() throws KettleException {
+	}
 
 	public boolean close() {
 		return false;

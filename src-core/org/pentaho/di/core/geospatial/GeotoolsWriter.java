@@ -52,11 +52,11 @@ public class GeotoolsWriter
 	private RowMetaInterface rowMeta;
 
 	public GeotoolsWriter(URL fileURL, String charset){
-		log      = LogWriter.getInstance();
+		log = LogWriter.getInstance();
 		gisURL = fileURL;
-		error         = false;
-		sf = null;
 		this.charset = charset;
+		error = false;
+		sf = null;	
 		featWriter = null;
 		featureType = null;
 		factory = null;
@@ -72,16 +72,14 @@ public class GeotoolsWriter
 			// implementation (to support file formats other than Shapefile)
 
 			// TODO: make charset configurable (in the step dialog box?)
-			if(!gisURL.toString().substring(gisURL.toString().length()-3,gisURL.toString().length()).equalsIgnoreCase("SHP")) {
-				// TODO: internationalize error message
-				throw new KettleException("The output specified is not in shapefile format (.shp)");
-			}
+			if(!gisURL.toString().substring(gisURL.toString().length()-3,gisURL.toString().length()).equalsIgnoreCase("SHP"))
+				throw new KettleException("The output specified is not in shapefile format (.shp)");			
 		}catch (Exception e){
 			throw new KettleException("Error opening GIS file at URL: "+gisURL, e);
 		}
 	}
 
-	public void createSimpleFeatureType(RowMetaInterface fields, Object[] firstRow, URL url) throws KettleException{
+	public void createSimpleFeatureType(RowMetaInterface fields, Object[] firstRow) throws KettleException{
 		String debug="get attributes from table";
 
 		rowMeta = fields;
@@ -163,7 +161,7 @@ public class GeotoolsWriter
 
 			Map <String, Serializable> create = new HashMap<String, Serializable>();			
 			
-			create.put(ShapefileDataStoreFactory.URLP.key, url);	
+			create.put(ShapefileDataStoreFactory.URLP.key, gisURL);	
 			create.put(ShapefileDataStoreFactory.CREATE_SPATIAL_INDEX.key, Boolean.TRUE);
 			create.put(ShapefileDataStoreFactory.MEMORY_MAPPED.key, Boolean.TRUE);
 			create.put(ShapefileDataStoreFactory.DBFCHARSET.key, charset);
@@ -228,18 +226,13 @@ public class GeotoolsWriter
 		}    
 	}
 
-	public void write() throws KettleException{
-		try{
-			if(featWriter!=null)featWriter.close();
-		}catch(Exception e){
-			throw new KettleException("An error has occured", e);
-		}
-	}
-
 	public boolean close(){
 		boolean retval = false;
 		try{
-			if (newDS != null) newDS.dispose();
+			if(featWriter!=null)
+				featWriter.close();
+			if(newDS != null) 
+				newDS.dispose();			
 			retval=true;
 		}catch (Exception e){
 			log.logError(toString(), "Couldn't close iterator for datastore ["+gisURL+"] : "+e.toString());

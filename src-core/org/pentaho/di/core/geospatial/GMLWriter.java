@@ -1,7 +1,7 @@
 package org.pentaho.di.core.geospatial;
 
 import java.io.FileOutputStream;
-import java.net.URL;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.deegree.datatypes.QualifiedName;
@@ -20,7 +20,6 @@ import org.pentaho.di.core.logging.LogWriter;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
-//import org.pentaho.di.trans.steps.gisfileoutput.Messages;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -41,108 +40,80 @@ public class GMLWriter
     private RowMetaInterface rowMeta;
     private int count = 0;
     
-    public GMLWriter(java.net.URL fileURL)
-    {
-        this.log      = LogWriter.getInstance();
-        this.gmlURL = fileURL;
-        error         = false;
+    public GMLWriter(java.net.URL fileURL){
+        log = LogWriter.getInstance();
+        gmlURL = fileURL;
+        error  = false;
         rowMeta = null;
     }
     
-    public void open() throws KettleException
-    {
- 		try {
- 			
- 			close();
-
+    public void open() throws KettleException{
+ 		try {	
  			if((!gmlURL.toString().substring(gmlURL.toString().length()-3,gmlURL.toString().length()).equalsIgnoreCase("gml")) && (!gmlURL.toString().substring(gmlURL.toString().length()-3,gmlURL.toString().length()).equalsIgnoreCase("xml")))
  				throw new KettleException("The output specified is not in gml format (.gml, .xml)");
-		}
-		catch(Exception e) {
+		}catch(Exception e) {
 			throw new KettleException("Error opening GML file at URL: " + gmlURL, e);
 		}
     }
    
-    public void createFeatureType(RowMetaInterface fields, Object[] firstRow, URL url) throws KettleException{
+    public void createFeatureType(RowMetaInterface fields, Object[] firstRow) throws KettleException{
         String debug="get attributes from table";
         
         rowMeta = fields;            
         
         PropertyType[] props = new PropertyType[rowMeta.size()];
         
-        try
-        {
-            // Fetch all field information
-            debug="allocate data types";
+		try {
+			// Fetch all field information
+			debug = "allocate data types";
 
-            for(int i = 0; i < fields.size(); i++)
-            {           	
-              if (log.isDebug()) debug="get attribute #"+i;
+			for (int i = 0; i < fields.size(); i++) {
+				if (log.isDebug())
+					debug = "get attribute #" + i;
 
-              ValueMetaInterface value = fields.getValueMeta(i);
-                                
-              if (value.getType() == ValueMeta.TYPE_STRING)
-              {    
-            	  QualifiedName qn = new QualifiedName(value.getName());
-            	  SimplePropertyType spt = new SimplePropertyType(qn,org.deegree.datatypes.Types.VARCHAR,0,-1);
-                  props[i] = spt;         	  
-              }
-              else if (value.getType() == ValueMeta.TYPE_INTEGER)
-              {    
-            	  QualifiedName qn = new QualifiedName(value.getName());
-            	  SimplePropertyType spt = new SimplePropertyType(qn,org.deegree.datatypes.Types.INTEGER,0,-1);
-                  props[i] = spt;          	  
-              }
-              else if (value.getType() == ValueMeta.TYPE_NUMBER)
-              {   
-            	  QualifiedName qn = new QualifiedName(value.getName());
-            	  SimplePropertyType spt = new SimplePropertyType(qn,org.deegree.datatypes.Types.DOUBLE,0,-1);
-                  props[i] = spt;         	  
-              }
-              else if (value.getType() == ValueMeta.TYPE_DATE)
-              {   
-            	  QualifiedName qn = new QualifiedName(value.getName());
-            	  SimplePropertyType spt = new SimplePropertyType(qn,org.deegree.datatypes.Types.DATE,0,-1);
-                  props[i] = spt;          	  
-              }
-              else if (value.getType() == ValueMeta.TYPE_GEOMETRY)
-              {    
-            	  // determine the geometry type from the first row's geometry object
-            	  Object o = firstRow[i];
-            	  if(o instanceof Geometry) {           		 
-                	  QualifiedName qn = new QualifiedName(value.getName());
-                	  QualifiedName qntype = new QualifiedName("GeometryPropertyType");
-                	  GeometryPropertyType gpt = new GeometryPropertyType(qn,qntype,org.deegree.datatypes.Types.GEOMETRY,0,-1);
-                      props[i] = gpt;
-            	  }
-            	  else {
-            		  throw new KettleException("Wrong object type for Geometry field");
-            	  }         	  
-              }
-              else {
-            	  //unknown
-            	  QualifiedName qn = new QualifiedName(value.getName());
-            	  SimplePropertyType spt = new SimplePropertyType(qn,java.sql.Types.VARCHAR,0,-1);
-                  props[i] = spt;
-              }
-            }            
-        }
-        catch(Exception e)
-        {
+				ValueMetaInterface value = fields.getValueMeta(i);
+				QualifiedName qn = new QualifiedName(value.getName());
+				if (value.getType() == ValueMeta.TYPE_STRING) {
+					props[i] = new SimplePropertyType(qn,
+							org.deegree.datatypes.Types.VARCHAR, 0, -1);
+				} else if (value.getType() == ValueMeta.TYPE_INTEGER) {
+					props[i] = new SimplePropertyType(qn,
+							org.deegree.datatypes.Types.INTEGER, 0, -1);
+				} else if (value.getType() == ValueMeta.TYPE_NUMBER) {
+					props[i] =  new SimplePropertyType(qn,
+							org.deegree.datatypes.Types.DOUBLE, 0, -1);
+				} else if (value.getType() == ValueMeta.TYPE_DATE) {
+					props[i] = new SimplePropertyType(qn,
+							org.deegree.datatypes.Types.DATE, 0, -1);
+				} else if (value.getType() == ValueMeta.TYPE_GEOMETRY) {
+					// determine the geometry type from the first row's geometry
+					// object
+					Object o = firstRow[i];
+					if (o instanceof Geometry) {
+						props[i] = new GeometryPropertyType(qn,
+								new QualifiedName(
+								"GeometryPropertyType"), org.deegree.datatypes.Types.GEOMETRY,
+								0, -1);
+					} else
+						throw new KettleException(
+								"Wrong object type for Geometry field");
+				} else {
+					props[i] = new SimplePropertyType(qn,
+							java.sql.Types.VARCHAR, 0, -1);
+				}
+			}           
+        }catch(Exception e){
             throw new KettleException("Error reading GML file metadata (in part "+debug+")", e);
         }
-        QualifiedName ft_name = new QualifiedName("type");
-        ft = org.deegree.model.feature.FeatureFactory.createFeatureType(ft_name, false, props);       
+        ft = org.deegree.model.feature.FeatureFactory.createFeatureType(new QualifiedName("type"), false, props);       
     }
     
 
     public void putRow(Object[] r) throws KettleException{       
-    	Object[] rowCopy = rowMeta.cloneRow(r);
-    	   	
+    	Object[] rowCopy = rowMeta.cloneRow(r);   	   	
     	PropertyType[] props = ft.getProperties();   	
     	FeatureProperty[] fprop = new FeatureProperty[props.length];
-    	for ( int i = 0; i < props.length ; i++)
-    	{
+    	for ( int i = 0; i < props.length ; i++){
     		FeatureProperty prop = null;
     		QualifiedName ftprop_name = props[i].getName();
     		if(rowCopy[i] instanceof Geometry) {
@@ -152,12 +123,10 @@ public class GMLWriter
        		 	} catch (GeometryException e) {
        		 		e.printStackTrace();
        		 	}      		 
-    		}else{
+    		}else
     			prop = org.deegree.model.feature.FeatureFactory.createFeatureProperty(ftprop_name,rowCopy[i]);	
-    		}
-       		
-    		fprop[i]=prop;
 
+    		fprop[i]=prop;
     	}
     	Feature feat = org.deegree.model.feature.FeatureFactory.createFeature("feature"+count, ft, fprop);
     	count++;
@@ -165,34 +134,28 @@ public class GMLWriter
     }
     
     public void write() throws KettleException{
+    	FileOutputStream fos = null;
         try{
         	Feature[] feats = new Feature[features.size()];
         	for (int i = 0; i < features.size(); i++){
         		feats[i] = features.get(i);
         	}
         	fc = org.deegree.model.feature.FeatureFactory.createFeatureCollection("kettlecoll", feats);
-            FileOutputStream fos = new FileOutputStream( gmlURL.toString().substring(5));
+            fos = new FileOutputStream( gmlURL.toString().substring(5));
             new GMLFeatureAdapter().export( fc, fos );
-            fos.close();
-        }
-        catch(Exception e)
-        {
-        	throw new KettleException("An error has occured");
+        }catch(Exception e){
+        	throw new KettleException("Could not write features.", e);
+        }finally{
+        	if(fos!=null){
+				try {
+					fos.close();
+				} catch (IOException e) {
+					throw new KettleException("Could not close output stream.", e);
+				}
+        	}
         }
     }
-    
-    public boolean close(){
-        boolean retval = false;
-        try{
-            retval=true;
-        }
-        catch(Exception e){
-            log.logError(toString(), "Couldn't close iterator for datastore ["+gmlURL+"] : "+e.toString());
-            error = true;
-        }       
-        return retval;
-    }
-    
+     
     public boolean hasError(){
     	return error;
     }
@@ -200,4 +163,8 @@ public class GMLWriter
     public String getVersionInfo(){
     	return null;
     }    
+    
+    public void close() throws KettleException{
+    	write();
+    }
 }

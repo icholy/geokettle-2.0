@@ -265,8 +265,7 @@ public class GISFileInputMeta extends BaseStepMeta implements StepMetaInterface{
 			rep.saveStepAttribute(id_transformation, id_step, "field_rownr",     rowNrField); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "gis_file_charset", gisFileCharset); //$NON-NLS-1$
 	        rep.saveStepAttribute(id_transformation, id_step, "passing_through_fields", passingThruFields);
-	        rep.saveStepAttribute(id_transformation, id_step, "accept_stepname", (acceptingStep!=null?acceptingStep.getName():"") );
-				
+	        rep.saveStepAttribute(id_transformation, id_step, "accept_stepname", (acceptingStep!=null?acceptingStep.getName():"") );				
         }catch(Exception e){
 			throw new KettleException(Messages.getString("GISFileInputMeta.Exception.UnableToSaveMetaDataToRepository")+id_step, e); //$NON-NLS-1$
 		}

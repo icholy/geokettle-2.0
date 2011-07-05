@@ -1,10 +1,10 @@
 package org.pentaho.di.trans.steps.kmlfileinput;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.apache.commons.vfs.FileObject;
+import org.pentaho.di.core.RowSet;
 import org.pentaho.di.core.fileinput.FileInputList;
-import org.pentaho.di.core.geospatial.KMLReader;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.trans.step.BaseStepData;
 import org.pentaho.di.trans.step.StepDataInterface;
@@ -17,16 +17,21 @@ import org.pentaho.di.trans.step.StepDataInterface;
  */
 public class KMLFileInputData extends BaseStepData implements StepDataInterface{
 	
-	public ArrayList <KMLReader> kmlreader;
 	public RowMetaInterface fields;
-    public ArrayList <FileObject> file_kml;
-    public FileInputList files;
-    public RowMetaInterface outputRowMeta;   
-	public int fileNr;
+    public RowMetaInterface outputRowMeta;
+    public FileInputList files;       
+	public HashMap<FileObject, Object[]> passThruFields;	
+	public Object[] currentPassThruFieldsRow;	
+	public int nrPassThruFields;	
+	public RowSet rowSet;
+	public int fileIndex;
+	public int readerRowSize;
+	public int rowRead;
 
 	public KMLFileInputData(){
 		super();
-		kmlreader=null;
-		fields=null;
+		fields = null;
+		fileIndex = 0;
+		rowRead = 0;
 	}
 }

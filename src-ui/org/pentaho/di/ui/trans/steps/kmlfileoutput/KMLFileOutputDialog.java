@@ -1,5 +1,7 @@
 package org.pentaho.di.ui.trans.steps.kmlfileoutput;
 
+import java.util.List;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.FocusListener;
@@ -29,6 +31,7 @@ import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
+import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.steps.kmlfileoutput.KMLFileOutputMeta;
 import org.pentaho.di.trans.steps.kmlfileoutput.Messages;
 import org.pentaho.di.ui.core.dialog.ErrorDialog;
@@ -56,6 +59,10 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
 	private Button wExportingFeatureDesc;
 	private FormData fdlExportingFeatureDesc,fdExportingFeatureDesc;
       
+    private Label        wlAccStep;
+	private CCombo       wAccStep;
+	private FormData     fdlAccStep, fdAccStep;
+	
     private Label wlFileNameField;
     private CCombo wFileNameField;
     private FormData fdFileNameField,fdlFileNameField;
@@ -110,7 +117,7 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		fdlStepname = new FormData();
 		fdlStepname.left = new FormAttachment(0, 0);
 		fdlStepname.right = new FormAttachment(middle, -margin);
-		fdlStepname.top = new FormAttachment(0, margin);
+		fdlStepname.top = new FormAttachment(0, margin*2);
 		wlStepname.setLayoutData(fdlStepname);
 		wStepname = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		wStepname.setText(stepname);
@@ -128,7 +135,7 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		props.setLook(wlFileName);
 		fdlFileName = new FormData();
 		fdlFileName.left = new FormAttachment(0, 0);
-		fdlFileName.top = new FormAttachment(wStepname, margin);
+		fdlFileName.top = new FormAttachment(wStepname, margin*2);
 		fdlFileName.right = new FormAttachment(middle, -margin);
 		wlFileName.setLayoutData(fdlFileName);
 
@@ -176,26 +183,48 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
             }
         }
         );
-        
+	    
+		wlAccStep=new Label(shell, SWT.RIGHT);
+		wlAccStep.setText(Messages.getString("KMLFileOutputDialog.AcceptStep.Label"));
+		props.setLook(wlAccStep);
+		fdlAccStep=new FormData();
+		fdlAccStep.top  = new FormAttachment(wFileField, margin*2);
+		fdlAccStep.left = new FormAttachment(0, 0);
+		fdlAccStep.right= new FormAttachment(middle, -margin);
+		wlAccStep.setLayoutData(fdlAccStep);
+		wAccStep=new CCombo(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+		wAccStep.setToolTipText(Messages.getString("KMLFileOutputDialog.AcceptStep.Tooltip"));
+		props.setLook(wAccStep);
+		fdAccStep=new FormData();
+		fdAccStep.top  = new FormAttachment(wFileField, margin);
+		fdAccStep.left = new FormAttachment(middle, 0);
+		fdAccStep.right= new FormAttachment(100, 0);
+		wAccStep.setLayoutData(fdAccStep);
+
+		// Fill in the source steps...
+		List<StepMeta> prevSteps = transMeta.findPreviousSteps(transMeta.findStep(stepname));
+		for (StepMeta prevStep : prevSteps){
+			wAccStep.add(prevStep.getName());
+		}	
+		
 		// FileName field
 		wlFileNameField=new Label(shell, SWT.RIGHT);
         wlFileNameField.setText(Messages.getString("KMLFileOutputDialog.FileNameField.Label"));
         props.setLook(wlFileNameField);
         fdlFileNameField=new FormData();
         fdlFileNameField.left = new FormAttachment(0, 0);
-        fdlFileNameField.top  = new FormAttachment(wFileField,2* margin);
+        fdlFileNameField.top  = new FormAttachment(wAccStep,2* margin);
         fdlFileNameField.right= new FormAttachment(middle, -margin);
         wlFileNameField.setLayoutData(fdlFileNameField);
               
         wFileNameField=new CCombo(shell, SWT.BORDER | SWT.READ_ONLY);
-        wFileNameField.setToolTipText(Messages.getString("KMLFileOutputDialog.FileNameField.Tooltip"));
         wFileNameField.setEditable(true);
         props.setLook(wFileNameField);
         wFileNameField.addModifyListener(lsMod);
         fdFileNameField=new FormData();
         fdFileNameField.left = new FormAttachment(middle, 0);
-        fdFileNameField.top  = new FormAttachment(wFileField, margin);
-        fdFileNameField.right= new FormAttachment(100, -margin);
+        fdFileNameField.top  = new FormAttachment(wAccStep, margin);
+        fdFileNameField.right= new FormAttachment(100, 0);
         wFileNameField.setLayoutData(fdFileNameField);
         wFileNameField.addFocusListener(new FocusListener()
             {
@@ -205,12 +234,12 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
                 public void focusGained(org.eclipse.swt.events.FocusEvent e){
                     Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
                     shell.setCursor(busy);
-                    setPrevField(wFileNameField);
+                    setInfos(wFileNameField);
                     shell.setCursor(null);
                     busy.dispose();
                 }
             }
-        );  
+        );
         
         //Exporting feature name?		        
 	    wlExportingFeatureName=new Label(shell, SWT.RIGHT);
@@ -268,7 +297,7 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
                 public void focusGained(org.eclipse.swt.events.FocusEvent e){
                     Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
                     shell.setCursor(busy);
-                    setPrevField(wFeatureNameField);
+                    setInfos(wFeatureNameField);
                     shell.setCursor(null);
                     busy.dispose();
                 }
@@ -331,7 +360,7 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
                 public void focusGained(org.eclipse.swt.events.FocusEvent e){
                     Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
                     shell.setCursor(busy);
-                    setPrevField(wFeatureDescField);
+                    setInfos(wFeatureDescField);
                     shell.setCursor(null);
                     busy.dispose();
                 }
@@ -422,13 +451,13 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		}
 		return stepname;
 	}
-
-	private void setPrevField(CCombo combo){
+	
+	private void setInfos(CCombo combo){
 		try{
 	        String field=  combo.getText();
 	        combo.removeAll();
 				
-			RowMetaInterface r = transMeta.getPrevStepFields(stepname);
+			RowMetaInterface r =  transMeta.getPrevStepFields(stepname);
 			if (combo.equals(wFeatureNameField) || combo.equals(wFeatureDescField))
 				combo.add(Messages.getString("KMLFileOutputDialog.NoField.Text"));
 			if (r!=null){
@@ -437,8 +466,8 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
 			    	combo.add(r.getFieldNames()[i]);									
 				}
 			}
-			if(field!=null) combo.setText(field);
-
+			if(field!=null) 
+				combo.setText(field);
 		}catch(KettleException ke){
 			new ErrorDialog(shell, Messages.getString("KMLFileOutputDialog.FailedToGetFields.DialogTitle"), Messages.getString("KMLFileOutputDialog.FailedToGetFields.DialogMessage"), ke); //$NON-NLS-1$ //$NON-NLS-2$
 		}
@@ -450,6 +479,8 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		wlFileName.setEnabled(!wFileField.getSelection());		
 		wFileName.setEnabled(!wFileField.getSelection());
 		wbFileName.setEnabled(!wFileField.getSelection());
+		wlAccStep.setEnabled(wFileField.getSelection());
+		wAccStep.setEnabled(wFileField.getSelection());
 	}
 	
 	private void activeFeatureNameField(){
@@ -474,6 +505,8 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
 			}
 		}else {
 			wFileField.setSelection(true);
+			if(input.getAcceptingStep()!=null) 
+				wAccStep.setText(input.getAcceptingStep().getName());
 			if(input.getFileNameField() !=null)
 				wFileNameField.setText(input.getFileNameField());		
 		}
@@ -497,16 +530,18 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		dispose();
 	}
 	
-	public void getInfo(KMLFileOutputMeta oneMeta) throws KettleStepException
+	public void getInfo(KMLFileOutputMeta meta) throws KettleStepException
 	{
 		// copy info to Meta class (input)
-		oneMeta.setFileName( wFileName.getText() );
-		oneMeta.setFileNameInField(wFileField.getSelection());
-		oneMeta.setFileNameField(wFileNameField.getText());	
-		oneMeta.setExportingFeatureName(wExportingFeatureName.getSelection());
-		oneMeta.setFeatureNameField(wFeatureNameField.getText());
-		oneMeta.setExportingFeatureDesc(wExportingFeatureDesc.getSelection());
-		oneMeta.setFeatureDescField(wFeatureDescField.getText());	
+		meta.setFileName( wFileName.getText() );
+		meta.setFileNameInField(wFileField.getSelection());
+		meta.setFileNameField(wFileNameField.getText());	
+		meta.setExportingFeatureName(wExportingFeatureName.getSelection());
+		meta.setFeatureNameField(wFeatureNameField.getText());
+		meta.setExportingFeatureDesc(wExportingFeatureDesc.getSelection());
+		meta.setFeatureDescField(wFeatureDescField.getText());	
+		meta.setAcceptingStepName( wAccStep.getText() );
+		meta.setAcceptingStep( transMeta.findStep( wAccStep.getText() ) );
 	}	
 	
 	private void ok()

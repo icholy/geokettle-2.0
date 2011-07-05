@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
+import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Counter;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
@@ -19,7 +20,6 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
-import org.pentaho.di.trans.steps.gisfileoutput.Messages;
 import org.w3c.dom.Node;
 
 
@@ -29,6 +29,8 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	private boolean isFileNameInField;
 	private String fileNameField;
 	private String  gisFileCharset;
+	private String  acceptingStepName;
+	private StepMeta acceptingStep;
 
 	public GISFileOutputMeta(){
 		super(); // allocate BaseStepMeta
@@ -66,6 +68,12 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 		this.gisFileCharset = gisFileCharset;
 	}
 	
+	public String getLookupStepname(){
+		if (isFileNameInField && acceptingStep!=null && !Const.isEmpty(acceptingStep.getName())) 
+			return acceptingStep.getName();
+		return null;
+	}
+	
     public void loadXML(Node stepnode, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleXMLException {
 		readData(stepnode);
 	}
@@ -75,6 +83,16 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 		return retval;
 	}
 	
+	public void searchInfoAndTargetSteps(List<StepMeta> steps){
+		acceptingStep = StepMeta.findStep(steps, acceptingStepName);
+	}
+
+	public String[] getInfoSteps(){
+		if (isFileNameInField && acceptingStep!=null)
+			return new String[] { acceptingStep.getName() };		
+		return super.getInfoSteps();
+	}
+	
 	private void readData(Node stepnode)
 		throws KettleXMLException{
 		try{				
@@ -82,6 +100,7 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 			isFileNameInField  = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "isfilenameinfield"));			
 			fileName    = XMLHandler.getTagValue(stepnode, "filename");			
 			gisFileCharset     = XMLHandler.getTagValue(stepnode, "gis_file_charset"); //$NON-NLS-1$
+			acceptingStepName = XMLHandler.getTagValue(stepnode, "accept_stepname");
 		}catch(Exception e){
 			throw new KettleXMLException(Messages.getString("GISFileOutputMeta.Exception.UnableToReadStepInformationFromXML"), e); //$NON-NLS-1$
 		}
@@ -100,6 +119,7 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 		retval.append("    " + XMLHandler.addTagValue("isfilenameinfield", isFileNameInField));
 		retval.append("    " + XMLHandler.addTagValue("filenamefield", fileNameField));  	
 		retval.append("    " + XMLHandler.addTagValue("gis_file_charset", gisFileCharset)); //$NON-NLS-1$ //$NON-NLS-2$
+		retval.append("    ").append(XMLHandler.addTagValue("accept_stepname", (acceptingStep!=null?acceptingStep.getName():"") ));		
 		return retval.toString();
 	}
 
@@ -110,6 +130,7 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 			isFileNameInField   = rep.getStepAttributeBoolean(id_step, "isfilenameinfield");	
 			fileNameField     = rep.getStepAttributeString (id_step, "filenamefield");
 			gisFileCharset     = rep.getStepAttributeString (id_step, "gis_file_charset"); //$NON-NLS-1$
+			acceptingStepName  = rep.getStepAttributeString (id_step, "accept_stepname");
 		}catch(Exception e){
 			throw new KettleException(Messages.getString("GISFileOutputMeta.Exception.UnexpectedErrorReadingMetaDataFromRepository"), e); //$NON-NLS-1$
 		}
@@ -122,6 +143,7 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 			rep.saveStepAttribute(id_transformation, id_step, "filename", fileName);
 			rep.saveStepAttribute(id_transformation, id_step, "isfilenameinfield", isFileNameInField);
 			rep.saveStepAttribute(id_transformation, id_step, "gis_file_charset", gisFileCharset); //$NON-NLS-1$
+			rep.saveStepAttribute(id_transformation, id_step, "accept_stepname", (acceptingStep!=null?acceptingStep.getName():"") );
 		}catch(Exception e){
 			throw new KettleException(Messages.getString("GISFileOutputMeta.Exception.UnableToSaveMetaDataToRepository")+id_step, e); //$NON-NLS-1$
 		}
@@ -129,7 +151,7 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 
 	public void check(List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta, RowMetaInterface prev,
 			String[] input, String[] output, RowMetaInterface info){
-		CheckResult cr;
+		CheckResult cr = null;
 		
 		if (!isFileNameInField){
 			if (fileName ==null){
@@ -158,5 +180,21 @@ public class GISFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 
 	public StepDataInterface getStepData(){
 		return new GISFileOutputData();
+	}
+
+	public void setAcceptingStepName(String acceptingStepName) {
+		this.acceptingStepName = acceptingStepName;
+	}
+
+	public String getAcceptingStepName() {
+		return acceptingStepName;
+	}
+
+	public void setAcceptingStep(StepMeta acceptingStep) {
+		this.acceptingStep = acceptingStep;
+	}
+
+	public StepMeta getAcceptingStep() {
+		return acceptingStep;
 	} 
 }

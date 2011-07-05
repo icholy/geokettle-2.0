@@ -1,5 +1,7 @@
 package org.pentaho.di.ui.trans.steps.gmlfileinput;
 
+import java.util.List;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.FocusListener;
@@ -31,6 +33,7 @@ import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.TransPreviewFactory;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
+import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.steps.gmlfileinput.GMLFileInputMeta;
 import org.pentaho.di.trans.steps.gmlfileinput.Messages;
 import org.pentaho.di.ui.core.dialog.EnterNumberDialog;
@@ -69,6 +72,14 @@ public class GMLFileInputDialog extends BaseStepDialog implements StepDialogInte
     private Label wlFileNameField;
     private CCombo wFileNameField;
     private FormData fdFileNameField,fdlFileNameField;
+    
+    private Label        wlPassThruFields;
+	private Button       wPassThruFields;
+	private FormData     fdlPassThruFields, fdPassThruFields;
+	
+	private Label        wlAccStep;
+	private CCombo       wAccStep;
+	private FormData     fdlAccStep, fdAccStep;
     
 	private GMLFileInputMeta input;
 	private boolean backupChanged, backupAddRownr;
@@ -115,7 +126,7 @@ public class GMLFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdlStepname=new FormData();
 		fdlStepname.left = new FormAttachment(0, 0);
 		fdlStepname.right= new FormAttachment(middle, -margin);
-		fdlStepname.top  = new FormAttachment(0, margin);
+		fdlStepname.top  = new FormAttachment(0, margin*2);
 		wlStepname.setLayoutData(fdlStepname);
 		wStepname=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		wStepname.setText(stepname);
@@ -134,7 +145,7 @@ public class GMLFileInputDialog extends BaseStepDialog implements StepDialogInte
  		props.setLook(wlFileName);
 		fdlFileName=new FormData();
 		fdlFileName.left = new FormAttachment(0, 0);
-		fdlFileName.top  = new FormAttachment(wStepname, margin);
+		fdlFileName.top  = new FormAttachment(wStepname, margin*2);
 		fdlFileName.right= new FormAttachment(middle, -margin);
 		wlFileName.setLayoutData(fdlFileName);
 
@@ -183,13 +194,54 @@ public class GMLFileInputDialog extends BaseStepDialog implements StepDialogInte
         }
         );
         
+		wlPassThruFields=new Label(shell, SWT.RIGHT);
+		wlPassThruFields.setText(Messages.getString("GMLFileInputDialog.PassThruFields.Label"));
+		props.setLook(wlPassThruFields);
+		fdlPassThruFields=new FormData();
+		fdlPassThruFields.top  = new FormAttachment(wFileField, margin*2);
+		fdlPassThruFields.left = new FormAttachment(0, 0);
+		fdlPassThruFields.right= new FormAttachment(middle, -margin);
+		wlPassThruFields.setLayoutData(fdlPassThruFields);
+
+		wPassThruFields=new Button(shell, SWT.CHECK);
+		wPassThruFields.setToolTipText(Messages.getString("GMLFileInputDialog.PassThruFields.Tooltip"));
+		props.setLook(wPassThruFields);
+		fdPassThruFields=new FormData();
+		fdPassThruFields.top  = new FormAttachment(wFileField, margin);
+		fdPassThruFields.left = new FormAttachment(middle, 0);
+		fdPassThruFields.right= new FormAttachment(100, 0);
+		wPassThruFields.setLayoutData(fdPassThruFields);
+
+		wlAccStep=new Label(shell, SWT.RIGHT);
+		wlAccStep.setText(Messages.getString("GMLFileInputDialog.AcceptStep.Label"));
+		props.setLook(wlAccStep);
+		fdlAccStep=new FormData();
+		fdlAccStep.top  = new FormAttachment(wPassThruFields, margin*2);
+		fdlAccStep.left = new FormAttachment(0, 0);
+		fdlAccStep.right= new FormAttachment(middle, -margin);
+		wlAccStep.setLayoutData(fdlAccStep);
+		wAccStep=new CCombo(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+		wAccStep.setToolTipText(Messages.getString("GMLFileInputDialog.AcceptStep.Tooltip"));
+		props.setLook(wAccStep);
+		fdAccStep=new FormData();
+		fdAccStep.top  = new FormAttachment(wPassThruFields, margin);
+		fdAccStep.left = new FormAttachment(middle, 0);
+		fdAccStep.right= new FormAttachment(100, 0);
+		wAccStep.setLayoutData(fdAccStep);
+
+		// Fill in the source steps...
+		List<StepMeta> prevSteps = transMeta.findPreviousSteps(transMeta.findStep(stepname));
+		for (StepMeta prevStep : prevSteps){
+			wAccStep.add(prevStep.getName());
+		}
+		
 		// FileName field
 		wlFileNameField=new Label(shell, SWT.RIGHT);
         wlFileNameField.setText(Messages.getString("GMLFileInputDialog.FilenameField.Label"));
         props.setLook(wlFileNameField);
         fdlFileNameField=new FormData();
         fdlFileNameField.left = new FormAttachment(0, 0);
-        fdlFileNameField.top  = new FormAttachment(wFileField,2* margin);
+        fdlFileNameField.top  = new FormAttachment(wAccStep,2* margin);
         fdlFileNameField.right= new FormAttachment(middle, -margin);
         wlFileNameField.setLayoutData(fdlFileNameField);
               
@@ -199,7 +251,7 @@ public class GMLFileInputDialog extends BaseStepDialog implements StepDialogInte
         wFileNameField.addModifyListener(lsMod);
         fdFileNameField=new FormData();
         fdFileNameField.left = new FormAttachment(middle, 0);
-        fdFileNameField.top  = new FormAttachment(wFileField, margin);
+        fdFileNameField.top  = new FormAttachment(wAccStep, margin);
         fdFileNameField.right= new FormAttachment(100, -margin);
         wFileNameField.setLayoutData(fdFileNameField);
         wFileNameField.addFocusListener(new FocusListener()
@@ -231,7 +283,7 @@ public class GMLFileInputDialog extends BaseStepDialog implements StepDialogInte
 		wLimit.addModifyListener(lsMod);
 		fdLimit=new FormData();
 		fdLimit.left = new FormAttachment(middle, 0);
-		fdLimit.top  = new FormAttachment(wFileNameField, margin*2);
+		fdLimit.top  = new FormAttachment(wFileNameField, margin);
 		fdLimit.right= new FormAttachment(100, 0);
 		wLimit.setLayoutData(fdLimit);
 
@@ -241,7 +293,7 @@ public class GMLFileInputDialog extends BaseStepDialog implements StepDialogInte
  		props.setLook(wlAddRownr);
 		fdlAddRownr=new FormData();
 		fdlAddRownr.left = new FormAttachment(0, 0);
-		fdlAddRownr.top  = new FormAttachment(wLimit, margin);
+		fdlAddRownr.top  = new FormAttachment(wLimit, margin*2);
 		fdlAddRownr.right= new FormAttachment(middle, -margin);
 		wlAddRownr.setLayoutData(fdlAddRownr);
 		wAddRownr=new Button(shell, SWT.CHECK );
@@ -259,7 +311,7 @@ public class GMLFileInputDialog extends BaseStepDialog implements StepDialogInte
  		props.setLook(wlFieldRownr);
 		fdlFieldRownr=new FormData();
 		fdlFieldRownr.left = new FormAttachment(wAddRownr, margin);
-		fdlFieldRownr.top  = new FormAttachment(wLimit, margin);
+		fdlFieldRownr.top  = new FormAttachment(wLimit, margin*2);
 		wlFieldRownr.setLayoutData(fdlFieldRownr);
 		wFieldRownr=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
  		props.setLook(wFieldRownr);
@@ -316,7 +368,7 @@ public class GMLFileInputDialog extends BaseStepDialog implements StepDialogInte
 						dialog.setFileName(wFileName.getText());
 					}
 						
-					dialog.setFilterNames(new String[] {Messages.getString("GLMFileInputDialog.Filter.SHPFiles"), Messages.getString("System.FileType.AllFiles")}); //$NON-NLS-1$ //$NON-NLS-2$
+					dialog.setFilterNames(new String[] {Messages.getString("GMLFileInputDialog.Filter.GMLFiles"), Messages.getString("System.FileType.AllFiles")}); //$NON-NLS-1$ //$NON-NLS-2$
 					
 					if (dialog.open()!=null)
 					{
@@ -363,6 +415,9 @@ public class GMLFileInputDialog extends BaseStepDialog implements StepDialogInte
 			}
 		}else {
 			wFileField.setSelection(true);
+			wPassThruFields.setSelection(input.isPassingThruFields());
+			if(input.getAcceptingStep()!=null) 
+				wAccStep.setText(input.getAcceptingStep().getName());
 			if(input.getFileNameField() !=null)
 				wFileNameField.setText(input.getFileNameField());		
 		}
@@ -385,39 +440,44 @@ public class GMLFileInputDialog extends BaseStepDialog implements StepDialogInte
 	
 	private void setFileField(){
 		try{
-	        String field=  wFileNameField.getText();
 			wFileNameField.removeAll();
-				
-			RowMetaInterface r = transMeta.getPrevStepFields(stepname);
-			if (r!=null){
-		    	r.getFieldNames();
-			    for (int i=0;i<r.getFieldNames().length;i++){	
-		        	wFileNameField.add(r.getFieldNames()[i]);									
-				}
-			}
-			if(field!=null) wFileNameField.setText(field);		
+			if(!Const.isEmpty(wAccStep.getText())){							
+				RowMetaInterface r = transMeta.getStepFields(wAccStep.getText());
+				if (r!=null){
+					r.getFieldNames();
+					for (int i=0;i<r.getFieldNames().length;i++){	
+						wFileNameField.add(r.getFieldNames()[i]);									
+					}
+				}	
+			}				
 		}catch(KettleException ke){
 			new ErrorDialog(shell, Messages.getString("GMLFileInputDialog.FailedToGetFields.DialogTitle"), Messages.getString("GMLFileInputDialog.FailedToGetFields.DialogMessage"), ke); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
-	
-	public void getInfo(GMLFileInputMeta oneMeta) throws KettleStepException
-	{
-		// copy info to Meta class (input)
-		oneMeta.setFileName( wFileName.getText() );
-		oneMeta.setFileNameInField(wFileField.getSelection());
-		oneMeta.setFileNameField(wFileNameField.getText());	
-		oneMeta.setRowLimit( Const.toInt(wLimit.getText(), 0 ) );
-        oneMeta.setRowNrAdded( wAddRownr.getSelection() );
-		oneMeta.setRowNrField( wFieldRownr.getText() );
-	}
-	
+
 	private void activeFileField(){
 		wlFileNameField.setEnabled(wFileField.getSelection());
 		wFileNameField.setEnabled(wFileField.getSelection());	
-		wlFileName.setEnabled(!wFileField.getSelection());	
+		wlPassThruFields.setEnabled(wFileField.getSelection());
+		wPassThruFields.setEnabled(wFileField.getSelection());
+		wlAccStep.setEnabled(wFileField.getSelection());
+		wAccStep.setEnabled(wFileField.getSelection());
+		wlFileName.setEnabled(!wFileField.getSelection());		
 		wFileName.setEnabled(!wFileField.getSelection());
-		wbFileName.setEnabled(!wFileField.getSelection());
+		wbFileName.setEnabled(!wFileField.getSelection());		
+	}
+	
+	public void getInfo(GMLFileInputMeta meta) throws KettleStepException{
+		// copy info to Meta class (input)
+		meta.setFileName( wFileName.getText() );
+		meta.setFileNameInField(wFileField.getSelection());
+		meta.setPassingThruFields( wPassThruFields.getSelection() );
+		meta.setFileNameField(wFileNameField.getText());	
+		meta.setRowLimit( Const.toInt(wLimit.getText(), 0 ) );
+		meta.setRowNrAdded( wAddRownr.getSelection() );
+		meta.setRowNrField( wFieldRownr.getText() );
+		meta.setAcceptingStepName( wAccStep.getText() );
+		meta.setAcceptingStep( transMeta.findStep( wAccStep.getText() ) );
 	}
 	
 	private void ok()

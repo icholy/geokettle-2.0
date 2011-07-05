@@ -1,10 +1,12 @@
 package org.pentaho.di.trans.steps.gisfileoutput;
 
-import java.util.ArrayList;
+import java.io.IOException;
 
 import org.apache.commons.vfs.FileObject;
+import org.apache.commons.vfs.FileSystemException;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.geospatial.GeotoolsWriter;
 import org.pentaho.di.core.vfs.KettleVFS;
 import org.pentaho.di.trans.Trans;
@@ -14,7 +16,6 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
-import org.pentaho.di.trans.steps.gisfileoutput.Messages;
 
 /**
  * Reads data from an GIS file.
@@ -23,164 +24,152 @@ import org.pentaho.di.trans.steps.gisfileoutput.Messages;
  * @since 29-sep-2008
  */
 public class GISFileOutput extends BaseStep implements StepInterface {
+	private final String DEFAULT_ENC = "ISO-8859-1";
+	
 	private GISFileOutputMeta meta;
 	private GISFileOutputData data;
 
 	public GISFileOutput(StepMeta stepMeta,StepDataInterface stepDataInterface, int copyNr,TransMeta transMeta, Trans trans) {
 		super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
 	}
-
-	public boolean isFileAlreadyCreated(FileObject fo){
-		if (data.file_gis.isEmpty())
+	
+	private boolean createWriter(Object[] r){
+		if(data.file!=null)
+			closeFile();
+		try {
+			data.gtWriter = new GeotoolsWriter(data.file.getURL(), data.charset);
+			data.gtWriter.open();
+		} catch (FileSystemException e) {
+			logError("Cannot get file URL.", e);
 			return false;
-		for (int i=0;i<data.file_gis.size();i++){
-			if (fo.equals(data.file_gis.get(i)))
-				return true;
-		}	
-		return false;
+		} catch (KettleException e) {
+			logError("Could not open reader.", e);
+			return false;
+		}
+		try {
+			data.gtWriter.createSimpleFeatureType(data.outputRowMeta, r);
+		} catch (KettleException e) {
+			logError("Could not create feature type.", e);
+			return false;
+		}
+		return true;
+	}
+	
+	private Object[] getRowPreviousStep() throws KettleException{
+		try {
+			return !meta.isFileNameInField()?getRow():getRowFrom(data.rowSet);
+		} catch (Exception e) {
+			throw new KettleException("Cannot create file object.", e);
+		} 
 	}
 	
 	public boolean processRow(StepMetaInterface smi, StepDataInterface sdi)throws KettleException {
 		meta = (GISFileOutputMeta) smi;
 		data = (GISFileOutputData) sdi;
 
-		Object[] r = getRow(); // this also waits for a previous step to be finished.
-		if (r == null){ // no more input to be expected...
-			try {
-				for (int i=0;i<data.gtwriter.size();i++){
-					data.gtwriter.get(i).write();
-					data.gtwriter.get(i).close();
-				}
-				setOutputDone();
-	            return false;
-			}catch (Exception e) {
-				logError("Because of an error, this step can't continue: ", e);
-				for (int i=0;i<data.gtwriter.size();i++){
-					data.gtwriter.get(i).close();
-				}
-				setErrors(1);
-				stopAll();
-				setOutputDone(); // signal end to receiver(s)
-				return false;
-			}
-		}
+		Object[] r = getRowPreviousStep();  
 		
-		int fileIndex = 0;
-		
-		if (first) {
-			first = false;
-			try {
-				data.outputRowMeta = getInputRowMeta().clone();
-				if(!meta.isFileNameInField())
-					data.gtwriter.get(fileIndex).createSimpleFeatureType(data.outputRowMeta, r, data.file_gis.get(fileIndex).getURL());
-			}catch (Exception e) {
-				logError("Because of an error, this step can't continue: ", e);
-				data.gtwriter.get(fileIndex).close();
-				setErrors(1);
-				stopAll();
-				setOutputDone(); // signal end to receiver(s)
-				return false;
-			}
-		}
-
-		try {
-			if(meta.isFileNameInField()){	
-				String fileName = (String) r[getInputRowMeta().indexOfValue(meta.getFileNameField())];
-				FileObject fo = KettleVFS.getFileObject(fileName);
-				if(!isFileAlreadyCreated(fo)){
-					data.file_gis.add(fo); 
-					fileIndex = data.file_gis.indexOf(fo);
-					// Create file if it does not exist
-					if (!data.file_gis.get(fileIndex).exists())
-						data.file_gis.get(fileIndex).createFile();
-					data.charset.add(meta.getGisFileCharset());
-					openNextFile(fileIndex);
+		if(r==null){
+			setOutputDone();
+			return false;
+		}else{
+			if (first) {	
+				first = false;	
+				if(!meta.isFileNameInField()){
 					data.outputRowMeta = getInputRowMeta().clone();
-					data.gtwriter.get(fileIndex).createSimpleFeatureType(data.outputRowMeta, r, data.file_gis.get(fileIndex).getURL());
-				}
+					createWriter(r);
+				}else				
+					data.outputRowMeta  = data.rowSet.getRowMeta();						
+			}			
 				
-				fileIndex = data.file_gis.indexOf(fo);			
-				data.gtwriter.get(fileIndex).putRow(r);
-				incrementLinesOutput();						
-			}else{//if only one file, simply put row to the only geotools writer
+			if(meta.isFileNameInField() && openFile(r[data.outputRowMeta.indexOfValue(meta.getFileNameField())].toString()))
+				createWriter(r);	
+
+			if (!writeRowToFile(r)){
+				setErrors(1);
+				stopAll();
+				return false;
+			}
+			
+			putRow(data.outputRowMeta, r);
+			
+	        if (checkFeedback(getLinesOutput()) && log.isBasic()) 
+	        	logBasic("linenr "+getLinesOutput());
+			
+			return true;
+		}	
+	}
+	
+	public boolean openFile(String fileName){
+		try {
+			FileObject fo;
+			try {
+				fo = KettleVFS.getFileObject(fileName);
+			} catch (IOException e) {
+				logError("Cannot create file object.", e);
+				return false;
+			}
+			if(data.file==null || !data.file.getURL().equals(fo.getURL())){
+				data.file = fo;
+				return true;
+			}			
+		}catch (FileSystemException e){
+			logError("Cannot open/create file ", e);
+			return false;
+		}
+		return false;
+	}
+	
+	public boolean init(StepMetaInterface smi, StepDataInterface sdi){
+		meta=(GISFileOutputMeta)smi;
+		data=(GISFileOutputData)sdi;
+		if (super.init(smi, sdi)){
+			if(!meta.isFileNameInField()){
+				try {						
+					data.file = KettleVFS.getFileObject(environmentSubstitute(meta.getFileName()));
+				} catch (IOException e) {
+					logError("Cannot create file object.", e);
+					return false;
+				}
+			}else{
 				try {
-					data.gtwriter.get(fileIndex).putRow(r);
-					incrementLinesOutput();	
-				}catch (Exception e) {
-					logError("Because of an error, this step can't continue: ", e);
-					data.gtwriter.get(fileIndex).close();
-					setErrors(1);
-					stopAll();
-					setOutputDone(); // signal end to receiver(s)
+					data.rowSet = findInputRowSet(meta.getAcceptingStepName());
+				} catch (KettleStepException e) {
+					logError("Could not retrieve filenames from previous step.", e);
 					return false;
 				}
 			}
-		}catch (Exception e){
-			logError("Error creating gis file from field value", e);
-			data.gtwriter.get(fileIndex).close();
-			setErrors(1);
-			stopAll();
-			setOutputDone(); // signal end to receiver(s)
-			return false;
-		} 
-		return true;
-	}
-
-	public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-		meta = (GISFileOutputMeta) smi;
-		data = (GISFileOutputData) sdi;
-
-		if (super.init(smi, sdi)) {
-			try {
-				data.file_gis = new ArrayList <FileObject>();
-				data.gtwriter = new ArrayList <GeotoolsWriter>();
-				data.charset = new ArrayList <String>();
-				if(!meta.isFileNameInField()){
-					String fileName = meta.getFileName();
-					data.file_gis.add(KettleVFS.getFileObject(fileName)); 
-				
-					// Create file if it does not exist
-					if (!data.file_gis.get(0).exists())
-						data.file_gis.get(0).createFile();
-					
-					// Set default value for shapefile encoding to ISO-8859-1.
-					// This is the default value used in Geotools
-					if (Const.isEmpty(meta.getGisFileCharset()))
-						meta.setGisFileCharset("ISO-8859-1");
-					
-					data.charset.add(meta.getGisFileCharset());
-					openNextFile(0);
-				}
-			}catch (Exception e) {
-				logError("Cannot open/create file " + data.file_gis.get(0).getName().toString(), e);
-				return false;
-			} 
+			data.charset =	Const.isEmpty(meta.getGisFileCharset())?DEFAULT_ENC:meta.getGisFileCharset();		
 			return true;
 		}
 		return false;
 	}
 
-	private void openNextFile(int fileIndex) throws KettleException {		
+	private boolean writeRowToFile(Object[] r){	
 		try {
-			data.gtwriter.add(new GeotoolsWriter(data.file_gis.get(fileIndex).getURL(),data.charset.get(fileIndex)));
-			data.gtwriter.get(fileIndex).open();
-
-			logBasic(Messages.getString("GISFileOutput.Log.OpenedGISFile") + " : ["+data.gtwriter.get(fileIndex)+" ("+data.charset.get(fileIndex)+")]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		}catch (Exception e) {
-			logError(Messages.getString("GISFileOutput.Log.Error.CouldNotOpenGISFile1") + data.file_gis.get(fileIndex) + Messages.getString("GISFileOutput.Log.Error.CouldNotOpenGISFile2") + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
-			throw new KettleException(e);
+			data.gtWriter.putRow(r);
+		} catch (KettleException e) {
+			logError("Could not write row.", e);
+			return false;
 		}
+		return true;
 	}
 
 	public void dispose(StepMetaInterface smi, StepDataInterface sdi){
-		closeFiles();
+		closeFile();
 		super.dispose(smi, sdi);
 	}
 
-	private void closeFiles() {
-		logBasic(Messages.getString("GISFileOutput.Log.FinishedReadingRecords")); //$NON-NLS-1$
-		for (int i=0;i<data.gtwriter.size();i++){
-			data.gtwriter.get(i).close();
+	private void closeFile() {
+		try {
+			if(data.file!=null)
+				data.file.close();
+		} catch (FileSystemException e) {
+			logError("Error closing file", e);
+		}
+		if(data.gtWriter!=null){
+			incrementLinesOutput();	
+			data.gtWriter.close();
 		}
 	}
 

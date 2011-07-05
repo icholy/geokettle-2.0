@@ -136,7 +136,7 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdlStepname=new FormData();
 		fdlStepname.left = new FormAttachment(0, 0);
 		fdlStepname.right= new FormAttachment(middle, -margin);
-		fdlStepname.top  = new FormAttachment(0, margin);
+		fdlStepname.top  = new FormAttachment(0, margin*2);
 		wlStepname.setLayoutData(fdlStepname);
 		wStepname=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		wStepname.setText(stepname);
@@ -154,7 +154,7 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 		props.setLook(wlFileName);
 		fdlFileName=new FormData();
 		fdlFileName.left = new FormAttachment(0, 0);
-		fdlFileName.top  = new FormAttachment(wStepname, margin);
+		fdlFileName.top  = new FormAttachment(wStepname, margin*2);
 		fdlFileName.right= new FormAttachment(middle, -margin);
 		wlFileName.setLayoutData(fdlFileName);
 
@@ -204,7 +204,7 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 		wlPassThruFields.setText(Messages.getString("GISFileInputDialog.PassThruFields.Label"));
 		props.setLook(wlPassThruFields);
 		fdlPassThruFields=new FormData();
-		fdlPassThruFields.top  = new FormAttachment(wFileField, margin*2);
+		fdlPassThruFields.top  = new FormAttachment(wFileField, margin);
 		fdlPassThruFields.left = new FormAttachment(0, 0);
 		fdlPassThruFields.right= new FormAttachment(middle, -margin);
 		wlPassThruFields.setLayoutData(fdlPassThruFields);
@@ -213,7 +213,7 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 		wPassThruFields.setToolTipText(Messages.getString("GISFileInputDialog.PassThruFields.Tooltip"));
 		props.setLook(wPassThruFields);
 		fdPassThruFields=new FormData();
-		fdPassThruFields.top  = new FormAttachment(wFileField, margin);
+		fdPassThruFields.top  = new FormAttachment(wFileField, 0);
 		fdPassThruFields.left = new FormAttachment(middle, 0);
 		fdPassThruFields.right= new FormAttachment(100, 0);
 		wPassThruFields.setLayoutData(fdPassThruFields);
@@ -277,7 +277,7 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 		props.setLook(wlEncoding);
 		fdlEncoding=new FormData();
 		fdlEncoding.left = new FormAttachment(0, 0);
-		fdlEncoding.top  = new FormAttachment(wFileNameField, margin);
+		fdlEncoding.top  = new FormAttachment(wFileNameField, margin *2);
 		fdlEncoding.right= new FormAttachment(middle, -margin);
 		wlEncoding.setLayoutData(fdlEncoding);
 		wEncoding=new CCombo(shell, SWT.BORDER | SWT.READ_ONLY);
@@ -324,7 +324,7 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 		props.setLook(wlAddRownr);
 		fdlAddRownr=new FormData();
 		fdlAddRownr.left = new FormAttachment(0, 0);
-		fdlAddRownr.top  = new FormAttachment(wLimit, margin);
+		fdlAddRownr.top  = new FormAttachment(wLimit, margin*2);
 		fdlAddRownr.right= new FormAttachment(middle, -margin);
 		wlAddRownr.setLayoutData(fdlAddRownr);
 		wAddRownr=new Button(shell, SWT.CHECK );
@@ -342,7 +342,7 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 		props.setLook(wlFieldRownr);
 		fdlFieldRownr=new FormData();
 		fdlFieldRownr.left = new FormAttachment(wAddRownr, margin);
-		fdlFieldRownr.top  = new FormAttachment(wLimit, margin);
+		fdlFieldRownr.top  = new FormAttachment(wLimit, margin*2);
 		wlFieldRownr.setLayoutData(fdlFieldRownr);
 		wFieldRownr=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		props.setLook(wFieldRownr);

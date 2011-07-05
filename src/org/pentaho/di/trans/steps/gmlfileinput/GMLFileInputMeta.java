@@ -33,12 +33,17 @@ import org.w3c.dom.Node;
 
 public class GMLFileInputMeta extends BaseStepMeta implements StepMetaInterface
 {
-	private String  fileName; 
-	private boolean isFileNameInField;
-	private String fileNameField;
+	private static final String YES = "Y";
 	private int 	rowLimit;
 	private boolean rowNrAdded;
 	private String  rowNrField;
+	private String  fileName;
+	private boolean isFileNameInField;
+	private String  fileNameField;
+	private boolean passingThruFields;
+	private String  acceptingStepName;
+	private StepMeta acceptingStep;
+	
 
 	public GMLFileInputMeta()
 	{
@@ -117,6 +122,48 @@ public class GMLFileInputMeta extends BaseStepMeta implements StepMetaInterface
         this.rowNrAdded = rowNrAdded;
     }
 
+    public String getAcceptingStepName(){
+		return acceptingStepName;
+	}
+
+	public void setAcceptingStepName(String acceptingStep){
+		this.acceptingStepName = acceptingStep;
+	}
+
+	public StepMeta getAcceptingStep(){
+		return acceptingStep;
+	}
+
+	public void setAcceptingStep(StepMeta acceptingStep){
+		this.acceptingStep = acceptingStep;
+	}
+
+    public boolean isPassingThruFields(){
+        return passingThruFields;
+    }
+
+    public void setPassingThruFields(boolean passingThruFields){
+        this.passingThruFields = passingThruFields;
+    }
+    
+	public String getLookupStepname(){
+		if (isFileNameInField && acceptingStep!=null && !Const.isEmpty(acceptingStep.getName())) 
+			return acceptingStep.getName();
+		return null;
+	}
+
+	/**
+	 * @param steps optionally search the info step in a list of steps
+	 */
+	public void searchInfoAndTargetSteps(List<StepMeta> steps){
+		acceptingStep = StepMeta.findStep(steps, acceptingStepName);
+	}
+
+	public String[] getInfoSteps(){
+		if (isFileNameInField && acceptingStep!=null)
+			return new String[] { acceptingStep.getName() };		
+		return super.getInfoSteps();
+	}
 
     public void loadXML(Node stepnode, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleXMLException {
 		readData(stepnode);
@@ -139,6 +186,8 @@ public class GMLFileInputMeta extends BaseStepMeta implements StepMetaInterface
 			rowLimit           = Const.toInt(XMLHandler.getTagValue(stepnode, "limit"), 0); //$NON-NLS-1$
 			rowNrAdded         = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "add_rownr")); //$NON-NLS-1$ //$NON-NLS-2$
 			rowNrField         = XMLHandler.getTagValue(stepnode, "field_rownr"); //$NON-NLS-1$
+			passingThruFields = YES.equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "passing_through_fields"));
+			acceptingStepName = XMLHandler.getTagValue(stepnode, "accept_stepname");
 		}
 		catch(Exception e)
 		{
@@ -158,11 +207,22 @@ public class GMLFileInputMeta extends BaseStepMeta implements StepMetaInterface
     
     @Override
     public void getFields(RowMetaInterface row, String name, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) throws KettleStepException {   	
+    	if (info!=null && isPassingThruFields() && isFileNameInField){
+            boolean found=false;
+            for (int i=0;i<info.length && !found;i++){
+                if (info[i]!=null){
+                    row.mergeRowMeta(info[i]);
+                    found=true;
+                }
+            }
+        }
     	if (!isFileNameInField()){
-        	FileInputList fileList = getTextFileList(space);
+        	FileInputList fileList = getFileList(space);
             if (fileList.nrOfFiles()==0)           
-                throw new KettleStepException(Messages.getString("XBaseInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$          
-            row.addRowMeta( getOutputFields(fileList, name) );
+                throw new KettleStepException(Messages.getString("XBaseInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$ 
+            
+            row.clear();
+            row.addRowMeta( getOutputFields(fileList, name));
         }
 	}
     
@@ -171,9 +231,10 @@ public class GMLFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		
         if (files.nrOfFiles()==0)
             throw new KettleStepException(Messages.getString("GMLFileInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$
-              
+         
+        GMLReader gmlr = null;
 		try{
-			GMLReader gmlr = new GMLReader(files.getFile(0).getURL());
+			gmlr = new GMLReader(files.getFile(0).getURL());
 			gmlr.open();
 			RowMetaInterface add = gmlr.getFields();
 			for (int i=0;i<add.size();i++){
@@ -190,8 +251,7 @@ public class GMLFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	    	rnr.setOrigin(name);
 	    	rowMeta.addValueMeta(rnr);
 	    }
-
-		return rowMeta;       
+		return rowMeta;   
 	}	
 
 	public String getXML()
@@ -204,7 +264,9 @@ public class GMLFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		retval.append("    " + XMLHandler.addTagValue("limit",       rowLimit)); //$NON-NLS-1$ //$NON-NLS-2$
 		retval.append("    " + XMLHandler.addTagValue("add_rownr",   rowNrAdded)); //$NON-NLS-1$ //$NON-NLS-2$
 		retval.append("    " + XMLHandler.addTagValue("field_rownr", rowNrField)); //$NON-NLS-1$ //$NON-NLS-2$
-
+		retval.append("    ").append(XMLHandler.addTagValue("passing_through_fields", passingThruFields));
+		retval.append("    ").append(XMLHandler.addTagValue("accept_stepname", (acceptingStep!=null?acceptingStep.getName():"") ));		
+			
 		return retval.toString();
 	}
 
@@ -219,6 +281,8 @@ public class GMLFileInputMeta extends BaseStepMeta implements StepMetaInterface
 			rowLimit              = (int)rep.getStepAttributeInteger(id_step, "limit"); //$NON-NLS-1$
 			rowNrAdded             =      rep.getStepAttributeBoolean(id_step, "add_rownr"); //$NON-NLS-1$
 			rowNrField           =      rep.getStepAttributeString (id_step, "field_rownr"); //$NON-NLS-1$
+			passingThruFields = rep.getStepAttributeBoolean(id_step, "passing_through_fields");
+			acceptingStepName  = rep.getStepAttributeString (id_step, "accept_stepname");
 		}
 		catch(Exception e)
 		{
@@ -237,6 +301,9 @@ public class GMLFileInputMeta extends BaseStepMeta implements StepMetaInterface
 			rep.saveStepAttribute(id_transformation, id_step, "limit",           rowLimit); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "add_rownr",       rowNrAdded); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "field_rownr",     rowNrField); //$NON-NLS-1$
+			rep.saveStepAttribute(id_transformation, id_step, "passing_through_fields", passingThruFields);
+	        rep.saveStepAttribute(id_transformation, id_step, "accept_stepname", (acceptingStep!=null?acceptingStep.getName():"") );
+			
         }
 		catch(Exception e)
 		{
@@ -282,8 +349,7 @@ public class GMLFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		return new GMLFileInputData();
 	}
 
-    public FileInputList getTextFileList(VariableSpace space)
-    {
-        return FileInputList.createFileList(space, new String[] { fileName }, new String[] { null }, new String[] { "N" });
-    }  
+	public FileInputList getFileList(VariableSpace space){
+	    return FileInputList.createFileList(space, new String[] { fileName }, new String[] { null }, new String[] { "N" });
+	}
 }

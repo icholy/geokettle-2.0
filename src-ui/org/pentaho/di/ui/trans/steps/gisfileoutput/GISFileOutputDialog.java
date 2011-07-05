@@ -33,6 +33,7 @@ import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
+import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.steps.gisfileoutput.GISFileOutputMeta;
 import org.pentaho.di.trans.steps.gisfileoutput.Messages;
 import org.pentaho.di.ui.core.dialog.ErrorDialog;
@@ -65,6 +66,10 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
     private Label        wlEncoding;
     private CCombo       wEncoding;
     private FormData     fdlEncoding, fdEncoding;
+    
+    private Label        wlAccStep;
+	private CCombo       wAccStep;
+	private FormData     fdlAccStep, fdAccStep;
     
 	private GISFileOutputMeta input;
 	private boolean backupChanged;
@@ -108,7 +113,7 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		fdlStepname = new FormData();
 		fdlStepname.left = new FormAttachment(0, 0);
 		fdlStepname.right = new FormAttachment(middle, -margin);
-		fdlStepname.top = new FormAttachment(0, margin);
+		fdlStepname.top = new FormAttachment(0, margin*2);
 		wlStepname.setLayoutData(fdlStepname);
 		wStepname = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		wStepname.setText(stepname);
@@ -126,7 +131,7 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
  		props.setLook(wlFileName);
 		fdlFileName=new FormData();
 		fdlFileName.left = new FormAttachment(0, 0);
-		fdlFileName.top  = new FormAttachment(wStepname, margin);
+		fdlFileName.top  = new FormAttachment(wStepname, margin*2);
 		fdlFileName.right= new FormAttachment(middle, -margin);
 		wlFileName.setLayoutData(fdlFileName);
 
@@ -172,13 +177,36 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
             }
         });
         
+		wlAccStep=new Label(shell, SWT.RIGHT);
+		wlAccStep.setText(Messages.getString("GISFileOutputDialog.AcceptStep.Label"));
+		props.setLook(wlAccStep);
+		fdlAccStep=new FormData();
+		fdlAccStep.top  = new FormAttachment(wFileField, margin*2);
+		fdlAccStep.left = new FormAttachment(0, 0);
+		fdlAccStep.right= new FormAttachment(middle, -margin);
+		wlAccStep.setLayoutData(fdlAccStep);
+		wAccStep=new CCombo(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+		wAccStep.setToolTipText(Messages.getString("GISFileOutputDialog.AcceptStep.Tooltip"));
+		props.setLook(wAccStep);
+		fdAccStep=new FormData();
+		fdAccStep.top  = new FormAttachment(wFileField, margin);
+		fdAccStep.left = new FormAttachment(middle, 0);
+		fdAccStep.right= new FormAttachment(100, 0);
+		wAccStep.setLayoutData(fdAccStep);
+
+		// Fill in the source steps...
+		List<StepMeta> prevSteps = transMeta.findPreviousSteps(transMeta.findStep(stepname));
+		for (StepMeta prevStep : prevSteps){
+			wAccStep.add(prevStep.getName());
+		}		
+		
 		// FileName field
 		wlFileNameField=new Label(shell, SWT.RIGHT);
         wlFileNameField.setText(Messages.getString("GISFileOutputDialog.FilenameField.Label"));
         props.setLook(wlFileNameField);
         fdlFileNameField=new FormData();
         fdlFileNameField.left = new FormAttachment(0, 0);
-        fdlFileNameField.top  = new FormAttachment(wFileField,2* margin);
+        fdlFileNameField.top  = new FormAttachment(wAccStep,2* margin);
         fdlFileNameField.right= new FormAttachment(middle, -margin);
         wlFileNameField.setLayoutData(fdlFileNameField);
             
@@ -188,8 +216,8 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
         wFileNameField.addModifyListener(lsMod);
         fdFileNameField=new FormData();
         fdFileNameField.left = new FormAttachment(middle, 0);
-        fdFileNameField.top  = new FormAttachment(wFileField, margin);
-        fdFileNameField.right= new FormAttachment(100, -margin);
+        fdFileNameField.top  = new FormAttachment(wAccStep, margin);
+        fdFileNameField.right= new FormAttachment(100, 0);
         wFileNameField.setLayoutData(fdFileNameField);
         wFileNameField.addFocusListener(new FocusListener(){
             public void focusLost(org.eclipse.swt.events.FocusEvent e){
@@ -210,7 +238,7 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 	    props.setLook(wlEncoding);
 	    fdlEncoding=new FormData();
 	    fdlEncoding.left = new FormAttachment(0, 0);
-	    fdlEncoding.top  = new FormAttachment(wFileNameField, margin);
+	    fdlEncoding.top  = new FormAttachment(wFileNameField, margin*2);
 	    fdlEncoding.right= new FormAttachment(middle, -margin);
 	    wlEncoding.setLayoutData(fdlEncoding);
 	    wEncoding=new CCombo(shell, SWT.BORDER | SWT.READ_ONLY);
@@ -303,6 +331,8 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 			}
 		}else{
 			wFileField.setSelection(true);
+			if(input.getAcceptingStep()!=null) 
+				wAccStep.setText(input.getAcceptingStep().getName());
 			if(input.getFileNameField() !=null)
 				wFileNameField.setText(input.getFileNameField());		
 		}
@@ -312,17 +342,16 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 	
 	private void setFileField(){
 		try{
-	        String field=  wFileNameField.getText();
 			wFileNameField.removeAll();
-				
-			RowMetaInterface r = transMeta.getPrevStepFields(stepname);
-			if (r!=null){
-		    	r.getFieldNames();
-			    for (int i=0;i<r.getFieldNames().length;i++){	
-		        	wFileNameField.add(r.getFieldNames()[i]);									
-				}
-			}
-			if(field!=null) wFileNameField.setText(field);		
+			if(!Const.isEmpty(wAccStep.getText())){							
+				RowMetaInterface r = transMeta.getStepFields(wAccStep.getText());
+				if (r!=null){
+					r.getFieldNames();
+					for (int i=0;i<r.getFieldNames().length;i++){	
+						wFileNameField.add(r.getFieldNames()[i]);									
+					}
+				}	
+			}				
 		}catch(KettleException ke){
 			new ErrorDialog(shell, Messages.getString("GISFileOutputDialog.FailedToGetFields.DialogTitle"), Messages.getString("GISFileOutputDialog.FailedToGetFields.DialogMessage"), ke); //$NON-NLS-1$ //$NON-NLS-2$
 		}
@@ -330,7 +359,9 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 	
 	private void activeFileField(){
 		wlFileNameField.setEnabled(wFileField.getSelection());
-		wFileNameField.setEnabled(wFileField.getSelection());	
+		wFileNameField.setEnabled(wFileField.getSelection());
+		wlAccStep.setEnabled(wFileField.getSelection());
+		wAccStep.setEnabled(wFileField.getSelection());
 		wlFileName.setEnabled(!wFileField.getSelection());		
 		wFileName.setEnabled(!wFileField.getSelection());
 		wbFileName.setEnabled(!wFileField.getSelection());
@@ -361,11 +392,13 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		dispose();
 	}
 	
-	public void getInfo(GISFileOutputMeta oneMeta) throws KettleStepException{
-		oneMeta.setFileName( wFileName.getText() );
-		oneMeta.setFileNameInField(wFileField.getSelection());
-		oneMeta.setFileNameField(wFileNameField.getText());	
-		oneMeta.setGisFileCharset(wEncoding.getText());
+	public void getInfo(GISFileOutputMeta meta) throws KettleStepException{
+		meta.setFileName( wFileName.getText() );
+		meta.setFileNameInField(wFileField.getSelection());
+		meta.setFileNameField(wFileNameField.getText());	
+		meta.setGisFileCharset(wEncoding.getText());
+		meta.setAcceptingStepName( wAccStep.getText() );
+		meta.setAcceptingStep( transMeta.findStep( wAccStep.getText() ) );
 	}
 	
 	private void ok(){

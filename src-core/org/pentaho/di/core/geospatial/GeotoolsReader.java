@@ -12,8 +12,6 @@ import org.geotools.feature.FeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.AttributeType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.logging.LogWriter;
@@ -45,10 +43,10 @@ public class GeotoolsReader
     private FeatureIterator<SimpleFeature> featIter;
 
     public GeotoolsReader(URL fileURL, String charset){
-        log      = LogWriter.getInstance();
+        log = LogWriter.getInstance();
         gisURL = fileURL;
         this.charset = charset;
-        error         = false;
+        error = false;
         gtDataStore = null;
         featSrc = null;
         featColl = null;
@@ -56,36 +54,17 @@ public class GeotoolsReader
     }
     
     public void open() throws KettleException{
- 		try {
- 			
+ 		try {			
  			// try closing first
  			close();
  			 			
 			// TODO: Don't use a memory-mapped file reader (3rd arg) because this
  			// causes out of memory errors with large files (~500mb).
- 			 			
- 			//gtDataStore = new ShapefileDataStore(gisURL, null, false);
- 			Charset charsetToBeUsed = Charset.forName(Const.isEmpty(this.charset)?"ISO-8859-1":this.charset);
- 			gtDataStore = new ShapefileDataStore(gisURL, null, false,charsetToBeUsed);
- 			/*
- 			if(gisURL.toString().substring(gisURL.toString().length()-3,gisURL.toString().length()).equalsIgnoreCase("SHP"))
- 	    	{
- 	    		gtDataStore = new ShapefileDataStore(gisURL, null, false);
- 	    	}
- 			if(gisURL.toString().substring(gisURL.toString().length()-3,gisURL.toString().length()).equalsIgnoreCase("GML"))
- 	    	{
- 				String encodedURL = gisURL.toString().replace(" ", "%20");
- 				URI gisURI = new URI(encodedURL);
- 				gtDataStore = new FileGMLDataStore(gisURI,256,Integer.MAX_VALUE);	
- 	    	}
- 	    	*/
- 	    	
- 	    	
-			String name = gtDataStore.getTypeNames()[0];
-			featSrc = gtDataStore.getFeatureSource(name);
+ 			
+ 			gtDataStore = new ShapefileDataStore(gisURL, null, false, Charset.forName(Const.isEmpty(this.charset)?"ISO-8859-1":this.charset));
+			featSrc = gtDataStore.getFeatureSource(gtDataStore.getTypeNames()[0]);
 			featColl = featSrc.getFeatures();
             featIter = featColl.features(); 
-
 		}catch(Exception e) {
 			throw new KettleException("Error opening GIS file at URL: "+gisURL, e);
 		}
@@ -98,17 +77,17 @@ public class GeotoolsReader
         try{
             // Fetch all field information
             debug="allocate data types";
-        	// datatype = new byte[reader.getFieldCount()];
-            SimpleFeatureType ft = featSrc.getSchema();
-            List<AttributeDescriptor> attrDescriptors = ft.getAttributeDescriptors();      
+            
+            List<AttributeDescriptor> attrDescriptors = featSrc.getSchema().getAttributeDescriptors();  
+            
             int i = 0;
             for(AttributeDescriptor ad : attrDescriptors){
-              if (log.isDebug()) debug="get attribute #"+i;
+              if (log.isDebug()) 
+            	  debug="get attribute #"+i;
 
               ValueMetaInterface value = null;
-
-              AttributeType at = ad.getType();
-              Class<?> c = at.getBinding();
+              
+              Class<?> c = ad.getType().getBinding();
               
               if(c == java.lang.String.class) {
             	  // String
@@ -153,11 +132,8 @@ public class GeotoolsReader
     }
     
     public Object[] getRow(Object[] r) throws KettleException{      
-    	String debug = "";
-    	
+    	String debug = "";    	
         try{
-        	// Read the next record
-            
             // Are we at the end yet?
             if (!featIter.hasNext()) return null;
         	
@@ -174,47 +150,33 @@ public class GeotoolsReader
 				if(val == null) {
 					debug = "null attribute";
 					r[i] = null;
-				}
-				else {
+				}else {
 					Class<?> c = val.getClass();
-
 					if(c == java.lang.String.class) {
 						debug = "string attribute";
 						r[i] = (String) val;
-					}
-					else if(c == java.lang.Integer.class) {
+					}else if(c == java.lang.Integer.class) {
 						debug = "integer attribute";
 						r[i] = new Long( ((Integer)val).longValue() );
-
-					}
-					else if(c == java.lang.Long.class) {
+					}else if(c == java.lang.Long.class) {
 						debug = "long integer attribute";
 						// TODO: check if this is supported:
 						r[i] = (Long) val;
-					}
-					else if(c == java.lang.Double.class) {
+					}else if(c == java.lang.Double.class) {
 						debug = "double attribute";
 						r[i] = (Double) val;
-					}
-					else if(c == java.util.Date.class) {
+					}else if(c == java.util.Date.class) {
 						debug = "date attribute";
 						r[i] = (java.util.Date) val;
-					}				
-					else if( com.vividsolutions.jts.geom.Geometry.class.isAssignableFrom(c)){
+					}else if( com.vividsolutions.jts.geom.Geometry.class.isAssignableFrom(c)){
 						// Geometry
 						debug = "geometry attribute";
-						Geometry jts_geom = (Geometry) val;
-
 						// TODO: add logic to convert simple MultiPolygons to Polygons
 						// (needed for JCS)
 						// could we put this in another step instead??
-
-						r[i] = jts_geom;
-					}
-					// TODO: add other attribute types? (numeric, float, logical, date, etc.)
-					else{
-						r[i] = null;
-					}
+						r[i] = (Geometry) val;
+					}else
+						r[i] = null;				
 				}			
 				i++;
 			}
@@ -227,63 +189,47 @@ public class GeotoolsReader
     }
     
     private SRS getSRS() throws KettleException {
-        if(featColl != null) {
-        	CoordinateReferenceSystem crs = featSrc.getSchema().getGeometryDescriptor().getCoordinateReferenceSystem();
-        	return new SRS(crs);
-        }
-        else 
-        	throw new KettleException("FeatureSource is not open");        
+        if(featColl == null)
+        	throw new KettleException("FeatureSource is not open");  
+        return new SRS(featSrc.getSchema().getGeometryDescriptor().getCoordinateReferenceSystem());
     }
     
-    public boolean close()
-    {
+    public boolean close(){
         boolean retval = false;
-        try
-        {
-        	if(featIter != null) featIter.close();
-        	// if(gtDataStore != null) gtDataStore.close();
-
+        try{
+        	if(featIter != null) 
+        		featIter.close();
             retval=true;
-        }
-        catch(Exception e)
-        {
+        }catch(Exception e){
             log.logError(toString(), "Couldn't close iterator for datastore ["+gisURL+"] : "+e.toString());
             error = true;
-        }
-        
+        }        
         return retval;
     }
     
-    public boolean hasError()
-    {
+    public boolean hasError(){
     	return error;
     }
 
-    public String toString()
-    {
-    	if (gisURL!=null)	return gisURL.toString();
-    	else 				return getClass().getName();
+    public String toString(){
+    	return gisURL!=null?gisURL.toString():getClass().getName();
     }
     
-    public String getVersionInfo()
-    {
-    	// return reader.getHeader().getSignatureDesc();
+    public String getVersionInfo(){
     	return null;
     }
     
     /**
      * @return the gisURL
      */
-    public java.net.URL getGisURL()
-    {
+    public java.net.URL getGisURL(){
         return gisURL;
     }
 
     /**
      * @param gisURL the gisURL to set
      */
-    public void setGisURL(java.net.URL gisURL)
-    {
+    public void setGisURL(java.net.URL gisURL){
         this.gisURL = gisURL;
     }
 }

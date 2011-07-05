@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
+import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Counter;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
@@ -28,6 +29,8 @@ public class GMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	private  String  fileName; 
 	private boolean isFileNameInField;
 	private String fileNameField;
+	private String  acceptingStepName;
+	private StepMeta acceptingStep;
 
 	public GMLFileOutputMeta()
 	{
@@ -58,6 +61,12 @@ public class GMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
         this.isFileNameInField = isfileNameInField;
     }   
 
+	public String getLookupStepname(){
+		if (isFileNameInField && acceptingStep!=null && !Const.isEmpty(acceptingStep.getName())) 
+			return acceptingStep.getName();
+		return null;
+	}
+	
     public void loadXML(Node stepnode, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleXMLException {
 		readData(stepnode);
 	}
@@ -68,6 +77,16 @@ public class GMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 		return retval;
 	}
 	
+	public void searchInfoAndTargetSteps(List<StepMeta> steps){
+		acceptingStep = StepMeta.findStep(steps, acceptingStepName);
+	}
+
+	public String[] getInfoSteps(){
+		if (isFileNameInField && acceptingStep!=null)
+			return new String[] { acceptingStep.getName() };		
+		return super.getInfoSteps();
+	}
+	
 	private void readData(Node stepnode)
 		throws KettleXMLException
 	{
@@ -76,6 +95,7 @@ public class GMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 			fileNameField     = XMLHandler.getTagValue(stepnode, "filenamefield");
 			isFileNameInField  = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "isfilenameinfield"));			
 			fileName    = XMLHandler.getTagValue(stepnode, "filename");
+			acceptingStepName = XMLHandler.getTagValue(stepnode, "accept_stepname");
 		}
 		catch(Exception e)
 		{
@@ -96,7 +116,8 @@ public class GMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 		
 		retval.append("    " + XMLHandler.addTagValue("filename", fileName));
 		retval.append("    " + XMLHandler.addTagValue("isfilenameinfield", isFileNameInField));
-		retval.append("    " + XMLHandler.addTagValue("filenamefield", fileNameField));  	
+		retval.append("    " + XMLHandler.addTagValue("filenamefield", fileNameField));  
+		retval.append("    ").append(XMLHandler.addTagValue("accept_stepname", (acceptingStep!=null?acceptingStep.getName():"") ));		
 		
 		return retval.toString();
 	}
@@ -109,6 +130,7 @@ public class GMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 			fileName    = rep.getStepAttributeString (id_step, "filename");
 			isFileNameInField   = rep.getStepAttributeBoolean(id_step, "isfilenameinfield");	
 			fileNameField     = rep.getStepAttributeString (id_step, "filenamefield");
+			acceptingStepName  = rep.getStepAttributeString (id_step, "accept_stepname");
 		}
 		catch(Exception e)
 		{
@@ -124,6 +146,7 @@ public class GMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 			rep.saveStepAttribute(id_transformation, id_step, "filenamefield", fileNameField);
 			rep.saveStepAttribute(id_transformation, id_step, "filename", fileName);
 			rep.saveStepAttribute(id_transformation, id_step, "isfilenameinfield", isFileNameInField);
+			rep.saveStepAttribute(id_transformation, id_step, "accept_stepname", (acceptingStep!=null?acceptingStep.getName():"") );
 		}
 		catch(Exception e)
 		{
@@ -168,5 +191,21 @@ public class GMLFileOutputMeta extends BaseStepMeta implements StepMetaInterface
 	public StepDataInterface getStepData()
 	{
 		return new GMLFileOutputData();
+	}
+
+	public void setAcceptingStep(StepMeta acceptingStep) {
+		this.acceptingStep = acceptingStep;
+	}
+
+	public StepMeta getAcceptingStep() {
+		return acceptingStep;
+	}
+
+	public void setAcceptingStepName(String acceptingStepName) {
+		this.acceptingStepName = acceptingStepName;
+	}
+
+	public String getAcceptingStepName() {
+		return acceptingStepName;
 	}  
 }
