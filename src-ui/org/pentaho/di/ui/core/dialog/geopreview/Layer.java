@@ -140,7 +140,16 @@ public class Layer extends Observable
 
 	public void addGeometry(Geometry geom, boolean batchMode){		
 		geodata.add(new GeometryWrapper(geom));				
-		if (!batchMode)update();
+		if (!batchMode)
+			update();
+	}
+	
+	public int getSingleGeometryCount(){
+		int count = 0;
+		for(GeometryWrapper gw: geodata){
+			count += gw.getJTSGeom().getNumGeometries();				
+		}
+		return count;
 	}
 	
 	public int getGeometryCount(){

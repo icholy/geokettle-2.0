@@ -66,9 +66,9 @@ public class LayerCollection implements Observer
 	
 	public int getGeometryCount(){
 		int size = 0;
-		size+=layers.get(Layer.POINT_LAYER).getGeometryCount();
-		size+=layers.get(Layer.LINE_LAYER).getGeometryCount();
-		size+=layers.get(Layer.POLYGON_LAYER).getGeometryCount();
+		size+=layers.get(Layer.POINT_LAYER).getSingleGeometryCount();
+		size+=layers.get(Layer.LINE_LAYER).getSingleGeometryCount();
+		size+=layers.get(Layer.POLYGON_LAYER).getSingleGeometryCount();
 		size+=layers.get(Layer.COLLECTION_LAYER).getGeometryCount();
 		return size;
 	}
