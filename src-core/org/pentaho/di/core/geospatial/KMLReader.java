@@ -107,7 +107,6 @@ public class KMLReader {
 		else if (feature instanceof de.micromata.opengis.kml.v_2_2_0.Placemark)
 			place.add((Placemark) feature);// stockage des placemark dans la liste place
 		
-
 		com.vividsolutions.jts.geom.Geometry[] geomlist = new com.vividsolutions.jts.geom.Geometry[place.size()];
 		
 		int j = 0;

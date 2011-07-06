@@ -53,7 +53,7 @@ public class SpatialAnalysisData extends BaseStepData implements StepDataInterfa
 	
 	public SpatialAnalysisData(){
 		super();		
-		files= new ArrayList<FileObject>();
+		files = new ArrayList<FileObject>();
 		fis  = new ArrayList<InputStream>();
         gzis  = new ArrayList<GZIPInputStream>();
         dis = new ArrayList<DataInputStream>();

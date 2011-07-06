@@ -34,101 +34,89 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 
 /**
- * @author JM
+ * @author jmathieu
  * @since nov-2010
  */
 public class SpatialAnalysis extends BaseStep implements StepInterface{
-    
 	private SpatialAnalysisMeta meta;
 	private SpatialAnalysisData data;
-	
-	private boolean hasTwoInputStreams = false;	
-	private boolean oneRow = false;	
-	private boolean compress = false;
-	
-	private Object[] outputRow;
-	private Object[] row;
-	
-	private Geometry result;
 	
 	public SpatialAnalysis(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta, Trans trans){
 		super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
 	}
 	
 	private boolean addBuffer(RowMetaInterface rowMeta, Object[] r) throws KettleException{
-		if (r == null)
-			return false;
-		
-		data.buffer.add(r);
-		data.freeCounter++;
-		
-		boolean doWrite = data.buffer.size() == data.writeSize; // Buffer is full: dump to disk
-		doWrite |= data.files.size() > 0 && r == null && data.buffer.size() > 0; // No more records: join from disk 
-		doWrite |= data.freeMemoryPctLimit > 0 && data.freeMemoryPct < data.freeMemoryPctLimit && data.buffer.size() >= data.minWriteSize;
-		
-		if (doWrite){				
-			// write rows to disk...
-			DataOutputStream dos;
-			GZIPOutputStream gzos;
-			int p;
+		if (r != null){
+			data.buffer.add(r);
+			data.freeCounter++;
 			
-			try{
-				FileObject fileObject=KettleVFS.createTempFile("spatialAnalysis", ".tmp", environmentSubstitute(Messages.getString("System.Button.Browse")));
-				
-				data.files.add(fileObject); // Remember the files!
-				OutputStream outputStream = KettleVFS.getOutputStream(fileObject,false);
-				if (data.compressFiles){
-					gzos = new GZIPOutputStream(new BufferedOutputStream(outputStream));
-					dos = new DataOutputStream(gzos);
-				}else{
-					dos = new DataOutputStream(new BufferedOutputStream(outputStream, 500000));
-					gzos = null;
-				}                              							
-                
-				// How many records do we have left?
-				data.bufferSizes.add( data.buffer.size() );
-                
-                for (p = 0; p < data.buffer.size(); p++){
-                    data.outputRowMeta.writeData(dos, data.buffer.get(p));
-				}
-                
-                if (data.writeSize < 0 && data.buffer.size() > data.minWriteSize){
-            		data.minWriteSize = data.buffer.size(); // if we did it once, we can do it again.
-            		
-            		// Memory usage goes up over time, even with garbage collection
-            		// We need pointers, file handles, etc.
-            		// As such, we're going to lower the min sort size a bit
-            		data.minWriteSize = (int)Math.round((double)data.minWriteSize * 0.90);
-                }
-                              
-                // Clear the list
-                data.buffer.clear();
-                
-				// Close temp-file
-				dos.close();  // close data stream
-				
-				if (gzos != null)
-					gzos.close(); // close gzip stream
-                
-                outputStream.close();  // close file stream
-                
-                // How much memory do we have left?
-                data.freeMemoryPct = Const.getPercentageFreeMemory();
-    			data.freeCounter = 0;
-    			if (data.writeSize <= 0 && log.isDetailed()) 
-    				logDetailed("Available memory : " + data.freeMemoryPct + "%");      			
-			}catch(Exception e){
-				throw new KettleException("Error processing temp-file!", e);
-			}
+			boolean doWrite = data.buffer.size() == data.writeSize; // Buffer is full: dump to disk
+			doWrite |= data.files.size() > 0 && r == null && data.buffer.size() > 0; // No more records: join from disk 
+			doWrite |= data.freeMemoryPctLimit > 0 && data.freeMemoryPct < data.freeMemoryPctLimit && data.buffer.size() >= data.minWriteSize;
 			
-            data.getBufferIndex=0;
-		}				
-		return true; 
+			if (doWrite){				
+				DataOutputStream dos;
+				GZIPOutputStream gzos;
+			
+				try{
+					FileObject fileObject=KettleVFS.createTempFile("spatialAnalysis", ".tmp", environmentSubstitute(Messages.getString("System.Button.Browse")));
+					
+					data.files.add(fileObject); // Remember the files!
+					
+					OutputStream outputStream = KettleVFS.getOutputStream(fileObject, false);
+					
+					if (data.compressFiles){
+						gzos = new GZIPOutputStream(new BufferedOutputStream(outputStream));
+						dos = new DataOutputStream(gzos);
+					}else{
+						dos = new DataOutputStream(new BufferedOutputStream(outputStream, 50000));
+						gzos = null;
+					}                              							
+	                
+					// How many records do we have left?
+					data.bufferSizes.add( data.buffer.size() );
+	                
+	                for (int p = 0; p < data.buffer.size(); p++){
+	                    data.outputRowMeta.writeData(dos, data.buffer.get(p));
+					}
+	                
+	                if (data.writeSize < 0 && data.buffer.size() > data.minWriteSize){
+	            		data.minWriteSize = data.buffer.size(); // if we did it once, we can do it again.
+	            		
+	            		// Memory usage goes up over time, even with garbage collection
+	            		// We need pointers, file handles, etc.
+	            		// As such, we're going to lower the min sort size a bit
+	            		data.minWriteSize = (int)Math.round((double)data.minWriteSize * 0.90);
+	                }
+	                              
+	                // Clear the list
+	                data.buffer.clear();
+	                
+					// Close temp-file
+					dos.close();  // close data stream
+					
+					if (gzos != null)
+						gzos.close(); // close gzip stream
+	                
+	                outputStream.close();  // close file stream
+	                
+	                // How much memory do we have left?
+	                data.freeMemoryPct = Const.getPercentageFreeMemory();
+	    			data.freeCounter = 0;
+	    			
+	    			if (data.writeSize <= 0 && log.isDetailed()) 
+	    				logDetailed("Available memory : " + data.freeMemoryPct + "%");      			
+				}catch(Exception e){
+					throw new KettleException("Error processing temp-file!", e);
+				}		
+	            data.getBufferIndex=0;
+			}				
+			return true; 
+		}
+		return false;
 	}
 	
 	private Object[] getBuffer() throws KettleValueException{
-		Object[] retval;
-		
 		// Open all files at once and read one row from each file...
 		if (data.files.size() > 0 && ( data.dis.size() == 0 || data.fis.size() == 0 )){
 			if(log.isBasic())
@@ -136,17 +124,19 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
 			try{
 				for (int f=0;f<data.files.size() && !isStopped();f++){
 					FileObject fileObject = (FileObject)data.files.get(f);
-                    String filename = KettleVFS.getFilename(fileObject);
-					if (log.isDetailed()) logDetailed("Opening tmp-file: ["+filename+"]");
-					InputStream fi=KettleVFS.getInputStream(fileObject);
+
+					if (log.isDetailed()) 
+						logDetailed("Opening tmp-file: ["+fileObject.getName()+"]");
+					
+					InputStream fi = KettleVFS.getInputStream(fileObject);
 					DataInputStream di;
 					data.fis.add(fi);
 					if (data.compressFiles){
 						GZIPInputStream gzfi = new GZIPInputStream(new BufferedInputStream(fi));
-						di =new DataInputStream(gzfi);
+						di = new DataInputStream(gzfi);
 						data.gzis.add(gzfi);
 					}else
-						di=new DataInputStream(new BufferedInputStream(fi, 50000));
+						di = new DataInputStream(new BufferedInputStream(fi, 50000));
 					
 					data.dis.add(di);
 					
@@ -154,7 +144,7 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
 					int buffersize=data.bufferSizes.get(f);
 					
 					if (log.isDetailed()) 
-						logDetailed("["+filename+"] expecting "+buffersize+" rows...");
+						logDetailed("["+fileObject.getName()+"] expecting "+buffersize+" rows...");
 					
 					if (buffersize>0){
 						Object[] row = (Object [])data.outputRowMeta.readData(di);
@@ -168,26 +158,21 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
 			}
 		}
 		
+		Object[] retval = null;
+		
 		if (data.files.size()==0){
 			if (data.getBufferIndex<data.buffer.size()){
 				retval=(Object[])data.buffer.get(data.getBufferIndex);
 				data.getBufferIndex++;
-			}else
-				retval=null;
+			}
 		}else{
-			if (data.rowBuffer.size()==0){
-                retval=null;
-            }else{
-				// We now have "filenr" rows waiting: which one is the smallest?
-				//
+			if (data.rowBuffer.size()>0){       
 				if (log.isRowLevel()){
 				    for (int i=0;i<data.rowBuffer.size() && !isStopped();i++){
-					    Object[] b = (Object[])data.rowBuffer.get(i);
-					    logRowlevel("--BR#"+i+": "+data.outputRowMeta.getString(b));
+					    logRowlevel("--BR#"+i+": "+data.outputRowMeta.getString((Object[])data.rowBuffer.get(i)));
 				    }
 				}				
-				RowTempFile rowTempFile = data.tempRows.remove(0);
-				retval = rowTempFile.row;												
+				retval = data.tempRows.remove(0).row;												
 			}
 		}
 		return retval;
@@ -200,13 +185,12 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
 	public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException{
 		meta=(SpatialAnalysisMeta)smi;
 		data=(SpatialAnalysisData)sdi;
-
-		boolean err = true;
 		
         if (first){
             first = false;
 
             data.oneRowSet = findInputRowSet(meta.getReferenceStepName());
+            
             if(data.oneRowSet.getRowMeta()!=null)
             	data.referenceIndex = data.oneRowSet.getRowMeta().indexOfValue(meta.getReferenceField()); 
             else
@@ -217,8 +201,9 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
         	       
         	data.one = getRowFrom(data.oneRowSet);  
 
-            if (hasTwoInputStreams){            	
+            if (meta.isAlgoDual()){            	
 				data.twoRowSet = findInputRowSet(meta.getCompareStepName());  
+				
 	            if(data.twoRowSet.getRowMeta()!=null)
 	            	data.compareIndex = data.twoRowSet.getRowMeta().indexOfValue(meta.getCompareField()); 
 	            else
@@ -227,147 +212,144 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
                 if (data.compareIndex<0) 
                 	throw new KettleException(Messages.getString("SpatialAnalysis.Exception.UnableToFindField", meta.getCompareField())); //$NON-NLS-1$
 
-            	data.two = getRowFrom(data.twoRowSet);
-            	
-            	if (compress){
-	            	//put every rows in the buffer            
-	            	err = addBuffer(data.twoRowSet.getRowMeta().clone(), data.two);
+            	if (meta.getCompressFiles()){
+            		data.two = getRowFrom(data.twoRowSet);          
+	            	boolean err = addBuffer(data.twoRowSet.getRowMeta().clone(), data.two);
 	            	while (err){
 	            		data.two = getRowFrom(data.twoRowSet);
 	            		err = addBuffer(data.outputRowMeta, data.two);
 	            	}
             	}
-            	
-    			row = compress?getBuffer():data.two;
-    			
-    			if(!oneRow){
-            		Geometry union = null;
-            		Object[] rowTemp = row;
-            		while (row!=null  && !isStopped()){          
-            	        union = union==null?checkGeometry(row[data.compareIndex]):union.union(checkGeometry(row[data.compareIndex]));							
-    					if(!compress)
-    						data.two = getRowFrom(data.twoRowSet);
-    					row = compress?getBuffer():data.two;
-            		}
-            		if (union == null){
+    			   			
+              	getCompareRow();
+    	        
+    	        if(!meta.getOneRow()){
+    				Object[] tempRow = null;
+    				Geometry compareSet = null;
+            		
+    				while (data.two!=null  && !isStopped()){          
+            			compareSet = compareSet==null?checkGeometry(data.two[data.compareIndex]):compareSet.union(checkGeometry(data.two[data.compareIndex]));							           			
+            			tempRow = data.two;
+            			getCompareRow();
+            		}  
+    				
+            		if (compareSet == null){
             			setOutputDone();
                         return false; 
-            		}
-            		rowTemp[data.compareIndex] = union;
-            		row = rowTemp;
+            		} 
+         		
+            		tempRow[data.compareIndex] = compareSet; 
+            		data.two = tempRow;
     			}  
             } 
  		  
     		//setting meta output
     		if (data.outputRowMeta == null){            
     			data.outputRowMeta = new RowMeta(); 
-                meta.getFields(data.outputRowMeta, getStepname(), (hasTwoInputStreams && oneRow)?new RowMetaInterface[] {data.oneRowSet.getRowMeta(), data.twoRowSet.getRowMeta()}:new RowMetaInterface[] {data.oneRowSet.getRowMeta()}, null, this);    
+                meta.getFields(data.outputRowMeta, getStepname(), (meta.isAlgoDual() && meta.getOneRow())?new RowMetaInterface[] {data.oneRowSet.getRowMeta(), data.twoRowSet.getRowMeta()}:new RowMetaInterface[] {data.oneRowSet.getRowMeta()}, null, this);    
             }    		
         }
 	
-        if (log.isRowLevel()) 
-        	logRowlevel(Messages.getString("SpatialAnalysis.Log.DataInfo",data.one+"")+data.two);
- 
         if (data.one == null){
         	setOutputDone();
             return false;       
         }
-
-        int outputIndex;
         
-    	if(hasTwoInputStreams && oneRow){
-    		if(row==null){
-    			setOutputDone();
-                return false;
-    		}
+        if (log.isRowLevel()) 
+        	logRowlevel(Messages.getString("SpatialAnalysis.Log.DataInfo",data.one+"")+data.two);
+ 
+        int outputIndex;
+ 
+    	Geometry result = null;
+    	Object[] outputRow;
+    	       
+    	if(meta.isAlgoDual() && meta.getOneRow()){
     		int outputIndexOne = data.oneRowSet.getRowMeta().size();
     		int outputIndexTwo = data.twoRowSet.getRowMeta().size();
         	outputIndex = outputIndexOne + outputIndexTwo;         		
         	outputRow = new Object[outputIndex];
         	for (int i = 0; i < outputIndex;i++){
-        		outputRow[i] = (i < outputIndexOne)?data.one[i]:row[i-outputIndexOne];           		
+        		outputRow[i] = (i < outputIndexOne)?data.one[i]:data.two[i-outputIndexOne];           		
     		}     		
     	}else{          		
     		outputRow = data.one;
     		outputIndex = data.oneRowSet.getRowMeta().size();
         }
 
-        switch (meta.getSpatialAnalysisByDesc()){
-            case 0:        	                   		     	                        
-        		result = checkGeometry(data.one[data.referenceIndex]).union(checkGeometry(row[data.compareIndex]));	        		
-            	break;
-            case 1:
-        		result = checkGeometry(data.one[data.referenceIndex]).intersection(checkGeometry(row[data.compareIndex]));        	
-            	break;
-            case 2:
-            	double dist = -1;
-            	try{
-            		dist = Double.parseDouble(meta.getDistField());	
-            	}catch(Exception e){
-            		logError(Messages.getString("SpatialAnalysis.Exception.WrongParameterType1") + Messages.getString("SpatialAnalysisDialog.DistField.Label") + Messages.getString("SpatialAnalysis.Exception.WrongParameterType2"));
-            	}
-            	result = checkGeometry(data.one[data.referenceIndex]).buffer(dist);
-            	break;
-            case 3:
-        		result = checkGeometry(data.one[data.referenceIndex]).symDifference(checkGeometry(row[data.compareIndex]));
-            	break;
-            case 4:
-            	result = checkGeometry(data.one[data.referenceIndex]).getInteriorPoint();
-            	break;
-            case 5:
-            	result = checkGeometry(data.one[data.referenceIndex]).getEnvelope();
-            	break;
-            case 6:
-            	result = checkGeometry(data.one[data.referenceIndex]).getCentroid();
-            	break;
-            case 7:
-            	result = checkGeometry(data.one[data.referenceIndex]).getBoundary();
-            	break;
-            case 8:
-        		result = checkGeometry(data.one[data.referenceIndex]).difference(checkGeometry(row[data.compareIndex]));
-            	break;
-            case 9:
-            	result = checkGeometry(data.one[data.referenceIndex]).convexHull();
-            	break;   
-            case 10:
-            	result = checkGeometry(data.one[data.referenceIndex]).reverse();
-            	break;         
-            default: 
-            	setOutputDone();
-                return false;  
-        }                                  
+    	Geometry geom = checkGeometry(data.one[data.referenceIndex]);
+
+    	if(!meta.isAlgoDual() || data.two!=null){
+	        switch (meta.getSpatialAnalysisByDesc()){
+	            case 0:        	                   		     	                        
+	        		result = geom.union(checkGeometry(data.two[data.compareIndex]));	        		
+	            	break;
+	            case 1:
+	        		result = geom.intersection(checkGeometry(data.two[data.compareIndex]));        	
+	            	break;
+	            case 2:
+	            	double dist = -1;
+	            	try{
+	            		dist = Double.parseDouble(meta.getDistField());	
+	            	}catch(Exception e){
+	            		logError(Messages.getString("SpatialAnalysis.Exception.WrongParameterType1") + Messages.getString("SpatialAnalysisDialog.DistField.Label") + Messages.getString("SpatialAnalysis.Exception.WrongParameterType2"));
+	            	}
+	            	result = geom.buffer(dist);
+	            	break;
+	            case 3:
+	        		result = geom.symDifference(checkGeometry(data.two[data.compareIndex]));
+	            	break;
+	            case 4:
+	            	result = geom.getInteriorPoint();
+	            	break;
+	            case 5:
+	            	result = geom.getEnvelope();
+	            	break;
+	            case 6:
+	            	result = geom.getCentroid();
+	            	break;
+	            case 7:
+	            	result = geom.getBoundary();
+	            	break;
+	            case 8:
+	        		result = geom.difference(checkGeometry(data.two[data.compareIndex]));
+	            	break;
+	            case 9:
+	            	result = geom.convexHull();
+	            	break;   
+	            case 10:
+	            	result = geom.reverse();
+	            	break;         
+	            default: 
+	            	setOutputDone();
+	                return false;  
+	        }   
+    	}
        
-		sendRow(outputIndex);
+    	try {
+			if(meta.isAlgoDual() && meta.getOneRow()){					
+				int outputIndexOne = data.oneRowSet.getRowMeta().size();	                    		    		
+		    	for (int i = outputIndexOne; i < outputIndex;i++){	                    		
+		    		outputRow[i] = data.two[i-outputIndexOne];  
+				} 					
+			}
+			putRow(data.outputRowMeta, RowDataUtil.addValueData(outputRow, outputIndex, result));							
+		} catch (KettleStepException e) {
+			throw new KettleException(e);
+		}
 		
         data.one = getRowFrom(data.oneRowSet);
 
-        if (hasTwoInputStreams && oneRow){
-        	data.two = getRowFrom(data.twoRowSet);          
-        	row = compress?getBuffer():data.two;  
-        }
+        if (meta.isAlgoDual() && meta.getOneRow())
+        	getCompareRow();          
 
         if (checkFeedback(getLinesRead()) && log.isBasic()) 
         	logBasic(Messages.getString("SpatialAnalysis.LineNumber")+getLinesRead());
 
 		return true;
 	}
-
-	public void sendRow(int outputIndex) throws KettleException{
-		try {
-			if (result == null)
-				putRow(data.outputRowMeta, RowDataUtil.addValueData(outputRow, outputIndex, null));
-			else{
-				if(hasTwoInputStreams && oneRow){					
-					int outputIndexOne = data.oneRowSet.getRowMeta().size();	                    		    		
-			    	for (int i = outputIndexOne; i < outputIndex;i++){	                    		
-			    		outputRow[i] = row[i-outputIndexOne];  
-					} 					
-				}
-				putRow(data.outputRowMeta, RowDataUtil.addValueData(outputRow, outputIndex, result));				
-			}			
-		} catch (KettleStepException e) {
-			throw new KettleException(e);
-		}
+	
+	public void getCompareRow() throws KettleStepException, KettleValueException{
+		data.two = meta.getCompressFiles()?getBuffer():getRowFrom(data.twoRowSet);
 	}
 
 	private Geometry checkGeometry(Object geom) throws KettleException{	 	                        		                    	                              
@@ -388,19 +370,13 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
 		meta = (SpatialAnalysisMeta)smi;
 		data = (SpatialAnalysisData)sdi;
 
-        if (super.init(smi, sdi)){    
-       	
-	        hasTwoInputStreams = meta.isAlgoDual();            
-	        oneRow = meta.getOneRow();
-	        compress = meta.getCompressFiles();
-	        
-	        if(compress){
+        if (super.init(smi, sdi)){         	           
+	        if(meta.getCompressFiles()){
 	        	data.writeSize = 5000;
 				data.freeMemoryPctLimit = 25;
 				data.buffer = new ArrayList<Object[]>(5000);
 	            data.compressFiles =  meta.getCompressFiles();                   
-	            data.rowBuffer=new ArrayList<Object[]>(data.writeSize);
-	            
+	            data.rowBuffer=new ArrayList<Object[]>(data.writeSize);     
 	            data.tempRows  = new ArrayList<RowTempFile>();            
 	            data.minWriteSize = 1000; 
 	        }
@@ -408,20 +384,23 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
         	if (meta.getReferenceStepName() != null){
         		if (!Const.isEmpty(meta.getReferenceField())){
         			if (!Const.isEmpty(meta.getResultFieldName())){
-        				int analysisType = meta.getSpatialAnalysisByDesc();
-    	    			if (analysisType == 2){//check if distance is a double for buffer
+    	    			if (meta.getSpatialAnalysisByDesc() == 2){//check if distance is a double for buffer
     	    				try{
-    	    					 Double.parseDouble(meta.getDistField());
+    	    					Double.parseDouble(meta.getDistField());
     	    				}catch(Exception e){
     	    					logError(Messages.getString("SpatialAnalysisMeta.CheckResult.DistFieldMustBeDouble"));
     	    				}
     	    			}
         	    		//check compare input if transformation requires 2 streams
-        	    		if (analysisType == 0 || analysisType == 1 || analysisType == 3 || analysisType == 8){
+        	    		if (meta.isAlgoDual()){
         	    			if (meta.getCompareStepName() != null){
-        	    				if (!Const.isEmpty(meta.getCompareField()))
-        	    					return true;        	    				
-        	    				logError(Messages.getString("SpatialAnalysisMeta.CheckResult.NoCompareFieldSpecified")); //$NON-NLS-1$        	    				
+        	    				if (!Const.isEmpty(meta.getCompareField())){
+        	    					if(meta.getCompareStepName().equals(meta.getReferenceStepName()))
+        	    						logError(Messages.getString("SpatialAnalysisMeta.CheckResult.CompareSameAsReference"));   	    				
+        	    					else
+        	    						return true;       	    				
+        	    				}else
+        	    					logError(Messages.getString("SpatialAnalysisMeta.CheckResult.NoCompareFieldSpecified")); //$NON-NLS-1$        	    				
         	    			}else
         	    				logError(Messages.getString("SpatialAnalysisMeta.CheckResult.CompareStepMissing"));									        	    			
         	    		}else

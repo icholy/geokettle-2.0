@@ -1,7 +1,11 @@
 package org.pentaho.di.ui.trans.steps.spatialanalysis;
 
+import java.util.List;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -30,8 +34,7 @@ import org.pentaho.di.trans.steps.spatialanalysis.SpatialAnalysisMeta;
 import org.pentaho.di.ui.core.dialog.ErrorDialog;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
-public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogInterface
-{
+public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogInterface{
 	private Label       		wlReference;
 	private CCombo      		wReference;
 	private FormData    		fdlReference, fdReference;
@@ -73,66 +76,40 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		input=(SpatialAnalysisMeta)in;
     }
 	
-	public String [] getPreviousSteps(){
-		return transMeta.getPrevStepNames(stepname);
-	}
-	
 	public void displayFields(){ //enable/disable appropriate fields
 		if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.BUFFER"))) {
     		setDualOptions(false);
     		wDistField.setEnabled(true);
-        }else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.INT_POINT"))) {
+        }else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.INT_POINT")))
         	setDualOptions(false);
-        }else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.ENVELOPE"))) {
+        else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.ENVELOPE")))
         	setDualOptions(false);
-        }else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.CENTROID"))) {
+        else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.CENTROID")))
         	setDualOptions(false);
-        }else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.BOUNDARY"))) {
+        else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.BOUNDARY")))
         	setDualOptions(false);
-        }else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.CONVEX_HULL"))) {
+        else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.CONVEX_HULL")))
         	setDualOptions(false);
-        }else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.REVERSE"))) {
+        else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.REVERSE"))) 
         	setDualOptions(false);
-        }else{
+        else{
         	setDualOptions(true);  
         	wDistField.setEnabled(false);
-        	checkPreviousSteps();
         }
 	}
 	
 	public void setDualOptions(boolean bool){
-		wDistField.setEnabled(bool);
+		if(!bool){
+	    	wCompare.removeAll();
+	    	wCompareField.removeAll();
+    	}
+		wDistField.setEnabled(false);
 		wCompare.setEnabled(bool);
     	wCompareField.setEnabled(bool);
-    	wOneRow.setEnabled(bool);
+    	wOneRow.setEnabled(bool); 
+    	wCompress.setEnabled(bool);
 	}
-	
-	public void checkPreviousSteps(){ //clear fields if step/hop has been deteled/disabled
-		String previousSteps[] = getPreviousSteps();
-		boolean refStepFound = false;
-		boolean compStepFound = false;
-		for(int i = 0;i<previousSteps.length;i++){
-			if(wCompare.getText().equals(previousSteps[i]))
-				compStepFound = true;			
-			if(wReference.getText().equals(previousSteps[i]))
-				refStepFound = true;
-		}
-		
-		if(!compStepFound){			
-			wCompare.removeAll();
-			wCompareField.removeAll();
-			wCompare.setItems( previousSteps );
-			getCompareFields();
-		}
-				
-		if(!refStepFound){
-			wReference.removeAll();
-			wReferenceField.removeAll();	
-			wReference.setItems( previousSteps );
-			getReferenceFields();
-		}
-	}
-	
+
 	public String open(){
 		Shell parent = getParent();
 		Display display = parent.getDisplay();
@@ -144,20 +121,6 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		ModifyListener lsMod = new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				input.setChanged();
-			}
-		};
-		
-		ModifyListener lsModRef = new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				input.setChanged();
-				getReferenceFields();
-			}
-		};
-		
-		ModifyListener lsModCom = new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				input.setChanged();
-				getCompareFields();
 			}
 		};
 		
@@ -191,9 +154,6 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		fdStepname.top  = new FormAttachment(0, margin);
 		fdStepname.right= new FormAttachment(100, 0);
 		wStepname.setLayoutData(fdStepname);
-
-        // Get the previous steps...
-        String previousSteps[] = getPreviousSteps();
                
         // Analysis
         wlAnalysis = new Label(shell, SWT.RIGHT);
@@ -277,17 +237,20 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		wReference=new CCombo(shell, SWT.BORDER );
 		wReference.setEditable(false);
  		props.setLook(wReference);
-
-		if (previousSteps!=null)
-			wReference.setItems( previousSteps );
 		
-		wReference.addModifyListener(lsModRef);
+		wReference.addModifyListener(lsMod);
 		fdReference=new FormData();
 		fdReference.left = new FormAttachment(middle, 0);
 		fdReference.top  = new FormAttachment(wDistField, margin*4);
 		fdReference.right= new FormAttachment(100, 0);
 		wReference.setLayoutData(fdReference);
-
+		wReference.addFocusListener(new FocusListener(){
+			public void focusLost(FocusEvent e){}       
+			public void focusGained(FocusEvent e){
+				setStepNames(wReference);
+			}
+		});
+		
 		//reference field
 		wlReferenceField=new Label(shell, SWT.RIGHT);
 		wlReferenceField.setText(Messages.getString("SpatialAnalysisDialog.ReferenceField.Label")); //$NON-NLS-1$
@@ -306,6 +269,12 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		fdReferenceField.right= new FormAttachment(100, 0);
 		fdReferenceField.top  = new FormAttachment(wReference, margin);
 		wReferenceField.setLayoutData(fdReferenceField);
+		wReferenceField.addFocusListener(new FocusListener(){
+			public void focusLost(FocusEvent e){}       
+			public void focusGained(FocusEvent e){
+				setReferenceField();
+			}
+		});
 		
 		//compare step
 		wlCompare=new Label(shell, SWT.RIGHT);
@@ -319,16 +288,19 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		wCompare=new CCombo(shell, SWT.BORDER );
 		wCompare.setEditable(false);
  		props.setLook(wCompare);
-
-        if (previousSteps!=null)
-            wCompare.setItems( previousSteps );	
         
-		wCompare.addModifyListener(lsModCom);
+		wCompare.addModifyListener(lsMod);
 		fdCompare=new FormData();
         fdCompare.top  = new FormAttachment(wReferenceField, margin*4);
 		fdCompare.left = new FormAttachment(middle, 0);
 		fdCompare.right= new FormAttachment(100, 0);
-		wCompare.setLayoutData(fdCompare);
+		wCompare.setLayoutData(fdCompare);	
+		wCompare.addFocusListener(new FocusListener(){
+			public void focusLost(FocusEvent e){}       
+			public void focusGained(FocusEvent e){
+				setStepNames(wCompare);
+			}
+		});
 		
 		//compare field
 		wlCompareField=new Label(shell, SWT.RIGHT);
@@ -348,6 +320,12 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		fdCompareField.right= new FormAttachment(100, 0);
 		fdCompareField.top  = new FormAttachment(wCompare, margin);
 		wCompareField.setLayoutData(fdCompareField);
+		wCompareField.addFocusListener(new FocusListener(){
+			public void focusLost(FocusEvent e){}       
+			public void focusGained(FocusEvent e){
+				setCompareField();
+			}
+		});
 		
 		// Execute analysis on the whole set (rowset 2)?		        
         wOneRow=new Button(shell, SWT.CHECK);
@@ -406,7 +384,7 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 
 		// Set the shell size, based upon previous time...
 		setSize();
-		
+ 		
 		//fill entries
 		getData();
 		
@@ -417,9 +395,16 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		
 		shell.open();
 		while (!shell.isDisposed()){
-				if (!display.readAndDispatch()) display.sleep();
+			if (!display.readAndDispatch()) display.sleep();
 		}
 		return stepname;
+	}
+	
+	public void setStepNames(CCombo combo){
+ 		List<StepMeta> prevSteps = transMeta.findPreviousSteps(transMeta.findStep(stepname));
+		for (StepMeta prevStep : prevSteps){
+			combo.add(prevStep.getName());
+		}
 	}
 	
 	/**
@@ -427,10 +412,14 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 	 */ 
 	public void getData(){
 		wAnalysis.select(input.getSpatialAnalysisByDesc());
-		if (input.getDistField()!=null) wDistField.setText(input.getDistField());
-		if (input.getResultFieldName()!=null) wResult.setText(input.getResultFieldName());
-		if (input.getReferenceStepName() != null) wReference.setText(input.getReferenceStepName());
-		if (input.getCompareStepName() != null) wCompare.setText(input.getCompareStepName());
+		if (input.getDistField()!=null) 
+			wDistField.setText(input.getDistField());
+		if (input.getResultFieldName()!=null) 
+			wResult.setText(input.getResultFieldName());
+		if (input.getReferenceStepName() != null) 
+			wReference.setText(input.getReferenceStepName());
+		if (input.getCompareStepName() != null)
+			wCompare.setText(input.getCompareStepName());
 		wCompress.setSelection(input.getCompressFiles());
 		wOneRow.setSelection(input.getOneRow());
 		wReferenceField.setText(Const.NVL(input.getReferenceField(), ""));
@@ -438,64 +427,59 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
         wStepname.selectAll();
 	}
 	
-	private void cancel(){
-		
+	private void cancel(){	
 		stepname=null;
 		input.setChanged(backupChanged);
 		dispose();
 	}
 	
 	private void ok(){		
-		if (Const.isEmpty(wStepname.getText())) return;
-
-		input.setReferenceStepMeta(transMeta.findStep(wReference.getText()));
-		input.setCompareStepMeta(transMeta.findStep(wCompare.getText()));                  
-		input.setReferenceField(wReferenceField.getText());
-		input.setCompareField(wCompareField.getText());
-        input.setResultFieldName(wResult.getText());
-        input.setDistField(wDistField.getText());
-        input.setCompressFiles(wCompress.getSelection());
-        input.setOneRow(wOneRow.getSelection());
-        if(wAnalysis.getSelectionIndex()<0)
-			input.setSpatialAnalysisType(0); 
-		else
-			input.setSpatialAnalysisType(wAnalysis.getSelectionIndex());
-        
-		stepname = wStepname.getText(); // return value
-		
-		dispose();
+		if (!Const.isEmpty(wStepname.getText())){
+			input.setReferenceStepMeta(transMeta.findStep(wReference.getText()));
+			input.setCompareStepMeta(transMeta.findStep(wCompare.getText()));                  
+			input.setReferenceField(wReferenceField.getText());
+			input.setCompareField(wCompareField.getText());
+		    input.setResultFieldName(wResult.getText());
+		    input.setDistField(wDistField.getText());
+		    input.setCompressFiles(wCompress.getSelection());
+		    input.setOneRow(wOneRow.getSelection());
+			input.setSpatialAnalysisType(wAnalysis.getSelectionIndex()<0?0:wAnalysis.getSelectionIndex()); 
+			stepname = wStepname.getText(); // return value
+			dispose();
+		}
 	}
     
-    private void getReferenceFields(){    	
-    	try{
-            StepMeta stepMeta = transMeta.findStep(wReference.getText());
-            if (stepMeta!=null){
-            	RowMetaInterface prev = transMeta.getStepFields(stepMeta);
-            	if (prev!=null){
-	            	String[] fieldNames = prev.getFieldNames();
-	        		wReferenceField.setItems(fieldNames);
-                } 
-            }
-        }
-        catch(KettleException e){
-            new ErrorDialog(shell, Messages.getString("SpatialAnalysisDialog.ErrorGettingFields.DialogTitle"), Messages.getString("SpatialAnalysisDialog.ErrorGettingFields.DialogMessage"), e); //$NON-NLS-1$ //$NON-NLS-2$
-        } 
-    }
-    
-    
-    private void getCompareFields(){
-	    try{
-            StepMeta stepMeta = transMeta.findStep(wCompare.getText());
-            if (stepMeta!=null){
-            	RowMetaInterface prev = transMeta.getStepFields(stepMeta);
-            	if (prev!=null){
-	            	String[] fieldNames = prev.getFieldNames();
-	        		wCompareField.setItems(fieldNames);	        			        		
-                } 
-            }
-        }
-        catch(KettleException e){
-            new ErrorDialog(shell, Messages.getString("SpatialAnalysisDialog.ErrorGettingFields.DialogTitle"), Messages.getString("SpatialAnalysisDialog.ErrorGettingFields.DialogMessage"), e); //$NON-NLS-1$ //$NON-NLS-2$
-        }    	
-    }
+	private void setCompareField(){
+		try{
+			wCompareField.removeAll();
+			if(!Const.isEmpty(wCompare.getText())){							
+				RowMetaInterface r = transMeta.getStepFields(wCompare.getText());
+				if (r!=null){
+					r.getFieldNames();
+					for (int i=0;i<r.getFieldNames().length;i++){	
+						wCompareField.add(r.getFieldNames()[i]);									
+					}
+				}	
+			}				
+		}catch(KettleException ke){
+			new ErrorDialog(shell, Messages.getString("SpatialAnalysisDialog.ErrorGettingFields.DialogTitle"), Messages.getString("SpatialAnalysisDialog.ErrorGettingFields.DialogMessage"), ke); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+	}
+	
+	private void setReferenceField(){
+		try{
+			wReferenceField.removeAll();
+			if(!Const.isEmpty(wReference.getText())){							
+				RowMetaInterface r = transMeta.getStepFields(wReference.getText());
+				if (r!=null){
+					r.getFieldNames();
+					for (int i=0;i<r.getFieldNames().length;i++){	
+						wReferenceField.add(r.getFieldNames()[i]);									
+					}
+				}	
+			}				
+		}catch(KettleException ke){
+			new ErrorDialog(shell, Messages.getString("SpatialAnalysisDialog.ErrorGettingFields.DialogTitle"), Messages.getString("SpatialAnalysisDialog.ErrorGettingFields.DialogMessage"), ke); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+	}
 }
