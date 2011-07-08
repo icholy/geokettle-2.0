@@ -7,6 +7,9 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -29,9 +32,6 @@ import org.pentaho.di.trans.step.StepMetaInterface;
 import org.pentaho.di.trans.steps.sort.RowTempFile;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * @author jmathieu
@@ -178,43 +178,46 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
 		return retval;
 	}
 	
-	public boolean isGeometry(Object obj){           
-        return com.vividsolutions.jts.geom.Geometry.class.isAssignableFrom(obj.getClass())?true:false;
-	}
-	
 	public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException{
 		meta=(SpatialAnalysisMeta)smi;
 		data=(SpatialAnalysisData)sdi;
 		
         if (first){
             first = false;
-
-            data.oneRowSet = findInputRowSet(meta.getReferenceStepName());
+ 
+            data.oneMeta = getTransMeta().getStepFields(meta.getReferenceStepName());
+            data.twoMeta = meta.isAlgoDual()?getTransMeta().getStepFields(meta.getCompareStepName()):null;  
             
-            if(data.oneRowSet.getRowMeta()!=null)
-            	data.referenceIndex = data.oneRowSet.getRowMeta().indexOfValue(meta.getReferenceField()); 
-            else
-            	data.referenceIndex = getTransMeta().getStepFields(meta.getReferenceStepName()).indexOfValue(meta.getReferenceField()); 
-       	
+    		//setting meta output
+    		if (data.outputRowMeta == null){            
+    			data.outputRowMeta = new RowMeta(); 
+                meta.getFields(data.outputRowMeta, getStepname(), meta.getOneRow()?new RowMetaInterface[] {data.oneMeta, data.twoMeta}:new RowMetaInterface[] {data.oneMeta}, null, this);    
+            }  
+    		
+            data.oneRowSet = findInputRowSet(meta.getReferenceStepName());     
+            data.outputIndex =  data.oneMeta.size();
+            data.referenceIndex =  data.oneMeta.indexOfValue(meta.getReferenceField()); 
+
         	if (data.referenceIndex<0) 
             	throw new KettleException(Messages.getString("SpatialAnalysis.Exception.UnableToFindField", meta.getReferenceField())); 
         	       
         	data.one = getRowFrom(data.oneRowSet);  
 
+        	if (data.one == null){
+              	setOutputDone();
+                return false;       
+            }
+        	
             if (meta.isAlgoDual()){            	
-				data.twoRowSet = findInputRowSet(meta.getCompareStepName());  
-				
-	            if(data.twoRowSet.getRowMeta()!=null)
-	            	data.compareIndex = data.twoRowSet.getRowMeta().indexOfValue(meta.getCompareField()); 
-	            else
-	            	data.compareIndex = getTransMeta().getStepFields(meta.getCompareStepName()).indexOfValue(meta.getCompareField()); 
-        
+				data.twoRowSet = findInputRowSet(meta.getCompareStepName());  				 	    		  		
+	    		data.compareIndex =  data.twoMeta.indexOfValue(meta.getCompareField()); 
+	    		
                 if (data.compareIndex<0) 
                 	throw new KettleException(Messages.getString("SpatialAnalysis.Exception.UnableToFindField", meta.getCompareField())); //$NON-NLS-1$
 
             	if (meta.getCompressFiles()){
             		data.two = getRowFrom(data.twoRowSet);          
-	            	boolean err = addBuffer(data.twoRowSet.getRowMeta().clone(), data.two);
+	            	boolean err = addBuffer(data.twoMeta, data.two);
 	            	while (err){
 	            		data.two = getRowFrom(data.twoRowSet);
 	            		err = addBuffer(data.outputRowMeta, data.two);
@@ -223,11 +226,13 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
     			   			
               	getCompareRow();
     	        
-    	        if(!meta.getOneRow()){
+    	        if(meta.getOneRow())
+    	        	data.outputIndex +=  data.twoMeta.size();  
+    	        else{
     				Object[] tempRow = null;
     				Geometry compareSet = null;
             		
-    				while (data.two!=null  && !isStopped()){          
+    				while (data.two!=null && !isStopped()){          
             			compareSet = compareSet==null?checkGeometry(data.two[data.compareIndex]):compareSet.union(checkGeometry(data.two[data.compareIndex]));							           			
             			tempRow = data.two;
             			getCompareRow();
@@ -241,105 +246,34 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
             		tempRow[data.compareIndex] = compareSet; 
             		data.two = tempRow;
     			}  
-            } 
- 		  
-    		//setting meta output
-    		if (data.outputRowMeta == null){            
-    			data.outputRowMeta = new RowMeta(); 
-                meta.getFields(data.outputRowMeta, getStepname(), (meta.isAlgoDual() && meta.getOneRow())?new RowMetaInterface[] {data.oneRowSet.getRowMeta(), data.twoRowSet.getRowMeta()}:new RowMetaInterface[] {data.oneRowSet.getRowMeta()}, null, this);    
-            }    		
+            }  		
         }
 	
         if (data.one == null){
         	setOutputDone();
             return false;       
-        }
+        } 
         
-        if (log.isRowLevel()) 
-        	logRowlevel(Messages.getString("SpatialAnalysis.Log.DataInfo",data.one+"")+data.two);
- 
-        int outputIndex;
- 
-    	Geometry result = null;
-    	Object[] outputRow;
-    	       
-    	if(meta.isAlgoDual() && meta.getOneRow()){
-    		int outputIndexOne = data.oneRowSet.getRowMeta().size();
-    		int outputIndexTwo = data.twoRowSet.getRowMeta().size();
-        	outputIndex = outputIndexOne + outputIndexTwo;         		
-        	outputRow = new Object[outputIndex];
-        	for (int i = 0; i < outputIndex;i++){
-        		outputRow[i] = (i < outputIndexOne)?data.one[i]:data.two[i-outputIndexOne];           		
-    		}     		
-    	}else{          		
-    		outputRow = data.one;
-    		outputIndex = data.oneRowSet.getRowMeta().size();
-        }
-
-    	Geometry geom = checkGeometry(data.one[data.referenceIndex]);
-
-    	if(!meta.isAlgoDual() || data.two!=null){
-	        switch (meta.getSpatialAnalysisByDesc()){
-	            case 0:        	                   		     	                        
-	        		result = geom.union(checkGeometry(data.two[data.compareIndex]));	        		
-	            	break;
-	            case 1:
-	        		result = geom.intersection(checkGeometry(data.two[data.compareIndex]));        	
-	            	break;
-	            case 2:
-	            	double dist = -1;
-	            	try{
-	            		dist = Double.parseDouble(meta.getDistField());	
-	            	}catch(Exception e){
-	            		logError(Messages.getString("SpatialAnalysis.Exception.WrongParameterType1") + Messages.getString("SpatialAnalysisDialog.DistField.Label") + Messages.getString("SpatialAnalysis.Exception.WrongParameterType2"));
-	            	}
-	            	result = geom.buffer(dist);
-	            	break;
-	            case 3:
-	        		result = geom.symDifference(checkGeometry(data.two[data.compareIndex]));
-	            	break;
-	            case 4:
-	            	result = geom.getInteriorPoint();
-	            	break;
-	            case 5:
-	            	result = geom.getEnvelope();
-	            	break;
-	            case 6:
-	            	result = geom.getCentroid();
-	            	break;
-	            case 7:
-	            	result = geom.getBoundary();
-	            	break;
-	            case 8:
-	        		result = geom.difference(checkGeometry(data.two[data.compareIndex]));
-	            	break;
-	            case 9:
-	            	result = geom.convexHull();
-	            	break;   
-	            case 10:
-	            	result = geom.reverse();
-	            	break;         
-	            default: 
-	            	setOutputDone();
-	                return false;  
-	        }   
-    	}
-       
-    	try {
-			if(meta.isAlgoDual() && meta.getOneRow()){					
-				int outputIndexOne = data.oneRowSet.getRowMeta().size();	                    		    		
-		    	for (int i = outputIndexOne; i < outputIndex;i++){	                    		
-		    		outputRow[i] = data.two[i-outputIndexOne];  
-				} 					
-			}
-			putRow(data.outputRowMeta, RowDataUtil.addValueData(outputRow, outputIndex, result));							
-		} catch (KettleStepException e) {
-			throw new KettleException(e);
-		}
+        Object[] outputRow = data.one;
+    	
+	    if(meta.getOneRow()){
+	    	if(data.two!=null){	
+	    	    List<Object> both = new ArrayList<Object>(data.twoMeta.size() + data.oneMeta.size());
+	    	    Collections.addAll(both, data.one);
+	    	    both.addAll(data.oneMeta.size(), Arrays.asList(data.two));
+	    	    outputRow = both.toArray(new Object[] {});
+	    	}else{
+	    		for(int i = data.oneMeta.size(); i < data.twoMeta.size() + data.oneMeta.size(); i++){
+	        		outputRow[i] = null;
+	        	}
+	    	}
+    	}	
+        
+		putRow(data.outputRowMeta, RowDataUtil.addValueData(outputRow,  data.outputIndex, executeAnalysis(meta.getSpatialAnalysisByDesc())));
 		
         data.one = getRowFrom(data.oneRowSet);
 
-        if (meta.isAlgoDual() && meta.getOneRow())
+        if (meta.getOneRow())
         	getCompareRow();          
 
         if (checkFeedback(getLinesRead()) && log.isBasic()) 
@@ -348,18 +282,62 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
 		return true;
 	}
 	
+	public Geometry executeAnalysis(int analysis) throws KettleException{	
+		Geometry result = null;
+		if(!meta.isAlgoDual() || data.two!=null){
+			Geometry geom = (Geometry) data.one[data.referenceIndex];
+			switch (analysis){
+		        case 0:        	                   		     	                        
+		    		result = geom.union(checkGeometry(data.two[data.compareIndex]));	        		
+		        	break;
+		        case 1:
+		    		result = geom.intersection(checkGeometry(data.two[data.compareIndex]));        	
+		        	break;
+		        case 2:
+		        	try{
+		        		result = geom.buffer(Double.parseDouble(meta.getDistField()));	
+		        	}catch(Exception e){
+		        		throw new KettleException(Messages.getString("SpatialAnalysis.Exception.WrongParameterType1") + Messages.getString("SpatialAnalysisDialog.DistField.Label") + Messages.getString("SpatialAnalysis.Exception.WrongParameterType2"));
+		        	}
+		        	break;
+		        case 3:
+		    		result = geom.symDifference(checkGeometry(data.two[data.compareIndex]));
+		        	break;
+		        case 4:
+		        	result = geom.getInteriorPoint();
+		        	break;
+		        case 5:
+		        	result = geom.getEnvelope();
+		        	break;
+		        case 6:
+		        	result = geom.getCentroid();
+		        	break;
+		        case 7:
+		        	result = geom.getBoundary();
+		        	break;
+		        case 8:
+		    		result = geom.difference(checkGeometry(data.two[data.compareIndex]));
+		        	break;
+		        case 9:
+		        	result = geom.convexHull();
+		        	break;   
+		        case 10:
+		        	result = geom.reverse();
+		        	break;         
+		        default: 
+		        	break;  
+			}  
+		}	
+		return result;
+	}
+	
 	public void getCompareRow() throws KettleStepException, KettleValueException{
 		data.two = meta.getCompressFiles()?getBuffer():getRowFrom(data.twoRowSet);
 	}
 
 	private Geometry checkGeometry(Object geom) throws KettleException{	 	                        		                    	                              
 		if(!(geom instanceof Geometry))
-			throw new KettleException("Unexpected class for Geometry field: "+ geom.getClass().toString());
-		GeometryFactory gf = new GeometryFactory();
-		if (geom instanceof Polygon)
-			return gf.createMultiPolygon(new Polygon[] {(Polygon) geom});            			  								        			  							
-		if (geom instanceof LineString)
-			return gf.createMultiLineString(new LineString[] {(LineString) geom});            			  													
+			throw new KettleException("Unexpected class for Geometry field: "+ geom.getClass().toString());           			  													
 		return (Geometry) geom;
 	}
 	

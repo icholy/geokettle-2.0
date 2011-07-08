@@ -144,14 +144,6 @@ public class Layer extends Observable
 			update();
 	}
 	
-	public int getSingleGeometryCount(){
-		int count = 0;
-		for(GeometryWrapper gw: geodata){
-			count += gw.getJTSGeom().getNumGeometries();				
-		}
-		return count;
-	}
-	
 	public int getGeometryCount(){
 		return geodata.size();
 	}

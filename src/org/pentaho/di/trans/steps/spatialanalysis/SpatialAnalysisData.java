@@ -49,6 +49,10 @@ public class SpatialAnalysisData extends BaseStepData implements StepDataInterfa
 	public int memoryReporting;
 	public int writeSize;
 	
+    public int outputIndex;
+    public RowMetaInterface oneMeta;
+    public RowMetaInterface twoMeta;
+	
 	public boolean compressFiles;
 	
 	public SpatialAnalysisData(){

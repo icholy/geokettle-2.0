@@ -102,6 +102,8 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		if(!bool){
 	    	wCompare.removeAll();
 	    	wCompareField.removeAll();
+	    	wCompress.setSelection(bool);
+	    	wOneRow.setSelection(bool);
     	}
 		wDistField.setEnabled(false);
 		wCompare.setEnabled(bool);
@@ -455,9 +457,9 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 			if(!Const.isEmpty(wCompare.getText())){							
 				RowMetaInterface r = transMeta.getStepFields(wCompare.getText());
 				if (r!=null){
-					r.getFieldNames();
-					for (int i=0;i<r.getFieldNames().length;i++){	
-						wCompareField.add(r.getFieldNames()[i]);									
+					String [] fieldNames = r.getFieldNames();
+					for (int i=0;i<fieldNames.length;i++){	
+						wCompareField.add(fieldNames[i]);									
 					}
 				}	
 			}				
@@ -472,9 +474,9 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 			if(!Const.isEmpty(wReference.getText())){							
 				RowMetaInterface r = transMeta.getStepFields(wReference.getText());
 				if (r!=null){
-					r.getFieldNames();
-					for (int i=0;i<r.getFieldNames().length;i++){	
-						wReferenceField.add(r.getFieldNames()[i]);									
+					String [] fieldNames = r.getFieldNames();
+					for (int i=0;i<fieldNames.length;i++){	
+						wReferenceField.add(fieldNames[i]);									
 					}
 				}	
 			}				

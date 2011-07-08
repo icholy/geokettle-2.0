@@ -33,13 +33,13 @@ public class LayerLabelProvider extends LabelProvider implements ITableLabelProv
 			if(element instanceof Layer){
 				tableViewer.setChecked(element, ((Layer)element).isVisible());
 				if (((Layer)element).getType()==Layer.POINT_LAYER)
-					return ((Layer)element).labels[Layer.POINT_LAYER]+" ("+((Layer)element).getSingleGeometryCount()+")";
+					return ((Layer)element).labels[Layer.POINT_LAYER]+" ("+((Layer)element).getGeometryCount()+")";
 				if (((Layer)element).getType()==Layer.COLLECTION_LAYER)
 					return ((Layer)element).labels[Layer.COLLECTION_LAYER]+" ("+((Layer)element).getGeometryCount()+")";
 				if (((Layer)element).getType()==Layer.LINE_LAYER)
-					return ((Layer)element).labels[Layer.LINE_LAYER]+" ("+((Layer)element).getSingleGeometryCount()+")";
+					return ((Layer)element).labels[Layer.LINE_LAYER]+" ("+((Layer)element).getGeometryCount()+")";
 				if (((Layer)element).getType()==Layer.POLYGON_LAYER)
-					return ((Layer)element).labels[Layer.POLYGON_LAYER]+" ("+((Layer)element).getSingleGeometryCount()+")";		
+					return ((Layer)element).labels[Layer.POLYGON_LAYER]+" ("+((Layer)element).getGeometryCount()+")";		
 			}
 			if (element instanceof Symbolisation){
 				tableViewer.setChecked(element, ((Symbolisation)element).isCustom());

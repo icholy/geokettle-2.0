@@ -219,7 +219,7 @@ public class GMLFileInputMeta extends BaseStepMeta implements StepMetaInterface
     	if (!isFileNameInField()){
         	FileInputList fileList = getFileList(space);
             if (fileList.nrOfFiles()==0)           
-                throw new KettleStepException(Messages.getString("XBaseInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$ 
+                throw new KettleStepException(Messages.getString("GMLFileInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$ 
             
             row.clear();
             row.addRowMeta( getOutputFields(fileList, name));
