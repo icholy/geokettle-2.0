@@ -27,6 +27,8 @@ import org.pentaho.di.trans.step.StepMetaInterface;
 import org.pentaho.di.trans.steps.spatialanalysis.Messages;
 import org.w3c.dom.Node;
 
+import com.vividsolutions.jts.operation.buffer.BufferParameters;
+
 /**
  * @author jmathieu
  * @since nov-2010
@@ -45,7 +47,7 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
     
     private boolean 	compressFiles;
     private boolean 	oneRow;
-    
+
     public static final String UNION = Messages.getString("SpatialAnalysisMeta.AnalysisType.UNION");
     public static final String INTERSECTION = Messages.getString("SpatialAnalysisMeta.AnalysisType.INTERSECTION");
     public static final String BUFFER = Messages.getString("SpatialAnalysisMeta.AnalysisType.BUFFER");
@@ -59,9 +61,19 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
     public static final String REVERSE = Messages.getString("SpatialAnalysisMeta.AnalysisType.REVERSE");
     
     public static String spatialAnalysisTypeCodes[] = {UNION, INTERSECTION, BUFFER, SYM_DIFF, INT_POINT, ENVELOPE, CENTROID, BOUNDARY, DIFFERENCE, CONVEX_HULL, REVERSE};
+
+    public static final String[] bufferSides = {Messages.getString("SpatialAnalysisMeta.Side.Left"), Messages.getString("SpatialAnalysisMeta.Side.Right"), Messages.getString("SpatialAnalysisMeta.Side.Both")};
+    
+    public static final String[] bufferCaps = {Messages.getString("SpatialAnalysisMeta.Cap.Flat"), Messages.getString("SpatialAnalysisMeta.Cap.Round"), Messages.getString("SpatialAnalysisMeta.Cap.Square")};
+   
+    public static final String[] bufferJoins = {Messages.getString("SpatialAnalysisMeta.Join.Bevel"), Messages.getString("SpatialAnalysisMeta.Join.Mitre"), Messages.getString("SpatialAnalysisMeta.Join.Round")};
 	
-	private String spatialAnalysisType;
+    private String spatialAnalysisType;
 		
+    private String bufferCap;
+    private String bufferSide;
+    private String bufferJoin;
+    
 	public void setSpatialAnalysisType(int i) {
 		spatialAnalysisType = spatialAnalysisTypeCodes[i];
 	}
@@ -150,6 +162,52 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
         this.oneRow = oneRow;
     }
 	
+	public void setSide(String side) {
+		this.bufferSide = side;
+	}
+	 
+	public void setCap(String cap) {
+		this.bufferCap = cap;
+	}
+	
+	public void setJoin(String join) {
+		this.bufferJoin = join;
+	}
+	
+	public int getCapAsInt(){
+		int cap = -1;
+        if(bufferCap.equals(bufferCaps[0]))
+        	cap = BufferParameters.CAP_FLAT;
+        if(bufferCap.equals(bufferCaps[1]))
+        	cap = BufferParameters.CAP_ROUND;
+        if(bufferCap.equals(bufferCaps[2]))
+        	cap = BufferParameters.CAP_SQUARE;
+        return cap;
+    }
+	
+	public String getSide(){
+        return bufferSide;
+    }
+	
+	public String getCap(){
+        return bufferCap;
+    }
+	
+	public String getJoin(){
+        return bufferJoin;
+    }
+	
+	public int getJoinAsInt(){
+		int join = -1;
+        if(bufferJoin.equals(bufferJoins[0]))
+        	join = BufferParameters.JOIN_BEVEL;
+        if(bufferJoin.equals(bufferJoins[1]))
+        	join = BufferParameters.JOIN_MITRE;
+        if(bufferJoin.equals(bufferJoins[2]))
+        	join = BufferParameters.JOIN_ROUND;
+        return join;
+    }
+	
     public SpatialAnalysisMeta(){
 		super(); // allocate BaseStepMeta
 	}
@@ -205,6 +263,9 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
         retval.append(XMLHandler.addTagValue("compareField", compareField));
         retval.append(XMLHandler.addTagValue("distField", distField));
 		retval.append(XMLHandler.addTagValue("reference", getReferenceStepName()));		 //$NON-NLS-1$
+		retval.append(XMLHandler.addTagValue("cap", getCap()));	
+		retval.append(XMLHandler.addTagValue("side", getSide()));	
+		retval.append(XMLHandler.addTagValue("join", getJoin()));	
 		retval.append(XMLHandler.addTagValue("compare", getCompareStepName()));		 //$NON-NLS-1$
 		retval.append("    <compare>"+Const.CR); //$NON-NLS-1$				
 		retval.append("    </compare>"+Const.CR); //$NON-NLS-1$
@@ -219,7 +280,10 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
             referenceField = XMLHandler.getTagValue(stepnode, "referenceField"); //$NON-NLS-1$
             compareField = XMLHandler.getTagValue(stepnode, "compareField"); //$NON-NLS-1$           
 			compareStepName = XMLHandler.getTagValue(stepnode, "compare"); //$NON-NLS-1$
-			referenceStepName = XMLHandler.getTagValue(stepnode, "reference"); //$NON-NLS-1$
+			referenceStepName = XMLHandler.getTagValue(stepnode, "reference"); //$NON-NLS-1$	
+			bufferCap = XMLHandler.getTagValue(stepnode, "cap"); //$NON-NLS-1$
+			bufferJoin = XMLHandler.getTagValue(stepnode, "join"); //$NON-NLS-1$
+			bufferSide = XMLHandler.getTagValue(stepnode, "side"); //$NON-NLS-1$		
 			compressFiles = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "compress"));
 			oneRow = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "oneRow"));
 			distField = XMLHandler.getTagValue(stepnode, "distField"); //$NON-NLS-1$
@@ -261,7 +325,10 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
 			referenceField = rep.getStepAttributeString (id_step, "referenceField");  //$NON-NLS-1$
 			compareField = rep.getStepAttributeString (id_step, "compareField");  //$NON-NLS-1$			
 			referenceStepName = rep.getStepAttributeString (id_step, "reference");  //$NON-NLS-1$
-			compareStepName = rep.getStepAttributeString (id_step, "compare");  //$NON-NLS-1$
+			compareStepName = rep.getStepAttributeString (id_step, "compare");  //$NON-NLS-1$	
+			bufferJoin = rep.getStepAttributeString (id_step, "join");  //$NON-NLS-1$
+			bufferSide = rep.getStepAttributeString (id_step, "side");  //$NON-NLS-1$
+			bufferCap = rep.getStepAttributeString (id_step, "cap");  //$NON-NLS-1$		
 			compressFiles = rep.getStepAttributeBoolean(id_step, "compress");
 			oneRow = rep.getStepAttributeBoolean(id_step, "oneRow");
 			distField = rep.getStepAttributeString (id_step, "distField");  //$NON-NLS-1$
@@ -280,7 +347,10 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
 			rep.saveStepAttribute(id_transformation, id_step, "oneRow", oneRow);
 			rep.saveStepAttribute(id_transformation, id_step, "referenceField", referenceField); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "compareField", compareField); //$NON-NLS-1$
-			rep.saveStepAttribute(id_transformation, id_step, "reference", getReferenceStepName()); //$NON-NLS-1$
+			rep.saveStepAttribute(id_transformation, id_step, "reference", getReferenceStepName()); //$NON-NLS-1$			
+			rep.saveStepAttribute(id_transformation, id_step, "cap", getCap()); //$NON-NLS-1$
+			rep.saveStepAttribute(id_transformation, id_step, "join", getJoin()); //$NON-NLS-1$
+			rep.saveStepAttribute(id_transformation, id_step, "side", getSide()); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "compare", getCompareStepName()); //$NON-NLS-1$
 		}catch(Exception e){
 			throw new KettleException(Messages.getString("SpatialAnalysisMeta.Exception.UnableToSaveStepInfo")+id_step, e); //$NON-NLS-1$

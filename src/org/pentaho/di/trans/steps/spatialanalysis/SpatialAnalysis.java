@@ -32,6 +32,8 @@ import org.pentaho.di.trans.step.StepMetaInterface;
 import org.pentaho.di.trans.steps.sort.RowTempFile;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.operation.buffer.BufferOp;
+import com.vividsolutions.jts.operation.buffer.BufferParameters;
 
 /**
  * @author jmathieu
@@ -295,7 +297,18 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
 		        	break;
 		        case 2:
 		        	try{
-		        		result = geom.buffer(Double.parseDouble(meta.getDistField()));	
+		        		 double dist = Double.parseDouble(meta.getDistField());
+		        		 BufferParameters bufParams = new BufferParameters();
+		        		 if(meta.getSide().equals(Messages.getString("SpatialAnalysisMeta.Side.Right")))
+		        			 bufParams.setSingleSided(true);
+		        		 if(meta.getSide().equals(Messages.getString("SpatialAnalysisMeta.Side.Left"))){
+		        			 bufParams.setSingleSided(true);
+		        			 dist *= -1;
+		        		 }
+		        		 bufParams.setEndCapStyle(meta.getCapAsInt());
+		        		 bufParams.setJoinStyle(meta.getJoinAsInt());
+		        		 bufParams.setMitreLimit(BufferParameters.DEFAULT_MITRE_LIMIT);	        		 
+		        		 result = BufferOp.bufferOp(geom, dist, bufParams);
 		        	}catch(Exception e){
 		        		throw new KettleException(Messages.getString("SpatialAnalysis.Exception.WrongParameterType1") + Messages.getString("SpatialAnalysisDialog.DistField.Label") + Messages.getString("SpatialAnalysis.Exception.WrongParameterType2"));
 		        	}

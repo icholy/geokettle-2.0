@@ -68,6 +68,18 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 	private Label       		wlDistField;
 	private Text       			wDistField;
 	private FormData    		fdlDistField, fdDistField;
+	
+	private Label       		wlSide;
+	private CCombo      		wSide;
+	private FormData    		fdlSide, fdSide;
+	
+	private Label       		wlCap;
+	private CCombo      		wCap;
+	private FormData    		fdlCap, fdCap;
+	
+	private Label       		wlJoin;
+	private CCombo      		wJoin;
+	private FormData    		fdlJoin, fdJoin;
 
 	private SpatialAnalysisMeta input;
 	
@@ -80,6 +92,9 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.BUFFER"))) {
     		setDualOptions(false);
     		wDistField.setEnabled(true);
+    		wCap.setEnabled(true);
+    		wSide.setEnabled(true);
+    		wJoin.setEnabled(true);
         }else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.INT_POINT")))
         	setDualOptions(false);
         else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.ENVELOPE")))
@@ -106,6 +121,9 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 	    	wOneRow.setSelection(bool);
     	}
 		wDistField.setEnabled(false);
+		wCap.setEnabled(false);
+		wSide.setEnabled(false);
+		wJoin.setEnabled(false);
 		wCompare.setEnabled(bool);
     	wCompareField.setEnabled(bool);
     	wOneRow.setEnabled(bool); 
@@ -203,29 +221,77 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		wlDistField.setLayoutData(fdlDistField);
 		wDistField=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
  		props.setLook(wDistField);
+ 		
 		wDistField.addModifyListener(lsMod);
 		wDistField.setEnabled(false);
 		fdDistField=new FormData();
 		fdDistField.left = new FormAttachment(middle, 0);
 		fdDistField.top  = new FormAttachment(wAnalysis, margin);
-		fdDistField.right= new FormAttachment(50, 0);
+		fdDistField.right = new FormAttachment(50, 0);
 		wDistField.setLayoutData(fdDistField);
         
-        // Using compression for temporary files?
-		wCompress=new Button(shell, SWT.CHECK);
-		wCompress.setToolTipText(null);
-	    props.setLook(wCompress);
-	    fdCompress=new FormData();
-	    fdCompress.right  = new FormAttachment(100, 0);
-	    fdCompress.top   = new FormAttachment(wAnalysis, margin);
-	    wCompress.setLayoutData(fdCompress);
-        wlCompress=new Label(shell, SWT.RIGHT);
-        wlCompress.setText(Messages.getString("SpatialAnalysisDialog.Compress.Label"));
-        props.setLook(wlCompress);
-        fdlCompress=new FormData();
-        fdlCompress.right = new FormAttachment(wCompress, -margin);
-        fdlCompress.top  = new FormAttachment(wAnalysis, margin*2);
-        wlCompress.setLayoutData(fdlCompress);
+		//Buffer side
+		wlSide=new Label(shell, SWT.RIGHT);
+		wlSide.setText(Messages.getString("SpatialAnalysisDialog.Side.Label")); //$NON-NLS-1$
+ 		props.setLook(wlSide);
+		fdlSide=new FormData();
+		fdlSide.left = new FormAttachment(middle, 75);
+		fdlSide.right = new FormAttachment(middle, 200);
+		fdlSide.top = new FormAttachment(wAnalysis, margin*2);
+		wlSide.setLayoutData(fdlSide);
+		wSide=new CCombo(shell, SWT.BORDER );
+		wSide.setEditable(false);
+ 		props.setLook(wSide);
+		
+		wSide.addModifyListener(lsMod);
+		fdSide=new FormData();
+		fdSide.left = new FormAttachment(wlSide, margin);
+		fdSide.top = new FormAttachment(wAnalysis, margin);
+		fdSide.right = new FormAttachment(100, 0);
+		wSide.setLayoutData(fdSide);
+		wSide.setItems(SpatialAnalysisMeta.bufferSides);
+		
+		//Buffer cap style
+		wlCap=new Label(shell, SWT.RIGHT);
+		wlCap.setText(Messages.getString("SpatialAnalysisDialog.Cap.Label")); //$NON-NLS-1$
+ 		props.setLook(wlCap);
+		fdlCap=new FormData();
+		fdlCap.left = new FormAttachment(0, 0);
+		fdlCap.right= new FormAttachment(middle, -margin);
+		fdlCap.top  = new FormAttachment(wDistField, margin*2);
+		wlCap.setLayoutData(fdlCap);
+		wCap=new CCombo(shell, SWT.BORDER );
+		wCap.setEditable(false);
+ 		props.setLook(wCap);
+		
+		wCap.addModifyListener(lsMod);
+		fdCap=new FormData();
+		fdCap.left = new FormAttachment(middle, 0);
+		fdCap.top  = new FormAttachment(wDistField, margin);
+		fdCap.right= new FormAttachment(50, 0);
+		wCap.setLayoutData(fdCap);
+		wCap.setItems(SpatialAnalysisMeta.bufferCaps);
+		
+		//Buffer Join style
+		wlJoin=new Label(shell, SWT.RIGHT);
+		wlJoin.setText(Messages.getString("SpatialAnalysisDialog.Join.Label")); //$NON-NLS-1$
+ 		props.setLook(wlJoin);
+		fdlJoin=new FormData();
+		fdlJoin.left = new FormAttachment(middle, 75);
+		fdlJoin.right = new FormAttachment(middle, 200);
+		fdlJoin.top = new FormAttachment(wDistField, margin*2);
+		wlJoin.setLayoutData(fdlJoin);
+		wJoin=new CCombo(shell, SWT.BORDER );
+		wJoin.setEditable(false);
+ 		props.setLook(wJoin);
+		
+		wJoin.addModifyListener(lsMod);
+		fdJoin=new FormData();
+		fdJoin.left = new FormAttachment(wlJoin, margin);
+		fdJoin.top = new FormAttachment(wDistField, margin);
+		fdJoin.right = new FormAttachment(100, 0);
+		wJoin.setLayoutData(fdJoin);
+		wJoin.setItems(SpatialAnalysisMeta.bufferJoins);
        		
 		//reference step
 		wlReference=new Label(shell, SWT.RIGHT);
@@ -234,7 +300,7 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		fdlReference=new FormData();
 		fdlReference.left = new FormAttachment(0, 0);
 		fdlReference.right= new FormAttachment(middle, -margin);
-		fdlReference.top  = new FormAttachment(wDistField, margin*5);
+		fdlReference.top  = new FormAttachment(wJoin, margin*5);
 		wlReference.setLayoutData(fdlReference);
 		wReference=new CCombo(shell, SWT.BORDER );
 		wReference.setEditable(false);
@@ -243,7 +309,7 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		wReference.addModifyListener(lsMod);
 		fdReference=new FormData();
 		fdReference.left = new FormAttachment(middle, 0);
-		fdReference.top  = new FormAttachment(wDistField, margin*4);
+		fdReference.top  = new FormAttachment(wJoin, margin*4);
 		fdReference.right= new FormAttachment(100, 0);
 		wReference.setLayoutData(fdReference);
 		wReference.addFocusListener(new FocusListener(){
@@ -329,20 +395,36 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 			}
 		});
 		
+        // Using compression for temporary files?
+		wCompress=new Button(shell, SWT.CHECK);
+		wCompress.setToolTipText(null);
+	    props.setLook(wCompress);
+	    fdCompress=new FormData();
+	    fdCompress.right  = new FormAttachment(100, 0);
+	    fdCompress.top   = new FormAttachment(wCompareField, margin*4);
+	    wCompress.setLayoutData(fdCompress);
+        wlCompress=new Label(shell, SWT.RIGHT);
+        wlCompress.setText(Messages.getString("SpatialAnalysisDialog.Compress.Label"));
+        props.setLook(wlCompress);
+        fdlCompress=new FormData();
+        fdlCompress.right = new FormAttachment(wCompress, -margin);
+        fdlCompress.top  = new FormAttachment(wCompareField, margin*5);
+        wlCompress.setLayoutData(fdlCompress);
+        
 		// Execute analysis on the whole set (rowset 2)?		        
         wOneRow=new Button(shell, SWT.CHECK);
 		wOneRow.setToolTipText(null);
 	    props.setLook(wOneRow);
 	    fdOneRow=new FormData();
 	    fdOneRow.right  = new FormAttachment(100, 0);
-	    fdOneRow.top   = new FormAttachment(wCompareField, margin*4);
+	    fdOneRow.top   = new FormAttachment(wCompress, margin);
 	    wOneRow.setLayoutData(fdOneRow);
 	    wlOneRow=new Label(shell, SWT.RIGHT);
         wlOneRow.setText(Messages.getString("SpatialAnalysisDialog.OneRow.Label"));
         props.setLook(wlOneRow);
         fdlOneRow=new FormData();
         fdlOneRow.right = new FormAttachment(wOneRow, -margin);
-        fdlOneRow.top  = new FormAttachment(wCompareField, margin*5);
+        fdlOneRow.top  = new FormAttachment(wCompress, margin*2);
         wlOneRow.setLayoutData(fdlOneRow);
 		
 		// Result line...
@@ -416,6 +498,12 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		wAnalysis.select(input.getSpatialAnalysisByDesc());
 		if (input.getDistField()!=null) 
 			wDistField.setText(input.getDistField());
+		if (input.getSide() != null) 
+			wSide.setText(input.getSide());
+		if (input.getJoin() != null) 
+			wJoin.setText(input.getJoin());
+		if (input.getCap() != null) 
+			wCap.setText(input.getCap());
 		if (input.getResultFieldName()!=null) 
 			wResult.setText(input.getResultFieldName());
 		if (input.getReferenceStepName() != null) 
@@ -440,7 +528,10 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 			input.setReferenceStepMeta(transMeta.findStep(wReference.getText()));
 			input.setCompareStepMeta(transMeta.findStep(wCompare.getText()));                  
 			input.setReferenceField(wReferenceField.getText());
-			input.setCompareField(wCompareField.getText());
+			input.setCompareField(wCompareField.getText());		
+			input.setCap(wCap.getText());
+			input.setSide(wSide.getText());
+			input.setJoin(wJoin.getText());		
 		    input.setResultFieldName(wResult.getText());
 		    input.setDistField(wDistField.getText());
 		    input.setCompressFiles(wCompress.getSelection());
