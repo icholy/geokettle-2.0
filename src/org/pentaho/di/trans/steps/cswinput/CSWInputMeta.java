@@ -619,11 +619,11 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 			while (it.hasNext()){
 				Element c=it.next();
 				if ((c.getName().equalsIgnoreCase("lowercorner"))||(c.getName().equalsIgnoreCase("uppercorner"))){
-					row.addValueMeta(new ValueMeta(c.getName(),ValueMetaInterface.TYPE_GEOMETRY));
+					row.addValueMeta(new ValueMeta(c.getParentElement().getName()+"_"+c.getName(),ValueMetaInterface.TYPE_GEOMETRY));
 				}else
-				row.addValueMeta(new ValueMeta(c.getName(), ValueMetaInterface.TYPE_STRING));
+				row.addValueMeta(new ValueMeta(c.getParentElement().getName()+"_"+c.getName(), ValueMetaInterface.TYPE_STRING));
 				
-				colName.add(c.getName());
+				colName.add(c.getParentElement().getName()+"_"+c.getName());
 			}				
 		//
 			fieds=row;
@@ -644,8 +644,10 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 			Iterator<Element> it=cswParam.getColumns(el).iterator();
 			while (it.hasNext()){
 				Element c=it.next();					
-				row.addValueMeta(new ValueMeta(c.getParentElement().getName(), ValueMetaInterface.TYPE_STRING));
-				colName.add(c.getParentElement().getName());
+				//row.addValueMeta(new ValueMeta(c.getParentElement().getName(), ValueMetaInterface.TYPE_STRING));
+				row.addValueMeta(new ValueMeta(c.getParentElement().getParentElement().getName()+"_"+c.getParentElement().getName(), ValueMetaInterface.TYPE_STRING));
+				//colName.add(c.getParentElement().getName());
+				colName.add(c.getParentElement().getParentElement().getName()+"_"+c.getParentElement().getName());
 			}				
 		//
 			fieds=row;

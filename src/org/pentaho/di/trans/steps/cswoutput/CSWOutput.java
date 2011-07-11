@@ -4,10 +4,13 @@
 package org.pentaho.di.trans.steps.cswoutput;
 
 
+
+
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import javax.servlet.ServletException;
-
+import org.pentaho.di.trans.steps.cswoutput.Messages;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.trans.Trans;
@@ -17,7 +20,8 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
-import org.pentaho.di.trans.steps.cswinput.Messages;
+
+import com.vividsolutions.jts.geom.Point;
 
 /**
  * @author O.Mamadou
@@ -51,8 +55,16 @@ public class CSWOutput extends BaseStep implements StepInterface {
 		
 		if (isReceivingInputFields && r==null){
 			setOutputDone();
-			String response=meta.getCSWwriter().cswINSERTTransaction(allQuery);
-			logBasic(response);
+			
+			String response;
+			try {
+				response = meta.getCSWwriter().cswINSERTTransaction(allQuery);
+				logBasic(response);
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			return false;			
 		}
 		
@@ -68,7 +80,18 @@ public class CSWOutput extends BaseStep implements StepInterface {
 		
 		
 		int i=0;
-		String query=CSWWriter.CSWBRIEF_XML;
+		String query=null;
+		
+		if (meta.getCSWwriter()!=null){
+			CSWWriter writer=meta.getCSWwriter();
+			System.out.println(Messages.getString("CSWOutputDialog.Schema.CSWRECORD"));
+			if (writer.getSchema().equalsIgnoreCase(Messages.getString("CSWOutputDialog.Schema.CSWRECORD"))){
+				query=CSWWriter.CSWBRIEF_XML;
+			}else{
+				query=CSWWriter.MD_METADATA_XML;
+			}
+		}
+		
 		if (r==null){
 			
 			isReceivingInputFields=true;
@@ -78,10 +101,16 @@ public class CSWOutput extends BaseStep implements StepInterface {
 			data.outputRowMeta=getInputRowMeta().clone();
 			fieldName=data.outputRowMeta.getFieldNames();
 			while(i<r.length){		
-							
+				String valueToSet=null;			
 				try {
-					
-					query=meta.getCSWwriter().setElementTextUsingQueryString(query,fieldName[i],(String)r[i]);
+					String fieldname=fieldName[i];
+					if (fieldname.equalsIgnoreCase("boundingbox_lowercorner")||fieldname.equalsIgnoreCase("boundingbox_uppercorner")){
+						Point point=(Point)r[i];						
+						valueToSet=point.getX()+" "+point.getY();
+					}else{
+						valueToSet=(String)r[i];
+					}
+					query=meta.getCSWwriter().setElementTextUsingQueryString(query,fieldname,valueToSet);
 					i++;
 				} catch (ServletException e) {
 					// TODO Auto-generated catch block
@@ -92,8 +121,9 @@ public class CSWOutput extends BaseStep implements StepInterface {
 				}		
 				
 			}
+			allQuery +=query;
 		}
-		allQuery +=query;
+		
 		
 		
 

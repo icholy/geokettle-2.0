@@ -4,10 +4,13 @@
 package org.pentaho.di.trans.steps.cswinput;
 
 import java.io.BufferedReader;
+
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -509,10 +512,15 @@ public class CSWReader {
 				}
 				for(int i=0;i<taille;i++){
 					Element e=tempCour.get(i);
-					if (e.getName().equalsIgnoreCase(colName[i])){
+					if ((e.getParentElement().getName()+"_"+e.getName()).equalsIgnoreCase(colName[i])){
 						if ((e.getName().equalsIgnoreCase("lowercorner"))||(e.getName().equalsIgnoreCase("uppercorner"))){
-							String[] coordinate=e.getText().split(" ");							
-							Geometry g1=new  GeometryFactory().createPoint(new Coordinate(Double.parseDouble(coordinate[0]), Double.parseDouble(coordinate[1])));
+							String[] coordinate=e.getText().split(" ");
+							Geometry g1=null;
+							try{
+								 g1=new  GeometryFactory().createPoint(new Coordinate(Double.parseDouble(coordinate[0]), Double.parseDouble(coordinate[1])));
+							}catch(NumberFormatException ex){
+								
+							}							
 							o.add(g1);
 						}else
 						o.add(e.getText());	
@@ -529,6 +537,7 @@ public class CSWReader {
 			
 			throw new IOException(Messages.getString("CSWInput.Exception.ZeroRecord"));
 		}
+		
 		return recordList;
 	}
 	
@@ -542,13 +551,15 @@ public class CSWReader {
 		try{
 			rootElement=this.XMLRequestResult.getRootElement();
 			ArrayList<Element> el=this.findElement(rootElement,profile);
-			String[] colName=this.ColsName.toArray(new String[ColsName.size()]);
-				//columnField.getFieldNames();
+			 if (this.ColsName==null)
+				 return null;
+			String[] colName=this.ColsName.toArray(new String[ColsName.size()]);			
+				
 			Iterator<?> it=el.iterator();
 			while (it.hasNext()){
 				Element courant=(Element)it.next();
 				ArrayList<Element> tempCour=getColumns(courant);
-				//Iterator<Element> it2=tempCour.iterator();
+				//
 				ArrayList<Object> o=new ArrayList<Object>();
 				int taille=tempCour.size();
 				if (colName.length<taille){
@@ -556,15 +567,13 @@ public class CSWReader {
 				}
 				for(int i=0;i<taille;i++){
 					Element e=tempCour.get(i);
-					if (e.getParentElement().getName().equalsIgnoreCase(colName[i])){
+					if ((e.getParentElement().getParentElement().getName()+"_"+e.getParentElement().getName()).equalsIgnoreCase(colName[i])){
 						o.add(e.getText());	
 						//System.out.print(e.getText());
 					}else{
 						o.add("N/A");
 					}
-				}
-				//System.out.println();
-					
+				}					
 				recordList.add(o);
 			}
 		}catch(Exception e){
@@ -601,9 +610,10 @@ public class CSWReader {
 			throw new KettleException("Error parsing CSW GetRecord...", e);
 		}
 		
-			
-		byte[] b =response.getBytes();
-		response=new String (b,"UTF-8");		
+		byte[] b =response.getBytes();	
+		response=new String (b,"UTF-8");
+		
+		
 		System.out.println(response);		
 		return response;
 	}
