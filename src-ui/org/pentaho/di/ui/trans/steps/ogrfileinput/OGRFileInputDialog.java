@@ -61,27 +61,11 @@ import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
 public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInterface
 {
-	//final static private String[] GISFILE_FILTER_EXT = new String[] {"*.shp;*.SHP", "*"};
 	
 	private Label        wlFilename;
 	private Button       wbFilename;
 	private TextVar      wFilename;
 	private FormData     fdlFilename, fdbFilename, fdFilename;
-
-//    private Group        gAccepting;
-//    private FormData     fdAccepting;
-//
-//    private Label        wlAccFilenames;
-//    private Button       wAccFilenames;
-//    private FormData     fdlAccFilenames, fdAccFilenames;
-//    
-//    private Label        wlAccField;
-//    private Text         wAccField;
-//    private FormData     fdlAccField, fdAccField;
-//
-//    private Label        wlAccStep;
-//    private CCombo       wAccStep;
-//    private FormData     fdlAccStep, fdAccStep;
     
 	private Label        wlLimit;
 	private Text         wLimit;
@@ -94,15 +78,6 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 	private Label        wlFieldRownr;
 	private Text         wFieldRownr;
 	private FormData     fdlFieldRownr, fdFieldRownr;
-
-//	private Label        wlInclFilename;
-//	private Button       wInclFilename;
-//	private FormData     fdlInclFilename, fdInclFilename;
-
-//    private Label        wlInclFilenameField;
-//    private Text         wInclFilenameField;
-//    private FormData     fdlInclFilenameField, fdInclFilenameField;
-
     
 	private OGRFileInputMeta input;
 	private boolean backupChanged, backupAddRownr;
@@ -188,97 +163,6 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdFilename.right= new FormAttachment(wbFilename, -margin);
 		fdFilename.top  = new FormAttachment(wStepname, margin);
 		wFilename.setLayoutData(fdFilename);
-		
-//        // Accepting filenames group
-//        // 
-//        
-//        gAccepting = new Group(shell, SWT.SHADOW_ETCHED_IN);
-//        gAccepting.setText(Messages.getString("GISFileInputDialog.AcceptingGroup.Label")); //$NON-NLS-1$;
-//        FormLayout acceptingLayout = new FormLayout();
-//        acceptingLayout.marginWidth  = 3;
-//        acceptingLayout.marginHeight = 3;
-//        gAccepting.setLayout(acceptingLayout);
-//        props.setLook(gAccepting);
-//        
-//        // Accept filenames from previous steps?
-//        //
-//        wlAccFilenames=new Label(gAccepting, SWT.RIGHT);
-//        wlAccFilenames.setText(Messages.getString("GISFileInputDialog.AcceptFilenames.Label"));
-//        props.setLook(wlAccFilenames);
-//        fdlAccFilenames=new FormData();
-//        fdlAccFilenames.top  = new FormAttachment(0, margin);
-//        fdlAccFilenames.left = new FormAttachment(0, 0);
-//        fdlAccFilenames.right= new FormAttachment(middle, -margin);
-//        wlAccFilenames.setLayoutData(fdlAccFilenames);
-//        wAccFilenames=new Button(gAccepting, SWT.CHECK);
-//        wAccFilenames.setToolTipText(Messages.getString("GISFileInputDialog.AcceptFilenames.Tooltip"));
-//        props.setLook(wAccFilenames);
-//        fdAccFilenames=new FormData();
-//        fdAccFilenames.top  = new FormAttachment(0, margin);
-//        fdAccFilenames.left = new FormAttachment(middle, 0);
-//        fdAccFilenames.right= new FormAttachment(100, 0);
-//        wAccFilenames.setLayoutData(fdAccFilenames);
-//        wAccFilenames.addSelectionListener(new SelectionAdapter()
-//            {
-//                public void widgetSelected(SelectionEvent arg0)
-//                {
-//                    setFlags();
-//                }
-//            }
-//        );
-//        
-//        // Which step to read from?
-//        wlAccStep=new Label(gAccepting, SWT.RIGHT);
-//        wlAccStep.setText(Messages.getString("GISFileInputDialog.AcceptStep.Label"));
-//        props.setLook(wlAccStep);
-//        fdlAccStep=new FormData();
-//        fdlAccStep.top  = new FormAttachment(wAccFilenames, margin);
-//        fdlAccStep.left = new FormAttachment(0, 0);
-//        fdlAccStep.right= new FormAttachment(middle, -margin);
-//        wlAccStep.setLayoutData(fdlAccStep);
-//        wAccStep=new CCombo(gAccepting, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-//        wAccStep.setToolTipText(Messages.getString("GISFileInputDialog.AcceptStep.Tooltip"));
-//        props.setLook(wAccStep);
-//        fdAccStep=new FormData();
-//        fdAccStep.top  = new FormAttachment(wAccFilenames, margin);
-//        fdAccStep.left = new FormAttachment(middle, 0);
-//        fdAccStep.right= new FormAttachment(100, 0);
-//        wAccStep.setLayoutData(fdAccStep);
-//
-//        
-//        // Which field?
-//        //
-//        wlAccField=new Label(gAccepting, SWT.RIGHT);
-//        wlAccField.setText(Messages.getString("GISFileInputDialog.AcceptField.Label"));
-//        props.setLook(wlAccField);
-//        fdlAccField=new FormData();
-//        fdlAccField.top  = new FormAttachment(wAccStep, margin);
-//        fdlAccField.left = new FormAttachment(0, 0);
-//        fdlAccField.right= new FormAttachment(middle, -margin);
-//        wlAccField.setLayoutData(fdlAccField);
-//        wAccField=new Text(gAccepting, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-//        wAccField.setToolTipText(Messages.getString("GISFileInputDialog.AcceptField.Tooltip"));
-//        props.setLook(wAccField);
-//        fdAccField=new FormData();
-//        fdAccField.top  = new FormAttachment(wAccStep, margin);
-//        fdAccField.left = new FormAttachment(middle, 0);
-//        fdAccField.right= new FormAttachment(100, 0);
-//        wAccField.setLayoutData(fdAccField);
-//                
-//        // Fill in the source steps...
-//        StepMeta[] prevSteps = transMeta.getPrevSteps(transMeta.findStep(stepname));
-//        for (int i=0;i<prevSteps.length;i++)
-//        {
-//            wAccStep.add(prevSteps[i].getName());
-//        }
-//        
-//        fdAccepting=new FormData();
-//        fdAccepting.left   = new FormAttachment(middle, 0);
-//        fdAccepting.right  = new FormAttachment(100, 0);
-//        fdAccepting.top    = new FormAttachment(wFilename, margin*2);
-//        // fdAccepting.bottom = new FormAttachment(wAccStep, margin);
-//        gAccepting.setLayoutData(fdAccepting);
-//        
         
 		// Limit input ...
 		wlLimit=new Label(shell, SWT.RIGHT);
@@ -287,7 +171,6 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdlLimit=new FormData();
 		fdlLimit.left = new FormAttachment(0, 0);
 		fdlLimit.right= new FormAttachment(middle, -margin);
-		// fdlLimit.top  = new FormAttachment(gAccepting, margin*2);
 		fdlLimit.top  = new FormAttachment(wFilename, margin*2);
 		wlLimit.setLayoutData(fdlLimit);
 		wLimit=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
@@ -295,7 +178,6 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		wLimit.addModifyListener(lsMod);
 		fdLimit=new FormData();
 		fdLimit.left = new FormAttachment(middle, 0);
-		// fdLimit.top  = new FormAttachment(gAccepting, margin*2);
 		fdLimit.top  = new FormAttachment(wFilename, margin*2);
 		fdLimit.right= new FormAttachment(100, 0);
 		wLimit.setLayoutData(fdLimit);
@@ -334,59 +216,6 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdFieldRownr.top  = new FormAttachment(wLimit, margin);
 		fdFieldRownr.right= new FormAttachment(100, 0);
 		wFieldRownr.setLayoutData(fdFieldRownr);
-
-//        wlInclFilename=new Label(shell, SWT.RIGHT);
-//        wlInclFilename.setText(Messages.getString("GISFileInputDialog.InclFilename.Label"));
-//        props.setLook(wlInclFilename);
-//        fdlInclFilename=new FormData();
-//        fdlInclFilename.left = new FormAttachment(0, 0);
-//        fdlInclFilename.top  = new FormAttachment(wFieldRownr, margin);
-//        fdlInclFilename.right= new FormAttachment(middle, -margin);
-//        wlInclFilename.setLayoutData(fdlInclFilename);
-//        wInclFilename=new Button(shell, SWT.CHECK );
-//        props.setLook(wInclFilename);
-//        wInclFilename.setToolTipText(Messages.getString("GISFileInputDialog.InclFilename.Tooltip"));
-//        fdInclFilename=new FormData();
-//        fdInclFilename.left = new FormAttachment(middle, 0);
-//        fdInclFilename.top  = new FormAttachment(wFieldRownr, margin);
-//        wInclFilename.setLayoutData(fdInclFilename);
-//        wInclFilename.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent arg0) { input.setChanged(); setFlags(); } });
-//
-//        wlInclFilenameField=new Label(shell, SWT.LEFT);
-//        wlInclFilenameField.setText(Messages.getString("GISFileInputDialog.InclFilenameField.Label"));
-//        props.setLook(wlInclFilenameField);
-//        fdlInclFilenameField=new FormData();
-//        fdlInclFilenameField.left = new FormAttachment(wInclFilename, margin);
-//        fdlInclFilenameField.top  = new FormAttachment(wFieldRownr, margin);
-//        wlInclFilenameField.setLayoutData(fdlInclFilenameField);
-//        wInclFilenameField=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-//        props.setLook(wInclFilenameField);
-//        wInclFilenameField.addModifyListener(lsMod);
-//        fdInclFilenameField=new FormData();
-//        fdInclFilenameField.left = new FormAttachment(wlInclFilenameField, margin);
-//        fdInclFilenameField.top  = new FormAttachment(wFieldRownr, margin);
-//        fdInclFilenameField.right= new FormAttachment(100, 0);
-//        wInclFilenameField.setLayoutData(fdInclFilenameField);
-
-        // #CRQ-6087
-        //
-//        wlCharactersetName=new Label(shell, SWT.RIGHT);
-//        wlCharactersetName.setText(Messages.getString("XBaseInputDialog.CharactersetName.Label"));
-//        props.setLook(wlCharactersetName);
-//        fdlCharactersetName=new FormData();
-//        fdlCharactersetName.left = new FormAttachment(0, 0);
-//        fdlCharactersetName.right  = new FormAttachment(middle, -margin);
-//        fdlCharactersetName.top  = new FormAttachment(wInclFilename, margin);
-//        wlCharactersetName.setLayoutData(fdlCharactersetName);
-//        wCharactersetName=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-//        wCharactersetName.setToolTipText(Messages.getString("XBaseInputDialog.CharactersetName.Tooltip"));
-//        props.setLook(wCharactersetName);
-//        wCharactersetName.addModifyListener(lsMod);
-//        fdCharactersetName=new FormData();
-//        fdCharactersetName.left = new FormAttachment(middle, 0);
-//        fdCharactersetName.top  = new FormAttachment(wInclFilename, margin);
-//        fdCharactersetName.right= new FormAttachment(100, 0);
-//        wCharactersetName.setLayoutData(fdCharactersetName);
 		
 		// Some buttons
 		wOK=new Button(shell, SWT.PUSH);
@@ -412,7 +241,6 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		wStepname.addSelectionListener( lsDef );
 		wLimit.addSelectionListener( lsDef );
 		wFieldRownr.addSelectionListener( lsDef );
-        // wAccField.addSelectionListener( lsDef );
 
 		wFilename.addModifyListener(new ModifyListener()
 		{
@@ -429,7 +257,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 				public void widgetSelected(SelectionEvent e) 
 				{
 					FileDialog dialog = new FileDialog(shell, SWT.OPEN);
-					//dialog.setFilterExtensions(GISFILE_FILTER_EXT); //$NON-NLS-1$ //$NON-NLS-2$
+
 					if (wFilename.getText()!=null)
 					{
 						dialog.setFileName(wFilename.getText());
@@ -468,12 +296,6 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
         wlFieldRownr.setEnabled( wAddRownr.getSelection() );
         wFieldRownr.setEnabled( wAddRownr.getSelection() );
 
-//        wlInclFilenameField.setEnabled( wInclFilename.getSelection() );
-//        wInclFilenameField.setEnabled( wInclFilename.getSelection() );
-
-//        wlFilename.setEnabled( !wAccFilenames.getSelection() );
-//        wFilename.setEnabled( !wAccFilenames.getSelection() );
-//        wbFilename.setEnabled( !wAccFilenames.getSelection() );
     }
 	
 	/**
@@ -489,13 +311,6 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		wLimit.setText(Integer.toString(input.getRowLimit())); //$NON-NLS-1$
 		wAddRownr.setSelection(input.isRowNrAdded());
 		if (input.getRowNrField()!=null) wFieldRownr.setText(input.getRowNrField());
-
-//        wInclFilename.setSelection(input.includeFilename());
-//        if (input.getFilenameField()!=null) wInclFilenameField.setText(input.getFilenameField());
-//
-//        wAccFilenames.setSelection(input.isAcceptingFilenames());
-//        if (input.getAcceptingField()!=null) wAccField.setText(input.getAcceptingField());
-//        if (input.getAcceptingStep()!=null) wAccStep.setText(input.getAcceptingStep().getName());
 		
         setFlags();
 		
@@ -518,14 +333,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
         meta.setRowNrAdded( wAddRownr.getSelection() );
 		meta.setRowNrField( wFieldRownr.getText() );
 
-//        meta.setIncludeFilename( wInclFilename.getSelection() );
-//        meta.setFilenameField( wInclFilenameField.getText() );
-//
-//        meta.setAcceptingFilenames( wAccFilenames.getSelection() );
-//        meta.setAcceptingField( wAccField.getText() );
-//        meta.setAcceptingStep( transMeta.findStep( wAccStep.getText() ) );
-
-		if (Const.isEmpty(meta.getGisFileName()) /* && !meta.isAcceptingFilenames() */)
+		if (Const.isEmpty(meta.getGisFileName()))
 		{
 			throw new KettleStepException(Messages.getString("OGRFileInputDialog.Exception.SpecifyAFileToUse")); //$NON-NLS-1$
 		}
@@ -559,15 +367,6 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
     	{
 	        OGRFileInputMeta oneMeta = new OGRFileInputMeta();
 	        getInfo(oneMeta);
-	
-            if (/* oneMeta.isAcceptingFilenames()*/ false)
-            {
-                MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_INFORMATION);
-                mb.setMessage(Messages.getString("OGRFileInputDialog.Dialog.SpecifyASampleFile.Message")); // Nothing found that matches your criteria
-                mb.setText(Messages.getString("OGRFileInputDialog.Dialog.SpecifyASampleFile.Title")); // Sorry!
-                mb.open();
-                return;
-            }
             
             TransMeta previewMeta = TransPreviewFactory.generatePreviewTransformation(transMeta, oneMeta, wStepname.getText());
 	        

@@ -38,24 +38,6 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	private boolean rowNrAdded;
 	private String  rowNrField;
 	
-//    /** Are we accepting filenames in input rows?  */
-//    private boolean acceptingFilenames;
-//    
-//    /** The field in which the filename is placed */
-//    private String  acceptingField;
-//
-//    /** The stepname to accept filenames from */
-//    private String  acceptingStepName;
-//
-//    /** The step to accept filenames from */
-//    private StepMeta acceptingStep;
-//
-//    /** Flag indicating that we should include the filename in the output */
-//    private boolean includeFilename;
-//
-//    /** The name of the field in the output containing the filename */
-//    private String filenameField;
-
 
 	public OGRFileInputMeta()
 	{
@@ -147,13 +129,6 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 			rowNrAdded         = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "add_rownr")); //$NON-NLS-1$ //$NON-NLS-2$
 			rowNrField         = XMLHandler.getTagValue(stepnode, "field_rownr"); //$NON-NLS-1$
             
-//            includeFilename    = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "include"));
-//            filenameField      = XMLHandler.getTagValue(stepnode, "include_field");
-//            
-//            acceptingFilenames = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "accept_filenames")); //$NON-NLS-1$
-//            acceptingField     = XMLHandler.getTagValue(stepnode, "accept_field"); //$NON-NLS-1$
-//            acceptingStepName  = XMLHandler.getTagValue(stepnode, "accept_stepname"); //$NON-NLS-1$
-
 		}
 		catch(Exception e)
 		{
@@ -169,40 +144,12 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		rowNrField = null;
 	}
 	
-//    public String getLookupStepname()
-//    {
-//        if (acceptingFilenames &&
-//            acceptingStep!=null && 
-//            !Const.isEmpty( acceptingStep.getName() )
-//           ) 
-//            return acceptingStep.getName();
-//        return null;
-//    }
-
-//    public void searchInfoAndTargetSteps(ArrayList steps)
-//    {
-//        acceptingStep = StepMeta.findStep(steps, acceptingStepName);
-//    }
-//
-//    public String[] getInfoSteps()
-//    {
-//        if (acceptingFilenames && acceptingStep!=null)
-//        {
-//            return new String[] { acceptingStep.getName() };
-//        }
-//        return super.getInfoSteps();
-//    }
     
 	public RowMetaInterface getOutputFields(FileInputList files, String name)
 		throws KettleStepException
 	{
 		RowMetaInterface rowMeta = new RowMeta();
-				
-		// if (r==null) row=new Row(); // give back values
-		// else         row=r;         // add to the existing row of values...
-
-        // FileInputList fileList = getTextFileList();
-		
+						
         if (files.nrOfFiles()==0)
         {
             throw new KettleStepException(Messages.getString("OGRFileInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$
@@ -213,8 +160,6 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
         OGRReader ogrReader = null;
 		try
 		{
-			//files.getFile(0).getName().getURI();
-			//java.net.URL fileURL = files.getFile(0).getURL();
 			
         	String ogr_path = files.getFile(0).getURL().getPath();
         	
@@ -250,15 +195,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	    	rnr.setOrigin(name);
 	    	rowMeta.addValueMeta(rnr);
 	    }
-        
-//        if (includeFilename)
-//        {
-//            Value v = new Value(filenameField, Value.VALUE_TYPE_STRING);
-//            v.setLength(100, -1);
-//            v.setOrigin(name);
-//            row.addValue(v);
-//        }
-		
+        		
 		return rowMeta;
 	}
 	
@@ -284,14 +221,6 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		retval.append("    " + XMLHandler.addTagValue("add_rownr",   rowNrAdded)); //$NON-NLS-1$ //$NON-NLS-2$
 		retval.append("    " + XMLHandler.addTagValue("field_rownr", rowNrField)); //$NON-NLS-1$ //$NON-NLS-2$
 
-//		retval.append("    " + XMLHandler.addTagValue("include", includeFilename));
-//		retval.append("    " + XMLHandler.addTagValue("include_field", filenameField));
-//
-//
-//		retval.append("    " + XMLHandler.addTagValue("accept_filenames", acceptingFilenames));
-//		retval.append("    " + XMLHandler.addTagValue("accept_field", acceptingField));
-//		retval.append("    " + XMLHandler.addTagValue("accept_stepname", (acceptingStep!=null?acceptingStep.getName():"") ));
-
 		return retval.toString();
 	}
 
@@ -305,13 +234,6 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 			rowNrAdded             =      rep.getStepAttributeBoolean(id_step, "add_rownr"); //$NON-NLS-1$
 			rowNrField           =      rep.getStepAttributeString (id_step, "field_rownr"); //$NON-NLS-1$
             
-//            includeFilename = rep.getStepAttributeBoolean(id_step, "include");
-//            filenameField = rep.getStepAttributeString(id_step, "include_field");
-//
-//            acceptingFilenames = rep.getStepAttributeBoolean(id_step, "accept_filenames");
-//            acceptingField     = rep.getStepAttributeString (id_step, "accept_field");
-//            acceptingStepName  = rep.getStepAttributeString (id_step, "accept_stepname");
-
 		}
 		catch(Exception e)
 		{
@@ -329,12 +251,6 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 			rep.saveStepAttribute(id_transformation, id_step, "add_rownr",       rowNrAdded); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "field_rownr",     rowNrField); //$NON-NLS-1$
             
-//            rep.saveStepAttribute(id_transformation, id_step, "include", includeFilename);
-//            rep.saveStepAttribute(id_transformation, id_step, "include_field", filenameField);
-//
-//            rep.saveStepAttribute(id_transformation, id_step, "accept_filenames", acceptingFilenames); //$NON-NLS-1$
-//            rep.saveStepAttribute(id_transformation, id_step, "accept_field", acceptingField); //$NON-NLS-1$
-//            rep.saveStepAttribute(id_transformation, id_step, "accept_stepname", (acceptingStep!=null?acceptingStep.getName():"") ); //$NON-NLS-1$
 		}
 		catch(Exception e)
 		{
@@ -348,28 +264,9 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		CheckResult cr;
 		
 		if (gisFileName==null)
-		{
-            if ( false /* isAcceptingFilenames() */ ) 
-            {
-            	/*
-        	     if ( Const.isEmpty(getAcceptingStepName()) ) 
-           	     {
-        	    	 cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("XBaseInput.Log.Error.InvalidAcceptingStepName"), stepMeta); //$NON-NLS-1$
-        	    	 remarks.add(cr);
-                 }
-           	
-           	     if ( Const.isEmpty(getAcceptingField()) )
-           	     {
-           	    	cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("XBaseInput.Log.Error.InvalidAcceptingFieldName"), stepMeta); //$NON-NLS-1$
-           	    	remarks.add(cr);
-                 }
-                 */
-            }
-            else
-            {		
-			    cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("OGRFileInputMeta.Remark.PleaseSelectFileToUse"), stepMeta); //$NON-NLS-1$
-			    remarks.add(cr);
-            }
+		{		
+			cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("OGRFileInputMeta.Remark.PleaseSelectFileToUse"), stepMeta); //$NON-NLS-1$
+			remarks.add(cr);
 		}
         else
         {
@@ -408,12 +305,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
             }
         }
 	}
-	
-//	public StepDialogInterface getDialog(Shell shell, StepMetaInterface info, TransMeta transMeta, String name)
-//	{
-//		return new GISFileInputDialog(shell, info, transMeta, name);
-//	}
-	
+		
 	public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr, TransMeta tr, Trans trans)
 	{
 		return new OGRFileInput(stepMeta, stepDataInterface, cnr, tr, trans);
@@ -424,26 +316,10 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		return new OGRFileInputData();
 	}
 
-    
-//    public String[] getFilePaths()
-//    {
-//        return FileInputList.createFilePathList(new String[] { dbfFileName}, new String[] { null }, new String[] { "N" });
-//    }
-//    
-
     public FileInputList getTextFileList(VariableSpace space)
     {
         return FileInputList.createFileList(space, new String[] { gisFileName }, new String[] { null }, new String[] { "N" });
     }
-
-//    public String[] getUsedLibraries()
-//    {
-//        return new String[] { "javadbf.jar", };
-//    }
-
-//    public java.net.URL getGisFileNameURL() {
-//    	return getURLfromFileName(getGisFileName());
-//    }
     
     private java.net.URL getURLfromFileName(String filename) {
     	try {

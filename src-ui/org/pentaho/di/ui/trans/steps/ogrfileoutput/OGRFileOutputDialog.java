@@ -107,10 +107,8 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		
 		ArrayList<String> ogrf = new ArrayList<String>();
 		
-		//ogrFormats = new String[ogr.GetDriverCount()];
 		for(int i = 0; i < ogr.GetDriverCount(); i++)
         {
-			//if (isOGRWritableFormat(ogr.GetDriver(i)))
 			if (isOGRWritableFormat(ogr.GetDriver(i).getName()))
 				ogrf.add(ogr.GetDriver(i).getName());
         }
@@ -178,9 +176,6 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		wcbStepformat = new Combo(shell, 
                 SWT.DROP_DOWN | SWT.MULTI | 
                 SWT.V_SCROLL | SWT.H_SCROLL);
-//		wcbFormats.addSelectionListener(
-//				new SelectionListener() {
-//				});
 		wcbStepformat.removeAll();
 	    for (int i = 0; i < ogrFormats.length; i++) {
 	    	wcbStepformat.add(ogrFormats[i]);
@@ -200,7 +195,6 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
  		props.setLook(wlFilename);
 		fdlFilename=new FormData();
 		fdlFilename.left = new FormAttachment(0, 0);
-		//fdlFilename.top  = new FormAttachment(wStepname, margin);
 		fdlFilename.top  = new FormAttachment(wcbStepformat, margin);
 		fdlFilename.right= new FormAttachment(middle, -margin);
 		wlFilename.setLayoutData(fdlFilename);
@@ -210,7 +204,6 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		wbFilename.setText(Messages.getString("System.Button.Browse")); //$NON-NLS-1$
 		fdbFilename=new FormData();
 		fdbFilename.right= new FormAttachment(100, 0);
-		//fdbFilename.top  = new FormAttachment(wStepname, margin);
 		fdbFilename.top  = new FormAttachment(wcbStepformat, margin);
 		wbFilename.setLayoutData(fdbFilename);
 
@@ -220,7 +213,6 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		fdFilename=new FormData();
 		fdFilename.left = new FormAttachment(middle, 0);
 		fdFilename.right= new FormAttachment(wbFilename, -margin);
-		//fdFilename.top  = new FormAttachment(wStepname, margin);
 		fdFilename.top  = new FormAttachment(wcbStepformat, margin);
 		wFilename.setLayoutData(fdFilename);
 		
@@ -257,9 +249,6 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		wcbGeomtype = new Combo(shell, 
                 SWT.DROP_DOWN | SWT.MULTI | 
                 SWT.V_SCROLL | SWT.H_SCROLL);
-//		wcbFormats.addSelectionListener(
-//				new SelectionListener() {
-//				});
 		wcbGeomtype.removeAll();
 	    for (int i = 0; i < ogrGeomTypes.length; i++) {
 	    	wcbGeomtype.add(org.gdal.ogr.ogr.GeometryTypeToName(ogrGeomTypes[i]));
@@ -276,8 +265,6 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		// Some buttons
 		wOK=new Button(shell, SWT.PUSH);
 		wOK.setText(Messages.getString("System.Button.OK")); //$NON-NLS-1$
-        // wPreview=new Button(shell, SWT.PUSH);
-        // wPreview.setText(Messages.getString("System.Button.Preview")); //$NON-NLS-1$
 		wCancel=new Button(shell, SWT.PUSH);
 		wCancel.setText(Messages.getString("System.Button.Cancel")); //$NON-NLS-1$
 		
@@ -285,11 +272,9 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 
 		// Add listeners
 		lsCancel   = new Listener() { public void handleEvent(Event e) { cancel(); } };
-        // lsPreview  = new Listener() { public void handleEvent(Event e) { preview(); } };
 		lsOK       = new Listener() { public void handleEvent(Event e) { ok();     } };
 		
 		wCancel.addListener(SWT.Selection, lsCancel);
-        // wPreview.addListener (SWT.Selection, lsPreview);
 		wOK.addListener    (SWT.Selection, lsOK    );
 		
 		lsDef=new SelectionAdapter() { public void widgetDefaultSelected(SelectionEvent e) { ok(); } };
@@ -311,7 +296,7 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 				public void widgetSelected(SelectionEvent e) 
 				{
 					FileDialog dialog = new FileDialog(shell, SWT.OPEN);
-					//dialog.setFilterExtensions(OGRFILE_FILTER_EXT); //$NON-NLS-1$ //$NON-NLS-2$
+
 					if (wFilename.getText()!=null)
 					{
 						dialog.setFileName(wFilename.getText());
@@ -406,7 +391,7 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		meta.setOgrOptions( wOptions.getText() );
 		meta.setOgrGeomType(ogrGeomTypes[wcbGeomtype.getSelectionIndex()]);
 
-		if (Const.isEmpty(meta.getGisFileName()) /* && !meta.isAcceptingFilenames() */)
+		if (Const.isEmpty(meta.getGisFileName()))
 		{
 			throw new KettleStepException(Messages.getString("OGRFileOutputDialog.Exception.SpecifyAFileToUse")); //$NON-NLS-1$
 		}

@@ -50,13 +50,7 @@ public class OGRFileInput extends BaseStep implements StepInterface
         
         // Allocate the output row in advance, because we possibly want to add a few extra fields...
         Object[] row = data.ogrReader.getRow( RowDataUtil.allocateRowData(data.outputRowMeta.size()) );
-        
-//        while (row==null && data.fileNr < data.files.nrOfFiles()) // No more rows left in this file
-//        {
-//            openNextFile();
-//            row = data.xbi.getRow(data.fields);
-//        }
-        
+                
         if (row==null) 
         {           
             setOutputDone();  // signal end to receiver(s)
@@ -66,14 +60,6 @@ public class OGRFileInput extends BaseStep implements StepInterface
         // OK, so we have read a line: increment the input counter
 		incrementLinesInput();
 		int outputIndex = data.fields.size();
-
-        // Possibly add a filename...
-//        if (meta.includeFilename())
-//        {
-//            Value inc = new Value(meta.getFilenameField(), data.file_dbf.getName().getURI());
-//            inc.setLength(100);
-//            row.addValue(inc);
-//        }
 
         // Possibly add a row number...
         if (meta.isRowNrAdded())
@@ -112,15 +98,6 @@ public class OGRFileInput extends BaseStep implements StepInterface
             }
             
             data.file_gis = data.files.getFile(0);
-            
-//	    	try {
-//	    		// java.net.URL fileURL = (new java.io.File(meta.getGisFileName())).toURI().toURL();
-//	    	}
-	    	//catch(java.net.MalformedURLException urle) {
-//	    	catch(Exception e) {
-//	    		// TODO: change for another error message
-//	    		logError(Messages.getString("GISFileInput.Log.Error.MalformedURL"));
-//	    	}
 	    	
             return true;
 	    }
@@ -129,18 +106,6 @@ public class OGRFileInput extends BaseStep implements StepInterface
 	
 	private void openNextFile() throws KettleException
     {
-        // Close the last file before opening the next...
-        /*
-		if (data.xbi!=null)
-        {
-            logBasic(Messages.getString("XBaseInput.Log.FinishedReadingRecords")); //$NON-NLS-1$
-            data.xbi.close();
-        }
-        */
-        
-        // Replace possible environment variables...
-        //data.file_dbf = data.files.getFile(data.fileNr);
-        //data.fileNr++;
                 
         try
         {
@@ -159,12 +124,6 @@ public class OGRFileInput extends BaseStep implements StepInterface
         	logBasic(Messages.getString("OGRFileInput.Log.OpenedGISFile")+" : ["+data.ogrReader+"]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         	data.fields = data.ogrReader.getFields();
 
-        	/*
-            // Add this to the result file names...
-            ResultFile resultFile = new ResultFile(ResultFile.FILE_TYPE_GENERAL, data.file_dbf, getTransMeta().getName(), getStepname());
-            resultFile.setComment(Messages.getString("XBaseInput.ResultFile.Comment"));
-            addResultFile(resultFile);
-            */
         }
         catch(Exception e)
         {

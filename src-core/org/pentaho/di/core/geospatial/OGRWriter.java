@@ -32,9 +32,7 @@ public class OGRWriter
 {
 	private LogWriter   log;
 	private boolean     error;
-	//private java.net.URL gisURL;
 	private String ogrDataDestinationPath;
-	//private DataStore newDS;
 	private DataSource ogrDataDestination; 
 	private Layer ogrLayer;
 	private String ogrLayerName;
@@ -62,8 +60,6 @@ public class OGRWriter
 		ogrSpatialReference = new SpatialReference();
 		ogrDataDestinationOptions = new Vector<String>();
 		
-		//log.println(log.LOG_LEVEL_BASIC, " --> ogrOptions = \""+ogrOptions+"\"");
-		
 		if (ogrOptions!= null) {
 			String[] ogr_options = ogrOptions.trim().split(" ");
 			for(int i=0;i<ogr_options.length;i++)
@@ -78,15 +74,6 @@ public class OGRWriter
 
 			// try closing first
 			close();
-
-			// TODO: detect file type and instanciate the right type of DataStore
-			// implementation (to support file formats other than Shapefile)
-
-			// TODO: make charset configurable (in the step dialog box?)
-			//if(!gisURL.toString().substring(gisURL.toString().length()-3,gisURL.toString().length()).equalsIgnoreCase("SHP")) {
-			//	// TODO: internationalize error message
-			//	throw new KettleException("The output specified is not in shapefile format (.shp)");
-			//}
 			
 			ogr.RegisterAll();
 
@@ -97,10 +84,7 @@ public class OGRWriter
 					ogrDriver = ogr.GetDriver(i);
 				}
 	        }
-			
-			//log.println(log.LOG_LEVEL_BASIC, "  --> ogrDataFormat = "+ogrDataFormat);
-			//log.println(log.LOG_LEVEL_BASIC, "  --> FORMAT = "+ogrDriver.getName());
-			
+						
 			if (Const.isWindows()) {
 				ogrDataDestinationPath = ogrDataDestinationPath.replace('/', '\\');
 			} else {
@@ -111,11 +95,7 @@ public class OGRWriter
 				if (ogrDriver.TestCapability( ogr.ODrCDeleteDataSource ))
 					ogrDriver.DeleteDataSource(ogrDataDestinationPath);
 			
-			//log.println(log.LOG_LEVEL_BASIC, " --> ogrDataDestinationPath = "+ogrDataDestinationPath);
-			
 			ogrDataDestination = ogrDriver.CreateDataSource(ogrDataDestinationPath, ogrDataDestinationOptions);
-			
-			//log.println(log.LOG_LEVEL_BASIC, " --> ogrDataDestination = "+ogrDataDestination);
 
 		}
 		catch (Exception e) {
@@ -123,25 +103,18 @@ public class OGRWriter
 		}
 	}
 
-	//public void createSimpleFeatureType(RowMetaInterface fields, Object[] firstRow, URL url) throws KettleException
 	public void createLayer(RowMetaInterface fields) throws KettleException
 	{
 		String debug="get attributes from table";
 
-		//rowMeta = fields;
-
-		//SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-		//builder.setName( "Type" );
 		try
 		{
 			debug = "create layer";
-			//log.println(log.LOG_LEVEL_BASIC, " --> Before GetName !");
+			
 			ogrLayerName = ogrDataDestination.GetName();
-			//log.println(log.LOG_LEVEL_BASIC, " --> After GetName !");
+			
 			// Works if data destination is a file
 			// TODO Check if the layer name is correct for other types of data destination
-			
-			//log.println(log.LOG_LEVEL_BASIC, " --> ogrLayerName = "+ogrLayerName);
 			
 			if (Const.isWindows()) {
 				if (ogrLayerName.lastIndexOf('\\')!=-1)
@@ -152,8 +125,6 @@ public class OGRWriter
 			}
 	        if (ogrLayerName.lastIndexOf('.')!=-1)
 	        	ogrLayerName = ogrLayerName.substring(0, ogrLayerName.lastIndexOf('.'));
-	        
-	        //log.println(log.LOG_LEVEL_BASIC, " --> Cleaned ogrLayerName = "+ogrLayerName);
 	        
 	        SpatialReference sr = new SpatialReference();
 			for(int i = 0; i < fields.size(); i++)
@@ -168,8 +139,6 @@ public class OGRWriter
 				}
 			}
 			ogrLayer = ogrDataDestination.CreateLayer(ogrLayerName,sr,ogrGeomType);
-			
-			//log.println(log.LOG_LEVEL_BASIC, " --> CreateLayer with a geom type: "+org.gdal.ogr.ogr.GeometryTypeToName(ogrGeomType));
 			
 			// Fetch all field information
 			//
@@ -262,7 +231,6 @@ public class OGRWriter
 						break;
 					case ValueMeta.TYPE_INTEGER:
 						debug = "integer attribute "+i;
-						//ogrFeature.SetField(j, ((Long)r[i]).intValue());
 						ogrFeature.SetField(j, (Long)r[i]);
 						j++;
 						break;
@@ -277,11 +245,7 @@ public class OGRWriter
 						ogrGeometry = org.gdal.ogr.Geometry.CreateFromWkt(((Geometry)r[i]).toText());
 						SRS srs = value.getGeometrySRS();
 						if (srs!=null) {
-//							Extent extent = value.getGeometrySRS().getCRS().getDomainOfValidity();
 							ogrSpatialReference.ImportFromWkt(srs.getCRS().toWKT());
-//							if (ogrSpatialReference.IsGeographic()!=0) {
-//								// We should force here the extent to BOUNDS (-180, -90) (180, 90). Some drivers require it.
-//							}
 							ogrGeometry.AssignSpatialReference(ogrSpatialReference);
 						}
 				        ogrFeature.SetGeometry(ogrGeometry);
@@ -296,25 +260,12 @@ public class OGRWriter
 						break;
 				}
 			}
-			//ogrFeature.SetGeometry(ogrGeometry);
 			ogrLayer.CreateFeature(ogrFeature);
 		}
 		catch (Exception e) {
 			throw new KettleException("An error has occured while writing features ("+debug+"):", e);
 		}    
 	}
-
-//	public void write() throws KettleException
-//	{
-//		try
-//		{
-//			//featWriter.close();
-//		}
-//		catch(Exception e)
-//		{
-//			throw new KettleException("An error has occured", e);
-//		}
-//	}
 
 	public boolean close()
 	{
@@ -340,7 +291,6 @@ public class OGRWriter
 
 	public String getVersionInfo()
 	{
-		// return reader.getHeader().getSignatureDesc();
 		return null;
 	}    
 }

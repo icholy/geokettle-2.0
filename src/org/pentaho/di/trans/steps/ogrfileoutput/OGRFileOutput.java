@@ -107,11 +107,6 @@ public class OGRFileOutput extends BaseStep implements StepInterface {
 				data.file_options = meta.getOgrOptions();
 				data.file_geomtype = meta.getOgrGeomType();
 				
-				// Create file if it does not exist
-//				if (!data.file_gis.exists()) {
-//					data.file_gis.createFile();
-//				}
-
 			} 			
 			catch (IOException e) 
 			{
@@ -125,16 +120,7 @@ public class OGRFileOutput extends BaseStep implements StepInterface {
 	}
 
 	private void openNextFile() throws KettleException {
-		// Close the last file before opening the next...
-		/*
-		 * if (data.xbi!=null) {
-		 * logBasic(Messages.getString("XBaseOutput.Log.FinishedReadingRecords"
-		 * )); //$NON-NLS-1$ data.xbi.close(); }
-		 */
 
-		// Replace possible environment variables...
-		// data.file_dbf = data.files.getFile(data.fileNr);
-		// data.fileNr++;
 		try 
 		{
 			String ogr_path = data.file_gis.getURL().getPath();
@@ -146,14 +132,7 @@ public class OGRFileOutput extends BaseStep implements StepInterface {
 			data.ogrWriter.open();
 
 			logBasic(Messages.getString("OGRFileOutput.Log.OpenedGISFile") + " : [" + data.ogrWriter + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$	     		        	
-			/*
-			 * // Add this to the result file names... ResultFile resultFile =
-			 * new ResultFile(ResultFile.FILE_TYPE_GENERAL, data.file_dbf,
-			 * getTransMeta().getName(), getStepname());
-			 * resultFile.setComment(Messages
-			 * .getString("XBaseOutput.ResultFile.Comment"));
-			 * addResultFile(resultFile);
-			 */
+			
 		} 
 		catch (Exception e) 
 		{

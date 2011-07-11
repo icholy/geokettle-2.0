@@ -33,33 +33,21 @@ import com.vividsolutions.jts.io.WKTReader;
 public class OGRReader
 {
     private LogWriter   log;
-    //private java.net.URL gisURL;
     private String ogrDataSourcePath;
     private boolean     error;
     
-    //private DataStore gtDataStore;
     private DataSource ogrDataSource;
-    //private FeatureSource<SimpleFeatureType, SimpleFeature> featSrc;
     private Layer ogrLayer;
     private FeatureDefn ogrLayerDefinition;
-    //private FeatureCollection<SimpleFeatureType, SimpleFeature> featColl;
-    //private FeatureIterator<SimpleFeature> featIter;
-    private int ogrFeatureIndex;
 
     public OGRReader(String dataSourcePath)
     {
         this.log      = LogWriter.getInstance();
-        //this.gisURL = fileURL;
         this.ogrDataSourcePath = dataSourcePath; 
         error         = false;
-        //gtDataStore = null;
         ogrDataSource = null;
-        //featSrc = null;
         ogrLayer = null;
         ogrLayerDefinition = null;
-        //featColl = null;
-        //featIter = null;
-        ogrFeatureIndex = -1;
     }
     
     public void open() throws KettleException
@@ -68,20 +56,7 @@ public class OGRReader
  			
  			// try closing first
  			close();
- 			
- 			// TODO: detect file type and instanciate the right type of DataStore
- 			// implementation (to support file formats other than Shapefile)
- 			
-			// Don't use a memory-mapped file reader (3rd arg) because this
- 			// causes out of memory errors with large files (~500mb).
- 			// 4th argument is the charset.
- 			// TODO: make charset configurable (in the step dialog box?)
- 			// gtDataStore = new ShapefileDataStore(gisURL, null, false, Charset.defaultCharset());
- 			
- 			// ShapefileDataStore defaults to ISO-8859-1 charset (not always the same as Charset.defaultCharset()
- 			// which is often UTF-8 on linux!)
- 			//gtDataStore = new ShapefileDataStore(gisURL, null, false);
- 			
+ 			 			
  			// All OGR drivers are registered
  			ogr.RegisterAll();
  			// Try to open the data source in read only mode
@@ -92,32 +67,12 @@ public class OGRReader
  	        	ogrDataSource = ogr.Open(ogrDataSourcePath, false);
  	        }
  	        // Try to find the suitable driver for this data source
- 	        Driver ogrDriver = ogrDataSource.GetDriver();
-
- 			/*
- 			if(gisURL.toString().substring(gisURL.toString().length()-3,gisURL.toString().length()).equalsIgnoreCase("SHP"))
- 	    	{
- 	    		gtDataStore = new ShapefileDataStore(gisURL, null, false);
- 	    	}
- 			if(gisURL.toString().substring(gisURL.toString().length()-3,gisURL.toString().length()).equalsIgnoreCase("GML"))
- 	    	{
- 				String encodedURL = gisURL.toString().replace(" ", "%20");
- 				URI gisURI = new URI(encodedURL);
- 				gtDataStore = new FileGMLDataStore(gisURI,256,Integer.MAX_VALUE);	
- 	    	}
- 	    	*/
+ 	        Driver ogrDriver = ogrDataSource.GetDriver(); 	    	
  	    	
- 	    	
-			//String name = gtDataStore.getTypeNames()[0];
-			//featSrc = gtDataStore.getFeatureSource(name);
- 	        // TODO Here we assume that each data source has at least one layer and we process the first one only
- 	        //log.println(log.LOG_LEVEL_BASIC, "--> # of Layers: "+ogrDataSource.GetLayerCount());
+ 	        // Here we assume that each data source has at least one layer and we process the first one only
  	        ogrLayer =  ogrDataSource.GetLayer(0);
 			ogrLayerDefinition = ogrLayer.GetLayerDefn();
 			
-			//featColl = featSrc.getFeatures();
-            //featIter = featColl.features(); 
-
 		}
 		catch(Exception e) {
 			throw new KettleException("Error opening the OGR data source: "+ogrDataSourcePath, e);
@@ -134,63 +89,6 @@ public class OGRReader
             // Fetch all field information
             //
             debug="allocate data types";
-        	// datatype = new byte[reader.getFieldCount()];
-            /* SimpleFeatureType ft = featSrc.getSchema();
-            List<AttributeDescriptor> attrDescriptors = ft.getAttributeDescriptors();
-            
-            int i = 0;
-            for(AttributeDescriptor ad : attrDescriptors)
-            {
-              if (log.isDebug()) debug="get attribute #"+i;
-
-              ValueMetaInterface value = null;
-
-              AttributeType at = ad.getType();
-              Class<?> c = at.getBinding();
-              
-              if(c == java.lang.String.class) {
-            	  // String
-            	  debug = "string attribute";
-            	  value = new ValueMeta(ad.getName().getLocalPart(), ValueMetaInterface.TYPE_STRING);
-            	  // value.setLength(); // TODO: check if there is a way to get max string length from AttributeType
-              }
-              else if(c == java.lang.Integer.class || c == java.lang.Long.class) {
-            	  // Integer
-            	  debug = "integer attribute";
-            	  value = new ValueMeta(ad.getName().getLocalPart(), ValueMetaInterface.TYPE_INTEGER);
-              }
-              else if(c == java.lang.Double.class) {
-            	  // Double
-            	  debug = "double attribute";
-            	  value = new ValueMeta(ad.getName().getLocalPart(), ValueMetaInterface.TYPE_NUMBER);
-              }
-              else if(c == java.util.Date.class) {
-            	  // Date
-            	  debug = "date attribute";
-            	  value = new ValueMeta(ad.getName().getLocalPart(), ValueMetaInterface.TYPE_DATE);
-              }
-              else if( com.vividsolutions.jts.geom.Geometry.class.isAssignableFrom(c) )
-              {
-            	  // Geometry
-            	  debug = "geometry attribute";
-            	  value = new ValueMeta(ad.getName().getLocalPart(), ValueMetaInterface.TYPE_GEOMETRY);
-
-            	  // set the SRS
-            	  value.setGeometrySRS(getSRS());
-              }
-              // TODO: add other attribute types (logical, blob, etc.)
-              else {
-            	  //unknown
-            	  value = new ValueMeta(ad.getName().getLocalPart(), ValueMetaInterface.TYPE_STRING);
-              }
-              
-              if (value!=null)
-              {
-                  row.addValueMeta(value);
-              }
-              
-              i++;
-            }*/
             
             int nbrFieldCount = ogrLayerDefinition.GetFieldCount();
             FieldDefn ogrFieldDefinition = null;
@@ -280,93 +178,16 @@ public class OGRReader
         try
         {
         	// Read the next record
-            
-            // Are we at the end yet?
-            //if (!featIter.hasNext()) return null;
-            
-            // Copy the default row for speed...
-        	// debug = "copy the default row for speed!";
-        	// r = new Row(fields);
-        	
+                
         	debug = "set the values in the row";
-        	// Set the values in the row...
-        	
-        	/*SimpleFeature f = featIter.next();
-        	List<Object> attributeValues = f.getAttributes();
 
-        	int i = 0;
-        	for(Object val : attributeValues)
-			{
-	        	debug = "getting value #"+i;
-				
-				if(val == null) {
-					debug = "null attribute";
-					r[i] = null;
-				}
-				else {
-
-					Class<?> c = val.getClass();
-
-					if(c == java.lang.String.class) {
-						debug = "string attribute";
-						r[i] = (String) val;
-					}
-					else if(c == java.lang.Integer.class) {
-						debug = "integer attribute";
-						r[i] = new Long( ((Integer)val).longValue() );
-
-					}
-					else if(c == java.lang.Long.class) {
-						debug = "long integer attribute";
-						// TODO: check if this is supported:
-						r[i] = (Long) val;
-					}
-					else if(c == java.lang.Double.class) {
-						debug = "double attribute";
-						r[i] = (Double) val;
-					}
-					else if(c == java.util.Date.class) {
-						debug = "date attribute";
-						r[i] = (java.util.Date) val;
-					}				
-					else if( com.vividsolutions.jts.geom.Geometry.class.isAssignableFrom(c) )
-					{
-						// Geometry
-						debug = "geometry attribute";
-						Geometry jts_geom = (Geometry) val;
-
-						// TODO: add logic to convert simple MultiPolygons to Polygons
-						// (needed for JCS)
-						// could we put this in another step instead??
-
-						r[i] = jts_geom;
-					}
-					// TODO: add other attribute types? (numeric, float, logical, date, etc.)
-					else {
-						// unknown
-						r[i] = null;
-					}
-				}
-				
-				i++;
-			}*/
-        	
-			//for (int j = 0; j < ogrLayer.GetFeatureCount(); j++) {
+        	// Set the values in the row ...
         		
         	Feature ogrFeature = null;
-        	//log.println(log.LOG_LEVEL_BASIC, "--> ogrLayer:"+ogrLayer);
-        	//log.println(log.LOG_LEVEL_BASIC, "--> ogrLayer.GetFeatureCount():"+ogrLayer.GetFeatureCount());
-        	//log.println(log.LOG_LEVEL_BASIC, "--> ogrLayer.GetLayerDefn().GetFieldCount():"+ogrLayer.GetLayerDefn().GetFieldCount());
         	
-        	int featureCount = ogrLayer.GetFeatureCount();
-        	
-        	while ((ogrFeature == null) && (ogrFeatureIndex < featureCount-1)) {
-				ogrFeature = ogrLayer.GetFeature(++ogrFeatureIndex);
-        	}
-        	//log.println(log.LOG_LEVEL_BASIC, "--> FeatureCount = "+ogrFeatureIndex+" / "+featureCount);
-        	//ogrFeature = ogrLayer.GetNextFeature();
-        	//log.println(log.LOG_LEVEL_BASIC, "--> ogrFeature:"+ogrFeature);
-        	if (ogrFeature == null)
+       		ogrFeature = ogrLayer.GetNextFeature();
+
+       		if (ogrFeature == null)
         		return null;
         	
         	int ogrFieldsCount = ogrFeature.GetFieldCount();
@@ -418,7 +239,7 @@ public class OGRReader
 				r[k] = jts_geom;
 			}
 			else r[k] = null;
-			//}        	
+      	
         }
         catch(Exception e)
 		{
@@ -456,21 +277,6 @@ public class OGRReader
     
     public boolean close()
     {
-        /*boolean retval = false;
-        try
-        {
-        	if(featIter != null) featIter.close();
-        	// if(gtDataStore != null) gtDataStore.close();
-
-            retval=true;
-        }
-        catch(Exception e)
-        {
-            log.logError(toString(), "Couldn't close iterator for datastore ["+gisURL+"] : "+e.toString());
-            error = true;
-        }
-        
-        return retval;*/
     	return true;
     }
     
@@ -488,7 +294,6 @@ public class OGRReader
     
     public String getVersionInfo()
     {
-    	// return reader.getHeader().getSignatureDesc();
     	return null;
     }
 
