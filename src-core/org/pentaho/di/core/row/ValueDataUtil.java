@@ -33,6 +33,8 @@ import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleValueException;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.operation.buffer.BufferOp;
+import com.vividsolutions.jts.operation.buffer.BufferParameters;
 
 
 public class ValueDataUtil
@@ -1150,18 +1152,61 @@ public class ValueDataUtil
         	return null;      
     	return metaA.getGeometry(dataA).symDifference(metaB.getGeometry(dataB));       
     }
-    public static Geometry buffer(ValueMetaInterface metaA, Object dataA, ValueMetaInterface metaB, Object dataB) throws KettleValueException{
+    public static Geometry buffer(ValueMetaInterface metaA, Object dataA, ValueMetaInterface metaB, Object dataB, ValueMetaInterface metaC, Object dataC, ValueMetaInterface metaD, Object dataD, ValueMetaInterface metaE, Object dataE) throws KettleValueException{
         if (dataA==null || !metaA.isGeometry()) 
         	return null;
-        double distance = 0;
+        
+		BufferParameters bufParams = new BufferParameters();
+		
+        double distance = 0;//default
+        
         if (dataB!=null){
         	if(metaB.isBigNumber() || metaB.isInteger() || metaB.isNumber() || metaB.isNumeric())
         		distance = metaB.getNumber(dataB);
         	if(metaB.isString())
         		distance = Double.parseDouble(metaB.getString(dataB));       	
         }
-    	return metaA.getGeometry(dataA).buffer(distance);       
+		
+		if (dataC!=null){//default = false
+			if(metaC.getString(dataC).equalsIgnoreCase(org.pentaho.di.trans.steps.calculator.Messages.getString("Calculator.Buffer.Side.Both")))
+				bufParams.setSingleSided(false);
+			else if(metaC.getString(dataC).equalsIgnoreCase(org.pentaho.di.trans.steps.calculator.Messages.getString("Calculator.Buffer.Side.Right")))
+				bufParams.setSingleSided(true);
+			else if(metaC.getString(dataC).equalsIgnoreCase(org.pentaho.di.trans.steps.calculator.Messages.getString("Calculator.Buffer.Side.Left"))){
+				bufParams.setSingleSided(true);
+				distance *= -1;
+			}
+		}
+		
+		int cap = BufferParameters.CAP_ROUND;//default
+		
+		if (dataD!=null){
+			if(metaD.getString(dataD).equalsIgnoreCase(org.pentaho.di.trans.steps.calculator.Messages.getString("Calculator.Buffer.Cap.Flat")))
+	        	cap = BufferParameters.CAP_FLAT;
+			else if(metaD.getString(dataD).equalsIgnoreCase(org.pentaho.di.trans.steps.calculator.Messages.getString("Calculator.Buffer.Cap.Round")))
+	        	cap = BufferParameters.CAP_ROUND;
+			else if(metaD.getString(dataD).equalsIgnoreCase(org.pentaho.di.trans.steps.calculator.Messages.getString("Calculator.Buffer.Cap.Square")))
+	        	cap = BufferParameters.CAP_SQUARE;
+		}
+		
+		int join = BufferParameters.JOIN_ROUND;//default
+		
+		if (dataE!=null){
+	        if(metaE.getString(dataE).equalsIgnoreCase(org.pentaho.di.trans.steps.calculator.Messages.getString("Calculator.Buffer.Join.Bevel")))
+	        	join = BufferParameters.JOIN_BEVEL;
+	        else if(metaE.getString(dataE).equalsIgnoreCase(org.pentaho.di.trans.steps.calculator.Messages.getString("Calculator.Buffer.Join.Mitre")))
+	        	join = BufferParameters.JOIN_MITRE;
+	        else if(metaE.getString(dataE).equalsIgnoreCase(org.pentaho.di.trans.steps.calculator.Messages.getString("Calculator.Buffer.Join.Round")))
+	        	join = BufferParameters.JOIN_ROUND;
+	    }
+		
+		bufParams.setEndCapStyle(cap);
+		bufParams.setJoinStyle(join);
+		bufParams.setMitreLimit(BufferParameters.DEFAULT_MITRE_LIMIT);
+		
+		return BufferOp.bufferOp(metaA.getGeometry(dataA), distance, bufParams);    
     }
+    
     public static Geometry centroid(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
         if (dataA==null || !metaA.isGeometry()) 
         	return null;      

@@ -147,6 +147,8 @@ public class CalculatorDialog extends BaseStepDialog implements StepDialogInterf
                     new ColumnInfo(Messages.getString("CalculatorDialog.FieldAColumn.Column"),       ColumnInfo.COLUMN_TYPE_CCOMBO, new String[] { "" }, false),
                     new ColumnInfo(Messages.getString("CalculatorDialog.FieldBColumn.Column"),       ColumnInfo.COLUMN_TYPE_CCOMBO, new String[] { "" }, false),
                     new ColumnInfo(Messages.getString("CalculatorDialog.FieldCColumn.Column"),       ColumnInfo.COLUMN_TYPE_CCOMBO, new String[] { "" }, false),
+                    new ColumnInfo(Messages.getString("CalculatorDialog.FieldDColumn.Column"),       ColumnInfo.COLUMN_TYPE_CCOMBO, new String[] { "" }, false),
+                    new ColumnInfo(Messages.getString("CalculatorDialog.FieldEColumn.Column"),       ColumnInfo.COLUMN_TYPE_CCOMBO, new String[] { "" }, false),
                     new ColumnInfo(Messages.getString("CalculatorDialog.ValueTypeColumn.Column"),    ColumnInfo.COLUMN_TYPE_CCOMBO, ValueMeta.getTypes() ),
                     new ColumnInfo(Messages.getString("CalculatorDialog.LengthColumn.Column"),       ColumnInfo.COLUMN_TYPE_TEXT,   false),
                     new ColumnInfo(Messages.getString("CalculatorDialog.PrecisionColumn.Column"),    ColumnInfo.COLUMN_TYPE_TEXT,   false),
@@ -328,18 +330,20 @@ public class CalculatorDialog extends BaseStepDialog implements StepDialogInterf
             item.setText( 3, Const.NVL(fn.getFieldA(), ""));
             item.setText( 4, Const.NVL(fn.getFieldB(), ""));
             item.setText( 5, Const.NVL(fn.getFieldC(), ""));
-            item.setText( 6, Const.NVL(ValueMeta.getTypeDesc(fn.getValueType()), ""));
+            item.setText( 6, Const.NVL(fn.getFieldD(), ""));
+            item.setText( 7, Const.NVL(fn.getFieldE(), ""));
+            item.setText( 8, Const.NVL(ValueMeta.getTypeDesc(fn.getValueType()), ""));
             if (fn.getValueLength()>=0) {
-            	item.setText( 7, ""+fn.getValueLength());
+            	item.setText( 9, ""+fn.getValueLength());
             }
             if (fn.getValuePrecision()>=0) {
-            	item.setText( 8, ""+fn.getValuePrecision());
+            	item.setText( 10, ""+fn.getValuePrecision());
             }
-            item.setText( 9, fn.isRemovedFromResult()?Messages.getString("System.Combo.Yes"):Messages.getString("System.Combo.No"));
-            item.setText(10, Const.NVL(fn.getConversionMask(), ""));
-            item.setText(11, Const.NVL(fn.getDecimalSymbol(), ""));
-            item.setText(12, Const.NVL(fn.getGroupingSymbol(), ""));
-            item.setText(13, Const.NVL(fn.getCurrencySymbol(), ""));
+            item.setText( 11, fn.isRemovedFromResult()?Messages.getString("System.Combo.Yes"):Messages.getString("System.Combo.No"));
+            item.setText(12, Const.NVL(fn.getConversionMask(), ""));
+            item.setText(13, Const.NVL(fn.getDecimalSymbol(), ""));
+            item.setText(14, Const.NVL(fn.getGroupingSymbol(), ""));
+            item.setText(15, Const.NVL(fn.getCurrencySymbol(), ""));
         }
         
         wFields.setRowNums();
@@ -371,16 +375,18 @@ public class CalculatorDialog extends BaseStepDialog implements StepDialogInterf
             String fieldA          = item.getText(3);
             String fieldB          = item.getText(4);
             String fieldC          = item.getText(5);
-            int    valueType       = ValueMeta.getType( item.getText(6) );
-            int    valueLength     = Const.toInt( item.getText(7), -1 );
-            int    valuePrecision  = Const.toInt( item.getText(8), -1 );
-            boolean removed        = Messages.getString("System.Combo.Yes").equalsIgnoreCase( item.getText(9) );
-            String conversionMask  = item.getText(10);
-            String decimalSymbol   = item.getText(11);
-            String groupingSymbol  = item.getText(12);
-            String currencySymbol  = item.getText(13);
+            String fieldD          = item.getText(6);
+            String fieldE          = item.getText(7);
+            int    valueType       = ValueMeta.getType( item.getText(8) );
+            int    valueLength     = Const.toInt( item.getText(9), -1 );
+            int    valuePrecision  = Const.toInt( item.getText(10), -1 );
+            boolean removed        = Messages.getString("System.Combo.Yes").equalsIgnoreCase( item.getText(11) );
+            String conversionMask  = item.getText(12);
+            String decimalSymbol   = item.getText(13);
+            String groupingSymbol  = item.getText(14);
+            String currencySymbol  = item.getText(15);
                         
-            currentMeta.getCalculation()[i] = new CalculatorMetaFunction(fieldName, calcType, fieldA, fieldB, fieldC, valueType, valueLength, valuePrecision, removed, conversionMask, decimalSymbol, groupingSymbol, currencySymbol);
+            currentMeta.getCalculation()[i] = new CalculatorMetaFunction(fieldName, calcType, fieldA, fieldB, fieldC, fieldD, fieldE, valueType, valueLength, valuePrecision, removed, conversionMask, decimalSymbol, groupingSymbol, currencySymbol);
         }
         
         if ( ! originalMeta.equals(currentMeta) )

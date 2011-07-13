@@ -30,6 +30,7 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
+import org.pentaho.di.trans.steps.calculator.Messages;
 
 
 /**
@@ -46,6 +47,8 @@ public class Calculator extends BaseStep implements StepInterface
         public int indexA;
         public int indexB;
         public int indexC;
+        public int indexD;
+        public int indexE;
     };    
 
 	private CalculatorMeta meta;
@@ -142,11 +145,33 @@ public class Calculator extends BaseStep implements StepInterface
                         throw new KettleStepException("Unable to find the third argument field '"+function.getFieldName()+" for calculation #"+(i+1));
                     }
                 }
-                                
+                 
+                data.fieldIndexes[i].indexD=-1;
+                if (!Const.isEmpty(function.getFieldD())) 
+                {
+                    data.fieldIndexes[i].indexD = data.calcRowMeta.indexOfValue(function.getFieldD());
+                    if (data.fieldIndexes[i].indexD<0)
+                    {
+                        // Nope: throw an exception
+                        throw new KettleStepException("Unable to find the third argument field '"+function.getFieldName()+" for calculation #"+(i+1));
+                    }
+                }
+                
+                data.fieldIndexes[i].indexE=-1;
+                if (!Const.isEmpty(function.getFieldE())) 
+                {
+                    data.fieldIndexes[i].indexE = data.calcRowMeta.indexOfValue(function.getFieldE());
+                    if (data.fieldIndexes[i].indexE<0)
+                    {
+                        // Nope: throw an exception
+                        throw new KettleStepException("Unable to find the third argument field '"+function.getFieldName()+" for calculation #"+(i+1));
+                    }
+                }
+                
                 if (function.isRemovedFromResult())
                 {
                     tempIndexes.add(Integer.valueOf(getInputRowMeta().size()+i));
-                }
+                }             
             }
             
             // Convert temp indexes to int[]
@@ -239,6 +264,24 @@ public class Calculator extends BaseStep implements StepInterface
                 {
                     metaC = data.calcRowMeta.getValueMeta( data.fieldIndexes[i].indexC );
                     dataC = calcData[ data.fieldIndexes[i].indexC ];
+                }
+                
+                ValueMetaInterface metaD=null;
+                Object dataD=null;
+
+                if (data.fieldIndexes[i].indexD>=0) 
+                {
+                    metaD = data.calcRowMeta.getValueMeta( data.fieldIndexes[i].indexD );
+                    dataD = calcData[ data.fieldIndexes[i].indexD ];
+                }
+                
+                ValueMetaInterface metaE=null;
+                Object dataE=null;
+
+                if (data.fieldIndexes[i].indexE>=0) 
+                {
+                    metaE = data.calcRowMeta.getValueMeta( data.fieldIndexes[i].indexE );
+                    dataE = calcData[ data.fieldIndexes[i].indexE ];
                 }
                 
                 //The data types are those of the first argument field, convert to the target field.
@@ -646,7 +689,25 @@ public class Calculator extends BaseStep implements StepInterface
                 break;
                 case CalculatorMetaFunction.CALC_GEOM_BUFFER   : // Calculate geometry buffer
                 {
-                    calcData[index] = ValueDataUtil.buffer(metaA, dataA, metaB, dataB);
+            		if (dataC!=null && !metaC.getString(dataC).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Side.Both")) && !metaC.getString(dataC).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Side.Right")) && !metaC.getString(dataC).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Side.Left")))
+            			logError(Messages.getString("Calculator.Error.UnknownExpression1") + Messages.getString("CalculatorDialog.FieldCColumn.Column")
+            					+ Messages.getString("Calculator.Error.UnknownExpression2") + Messages.getString("Calculator.Buffer.Side.Right") + "', '" 
+            					+ Messages.getString("Calculator.Buffer.Side.Left") + "', '" + Messages.getString("Calculator.Buffer.Side.Both")
+            					+ Messages.getString("Calculator.Error.UnknownExpression3"));	       			
+            		           		
+            		if (dataD!=null && !metaD.getString(dataD).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Cap.Flat")) && !metaD.getString(dataD).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Cap.Round")) && !metaD.getString(dataD).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Cap.Square")))
+            			logError(Messages.getString("Calculator.Error.UnknownExpression1") + Messages.getString("CalculatorDialog.FieldDColumn.Column")
+            					+ Messages.getString("Calculator.Error.UnknownExpression2") + Messages.getString("Calculator.Buffer.Cap.Flat") + "', '" 
+            					+ Messages.getString("Calculator.Buffer.Cap.Round") + "', '" + Messages.getString("Calculator.Buffer.Cap.Square")
+            					+ Messages.getString("Calculator.Error.UnknownExpression3"));	
+            				
+            		if (dataE!=null && !metaE.getString(dataE).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Join.Bevel")) && !metaE.getString(dataE).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Join.Mitre")) && !metaE.getString(dataE).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Join.Round")))
+            			logError(Messages.getString("Calculator.Error.UnknownExpression1") + Messages.getString("CalculatorDialog.FieldEColumn.Column")
+            					+ Messages.getString("Calculator.Error.UnknownExpression2") + Messages.getString("Calculator.Buffer.Join.Bevel") + "', '" 
+            					+ Messages.getString("Calculator.Buffer.Join.Mitre") + "', '" + Messages.getString("Calculator.Buffer.Join.Round")
+            					+ Messages.getString("Calculator.Error.UnknownExpression3"));
+            	    
+                    calcData[index] = ValueDataUtil.buffer(metaA, dataA, metaB, dataB, metaC, dataC, metaD, dataD, metaE, dataE);
                     resultType=ValueMetaInterface.TYPE_GEOMETRY; 
                 }
                 break;

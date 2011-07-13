@@ -245,6 +245,8 @@ public class CalculatorMetaFunction implements Cloneable
     private String fieldA;
     private String fieldB;
     private String fieldC;
+    private String fieldD;
+    private String fieldE;
 
     private int    valueType;
     private int    valueLength;
@@ -271,13 +273,15 @@ public class CalculatorMetaFunction implements Cloneable
      * @param groupingSymbol 
      * @param currencySymbol 
      */
-    public CalculatorMetaFunction(String fieldName, int calcType, String fieldA, String fieldB, String fieldC, int valueType, int valueLength, int valuePrecision, boolean removedFromResult, String conversionMask, String decimalSymbol, String groupingSymbol, String currencySymbol)
+    public CalculatorMetaFunction(String fieldName, int calcType, String fieldA, String fieldB, String fieldC, String fieldD, String fieldE, int valueType, int valueLength, int valuePrecision, boolean removedFromResult, String conversionMask, String decimalSymbol, String groupingSymbol, String currencySymbol)
     {
         this.fieldName = fieldName;
         this.calcType = calcType;
         this.fieldA = fieldA;
         this.fieldB = fieldB;
         this.fieldC = fieldC;
+        this.fieldD = fieldD;
+        this.fieldE = fieldE;
         this.valueType = valueType;
         this.valueLength = valueLength;
         this.valuePrecision = valuePrecision;
@@ -323,6 +327,8 @@ public class CalculatorMetaFunction implements Cloneable
         xml+=XMLHandler.addTagValue("field_a",         fieldA);
         xml+=XMLHandler.addTagValue("field_b",         fieldB);
         xml+=XMLHandler.addTagValue("field_c",         fieldC);
+        xml+=XMLHandler.addTagValue("field_d",         fieldD);
+        xml+=XMLHandler.addTagValue("field_e",         fieldE);
         xml+=XMLHandler.addTagValue("value_type",      ValueMeta.getTypeDesc(valueType));
         xml+=XMLHandler.addTagValue("value_length",    valueLength);
         xml+=XMLHandler.addTagValue("value_precision", valuePrecision);
@@ -344,6 +350,8 @@ public class CalculatorMetaFunction implements Cloneable
         fieldA         = XMLHandler.getTagValue(calcnode, "field_a");
         fieldB         = XMLHandler.getTagValue(calcnode, "field_b");
         fieldC         = XMLHandler.getTagValue(calcnode, "field_c");
+        fieldD         = XMLHandler.getTagValue(calcnode, "field_d");
+        fieldE         = XMLHandler.getTagValue(calcnode, "field_e");
         valueType      = ValueMeta.getType( XMLHandler.getTagValue(calcnode, "value_type") );
         valueLength    = Const.toInt( XMLHandler.getTagValue(calcnode, "value_length"), -1 );
         valuePrecision = Const.toInt( XMLHandler.getTagValue(calcnode, "value_precision"), -1 );
@@ -382,6 +390,8 @@ public class CalculatorMetaFunction implements Cloneable
         rep.saveStepAttribute(id_transformation, id_step, nr, "field_a",             fieldA);
         rep.saveStepAttribute(id_transformation, id_step, nr, "field_b",             fieldB);
         rep.saveStepAttribute(id_transformation, id_step, nr, "field_c",             fieldC);
+        rep.saveStepAttribute(id_transformation, id_step, nr, "field_d",             fieldD);
+        rep.saveStepAttribute(id_transformation, id_step, nr, "field_e",             fieldE);
         rep.saveStepAttribute(id_transformation, id_step, nr, "value_type",          ValueMeta.getTypeDesc(valueType));
         rep.saveStepAttribute(id_transformation, id_step, nr, "value_length",        valueLength);
         rep.saveStepAttribute(id_transformation, id_step, nr, "value_precision",     valuePrecision);
@@ -399,6 +409,8 @@ public class CalculatorMetaFunction implements Cloneable
         fieldA            = rep.getStepAttributeString(id_step, nr, "field_a");
         fieldB            = rep.getStepAttributeString(id_step, nr, "field_b");
         fieldC            = rep.getStepAttributeString(id_step, nr, "field_c");
+        fieldD            = rep.getStepAttributeString(id_step, nr, "field_d");
+        fieldE            = rep.getStepAttributeString(id_step, nr, "field_e");
         valueType         = ValueMeta.getType( rep.getStepAttributeString(id_step, nr, "value_type") );
         valueLength       = (int)rep.getStepAttributeInteger(id_step, nr,  "value_length");
         valuePrecision    = (int)rep.getStepAttributeInteger(id_step, nr, "value_precision");
@@ -511,7 +523,39 @@ public class CalculatorMetaFunction implements Cloneable
     {
         this.fieldC = fieldC;
     }
+    
+    /**
+     * @return Returns the fieldD.
+     */
+    public String getFieldD()
+    {
+        return fieldD;
+    }
 
+    /**
+     * @param fieldC The fieldD to set.
+     */
+    public void setFieldD(String fieldD)
+    {
+        this.fieldD = fieldD;
+    }
+
+    /**
+     * @return Returns the fieldE.
+     */
+    public String getFieldE()
+    {
+        return fieldE;
+    }
+
+    /**
+     * @param fieldC The fieldC to set.
+     */
+    public void setFieldE(String fieldE)
+    {
+        this.fieldE = fieldE;
+    }
+    
     /**
      * @return Returns the fieldName.
      */
