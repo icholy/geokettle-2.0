@@ -207,7 +207,7 @@ public class PreviewRowsDialog extends Dialog
 
         //Standard Tab
         CTabItem standardItem = new CTabItem(tabFolder, SWT.NULL);
-        standardItem.setText("Standard view");
+        standardItem.setText( Messages.getString("PreviewRowsDialog.StandardView"));
         
         standardTab = new Composite(tabFolder, SWT.NONE);
         standardTab.setLayout(formLayout);
@@ -253,7 +253,7 @@ public class PreviewRowsDialog extends Dialog
 		geoTab.setLayout(formLayout);
 		
         CTabItem geographicTab = new CTabItem(tabFolder, SWT.NULL);
-        geographicTab.setText("Geographic view");                     		
+        geographicTab.setText(Messages.getString("PreviewRowsDialog.GeographicView"));                     		
 		geographicTab.setControl(geoTab);        
 
         //ToolBar the geographic tools

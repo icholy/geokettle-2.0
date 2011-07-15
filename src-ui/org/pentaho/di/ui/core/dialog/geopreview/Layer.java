@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 
-import org.pentaho.di.ui.core.util.geo.renderer.swt.LayerFactory;
 
+import org.pentaho.di.ui.core.util.geo.renderer.swt.LayerFactory;
+import org.pentaho.di.ui.core.dialog.geopreview.layercontrol.Messages;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
@@ -21,10 +22,10 @@ public class Layer extends Observable
 	public static final int POLYGON_LAYER = 2;
 	public static final int COLLECTION_LAYER = 3;
 	
-	private static final String POINTS = "Points";
-	private static final String LINES = "Lines";
-	private static final String POLYGONS = "Polygons";
-	private static final String COLLECTIONS = "Collections";
+	private static final String POINTS = Messages.getString("layerControl.geometry.points");
+	private static final String LINES = Messages.getString("layerControl.geometry.lines");
+	private static final String POLYGONS = Messages.getString("layerControl.geometry.polygons");
+	private static final String COLLECTIONS = Messages.getString("layerControl.geometry.collections");
 	
 	public final String[] labels = new String[]{POINTS, LINES, POLYGONS, COLLECTIONS};
 	

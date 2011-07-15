@@ -1,5 +1,7 @@
 package org.pentaho.di.ui.core.dialog.geopreview;
 
+import org.pentaho.di.ui.core.dialog.geopreview.layercontrol.Messages;
+
 /**
  * This class allows the personalisation of colors and opacity (backgound and lines) and of line styles (strokewidth)
  * 
@@ -20,12 +22,12 @@ public class Symbolisation {
 	public static final int CollectionOpacity=10;
 	public static final int Radius=11;
 	
-	public static final String STROKECOLOR="Stroke Color";
-	public static final String STROKEWIDTH="Stroke Width";
-	public static final String FILLCOLOR="Fill Color";
-	public static final String OPACITY="Opacity";
-	public static final String RADIUS="Radius";
-	public static final String COLOR="Color";
+	public static final String STROKECOLOR=Messages.getString("layerControl.style.strokeColor");
+	public static final String STROKEWIDTH=Messages.getString("layerControl.style.strokeWidth");
+	public static final String FILLCOLOR=Messages.getString("layerControl.style.fillColor");
+	public static final String OPACITY=Messages.getString("layerControl.style.opacity");
+	public static final String RADIUS=Messages.getString("layerControl.style.radius");
+	public static final String COLOR=Messages.getString("layerControl.style.color");
 	
 	public static final String[] usage = new String[]{STROKECOLOR, STROKECOLOR, STROKEWIDTH, STROKEWIDTH, FILLCOLOR, COLOR, COLOR, OPACITY, OPACITY, OPACITY, OPACITY, RADIUS };
 	
