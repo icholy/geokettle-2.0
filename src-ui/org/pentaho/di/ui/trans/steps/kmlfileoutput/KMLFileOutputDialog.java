@@ -158,7 +158,7 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
 				        
 		//Is FileName defined in a Field				        
 	    wlFileField=new Label(shell, SWT.RIGHT);
-	    wlFileField.setText(Messages.getString("KMLFileOutputDialog.FileNameInField.Label"));
+	    wlFileField.setText(Messages.getString("KMLFileOutputDialog.FilenameInField.Label"));
         props.setLook(wlFileField);
         fdlFileField=new FormData();
         fdlFileField.left = new FormAttachment(0, 0);
@@ -167,7 +167,7 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
         wlFileField.setLayoutData(fdlFileField);
         
         wFileField=new Button(shell, SWT.CHECK);
-        wFileField.setToolTipText(Messages.getString("KMLFileOutputDialog.FileNameInField.Tooltip"));
+        wFileField.setToolTipText(Messages.getString("KMLFileOutputDialog.FilenameInField.Tooltip"));
 	    props.setLook(wFileField);
 	    fdFileField=new FormData();
 	    fdFileField.right  = new FormAttachment(100, 0);
@@ -209,7 +209,7 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		
 		// FileName field
 		wlFileNameField=new Label(shell, SWT.RIGHT);
-        wlFileNameField.setText(Messages.getString("KMLFileOutputDialog.FileNameField.Label"));
+        wlFileNameField.setText(Messages.getString("KMLFileOutputDialog.FilenameField.Label"));
         props.setLook(wlFileNameField);
         fdlFileNameField=new FormData();
         fdlFileNameField.left = new FormAttachment(0, 0);
@@ -218,6 +218,7 @@ public class KMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
         wlFileNameField.setLayoutData(fdlFileNameField);
               
         wFileNameField=new CCombo(shell, SWT.BORDER | SWT.READ_ONLY);
+        wFileNameField.setToolTipText(Messages.getString("KMLFileOutputDialog.FilenameField.Tooltip"));
         wFileNameField.setEditable(true);
         props.setLook(wFileNameField);
         wFileNameField.addModifyListener(lsMod);

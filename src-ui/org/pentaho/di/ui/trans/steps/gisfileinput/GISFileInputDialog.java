@@ -258,7 +258,7 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdFileNameField=new FormData();
 		fdFileNameField.left = new FormAttachment(middle, 0);
 		fdFileNameField.top  = new FormAttachment(wAccStep, margin);
-		fdFileNameField.right= new FormAttachment(100, -margin);
+		fdFileNameField.right= new FormAttachment(100, 0);
 		wFileNameField.setLayoutData(fdFileNameField);
 		wFileNameField.addFocusListener(new FocusListener(){
 			public void focusLost(org.eclipse.swt.events.FocusEvent e){}       
@@ -314,7 +314,7 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 		wLimit.addModifyListener(lsMod);
 		fdLimit=new FormData();
 		fdLimit.left = new FormAttachment(middle, 0);
-		fdLimit.top  = new FormAttachment(wEncoding, margin*2);
+		fdLimit.top  = new FormAttachment(wEncoding, margin);
 		fdLimit.right= new FormAttachment(100, 0);
 		wLimit.setLayoutData(fdLimit);
 

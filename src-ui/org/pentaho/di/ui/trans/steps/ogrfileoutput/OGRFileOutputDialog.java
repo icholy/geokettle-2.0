@@ -1,25 +1,3 @@
-/**********************************************************************
- **                                                                   **
- **               This code belongs to the KETTLE project.            **
- **                                                                   **
- ** Kettle, from version 2.2 on, is released into the public domain   **
- ** under the Lesser GNU Public License (LGPL).                       **
- **                                                                   **
- ** For more details, please read the document LICENSE.txt, included  **
- ** in this project                                                   **
- **                                                                   **
- ** http://www.kettle.be                                              **
- ** info@kettle.be                                                    **
- **                                                                   **
- **********************************************************************/
-
- 
-/*
- * Created on 2008-01-27
- * jmathieu, edube
- *
- */
-
 package org.pentaho.di.ui.trans.steps.ogrfileoutput;
 
 import java.util.ArrayList;
@@ -151,7 +129,7 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		fdlStepname=new FormData();
 		fdlStepname.left = new FormAttachment(0, 0);
 		fdlStepname.right= new FormAttachment(middle, -margin);
-		fdlStepname.top  = new FormAttachment(0, margin);
+		fdlStepname.top  = new FormAttachment(0, margin*2);
 		wlStepname.setLayoutData(fdlStepname);
 		wStepname=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		wStepname.setText(stepname);
@@ -165,13 +143,12 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		
 		// Stepformat line
 		wlStepformat = new Label(shell, SWT.RIGHT);
-		// TODO This string should be externalised !
-		wlStepformat.setText("OGR data format");
+		wlStepformat.setText(Messages.getString("OGRFileOutputDialog.Dialog.DataFormat"));
 		props.setLook(wlStepformat);
 		fdlStepformat=new FormData();
 		fdlStepformat.left = new FormAttachment(0, 0);
 		fdlStepformat.right= new FormAttachment(middle, -margin);
-		fdlStepformat.top  = new FormAttachment(wStepname, margin);
+		fdlStepformat.top  = new FormAttachment(wStepname, margin*2);
 		wlStepformat.setLayoutData(fdlStepformat);
 		wcbStepformat = new Combo(shell, 
                 SWT.DROP_DOWN | SWT.MULTI | 
@@ -195,7 +172,7 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
  		props.setLook(wlFilename);
 		fdlFilename=new FormData();
 		fdlFilename.left = new FormAttachment(0, 0);
-		fdlFilename.top  = new FormAttachment(wcbStepformat, margin);
+		fdlFilename.top  = new FormAttachment(wcbStepformat, margin*2);
 		fdlFilename.right= new FormAttachment(middle, -margin);
 		wlFilename.setLayoutData(fdlFilename);
 		
@@ -218,13 +195,12 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		
 		//GDAL/OGR options line
 		wlOptions=new Label(shell, SWT.RIGHT);
-		// TODO This string should be externalised !
-		wlOptions.setText("OGR options"); //$NON-NLS-1$
+		wlOptions.setText(Messages.getString("OGRFileOutputDialog.Dialog.OGROptions")); //$NON-NLS-1$
  		props.setLook(wlOptions);
 		fdlOptions=new FormData();
 		fdlOptions.left = new FormAttachment(0, 0);
 		fdlOptions.right= new FormAttachment(middle, -margin);
-		fdlOptions.top  = new FormAttachment(wFilename, margin);
+		fdlOptions.top  = new FormAttachment(wFilename, margin*2);
 		wlOptions.setLayoutData(fdlOptions);
 		wOptions=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		wOptions.setText("");
@@ -238,13 +214,12 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		
 		// Geometry type line
 		wlGeomtype = new Label(shell, SWT.RIGHT);
-		// TODO This string should be externalised !
-		wlGeomtype.setText("Geometry type");
+		wlGeomtype.setText(Messages.getString("OGRFileOutputDialog.Dialog.GeometryType"));
 		props.setLook(wlGeomtype);
 		fdlGeomtype=new FormData();
 		fdlGeomtype.left = new FormAttachment(0, 0);
 		fdlGeomtype.right= new FormAttachment(middle, -margin);
-		fdlGeomtype.top  = new FormAttachment(wOptions, margin);
+		fdlGeomtype.top  = new FormAttachment(wOptions, margin*2);
 		wlGeomtype.setLayoutData(fdlGeomtype);
 		wcbGeomtype = new Combo(shell, 
                 SWT.DROP_DOWN | SWT.MULTI | 
@@ -392,9 +367,7 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		meta.setOgrGeomType(ogrGeomTypes[wcbGeomtype.getSelectionIndex()]);
 
 		if (Const.isEmpty(meta.getGisFileName()))
-		{
-			throw new KettleStepException(Messages.getString("OGRFileOutputDialog.Exception.SpecifyAFileToUse")); //$NON-NLS-1$
-		}
+			throw new KettleStepException(Messages.getString("OGRFileOutputDialog.Exception.SpecifyAFileToUse")); //$NON-NLS-1$		
 	}
 	
 	private void ok()
@@ -415,6 +388,5 @@ public class OGRFileOutputDialog extends BaseStepDialog implements StepDialogInt
 			// Close anyway!
 			dispose();
 		}
-	}
-	
+	}	
 }

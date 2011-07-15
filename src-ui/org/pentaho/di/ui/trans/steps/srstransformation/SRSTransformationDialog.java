@@ -124,10 +124,10 @@ public class SRSTransformationDialog extends BaseStepDialog implements StepDialo
 		
 		// Field
 		Label wlField = new Label(shell, SWT.LEFT);
-		wlField.setText("Apply transformation on:");
+		wlField.setText(Messages.getString("SRSTransformationDialog.FieldToTransform.Label"));
 		FormData fdlField = new FormData();
 		fdlField.left = new FormAttachment(0, 0);
-		fdlField.top = new FormAttachment(wStepname, 0);
+		fdlField.top = new FormAttachment(wStepname, Const.MARGIN*2);
 		fdlField.right = new FormAttachment(25, 0);
 		wlField.setLayoutData(fdlField);
 		
@@ -139,10 +139,10 @@ public class SRSTransformationDialog extends BaseStepDialog implements StepDialo
 		fillGeometryFieldsList(wField);
 		
 		Label wlFieldInfo = new Label(shell, SWT.LEFT);
-		wlFieldInfo.setText("(only geometry fields are shown)");
+		wlFieldInfo.setText(Messages.getString("SRSTransformationDialog.OnlyGeomAreShown.Label"));
 		FormData fdlFieldInfo = new FormData();
 		fdlFieldInfo.left = new FormAttachment(wField, Const.MARGIN);
-		fdlFieldInfo.top = new FormAttachment(wStepname, 0);
+		fdlFieldInfo.top = new FormAttachment(wStepname, Const.MARGIN*2);
 		fdlFieldInfo.right = new FormAttachment(100, 0);
 		wlFieldInfo.setLayoutData(fdlFieldInfo);
 		

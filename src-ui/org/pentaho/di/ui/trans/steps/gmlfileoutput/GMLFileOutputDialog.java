@@ -171,7 +171,7 @@ public class GMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
         );
         
 		wlAccStep=new Label(shell, SWT.RIGHT);
-		wlAccStep.setText(Messages.getString("GISFileOutputDialog.AcceptStep.Label"));
+		wlAccStep.setText(Messages.getString("GMLFileOutputDialog.AcceptStep.Label"));
 		props.setLook(wlAccStep);
 		fdlAccStep=new FormData();
 		fdlAccStep.top  = new FormAttachment(wFileField, margin*2);
@@ -179,7 +179,7 @@ public class GMLFileOutputDialog extends BaseStepDialog implements StepDialogInt
 		fdlAccStep.right= new FormAttachment(middle, -margin);
 		wlAccStep.setLayoutData(fdlAccStep);
 		wAccStep=new CCombo(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-		wAccStep.setToolTipText(Messages.getString("GISFileOutputDialog.AcceptStep.Tooltip"));
+		wAccStep.setToolTipText(Messages.getString("GMLFileOutputDialog.AcceptStep.Tooltip"));
 		props.setLook(wAccStep);
 		fdAccStep=new FormData();
 		fdAccStep.top  = new FormAttachment(wFileField, margin);

@@ -376,7 +376,7 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
  		props.setLook(wlCompareField);
 		FormData fdlCompareField = new FormData();
 		fdlCompareField.left = new FormAttachment(0, 0);
-		fdlCompareField.right= new FormAttachment(middle, 0);
+		fdlCompareField.right= new FormAttachment(middle, -margin);
 		fdlCompareField.top  = new FormAttachment(wCompare, margin*2);
 		wlCompareField.setLayoutData(fdlCompareField);
 		wCompareField=new CCombo(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);

@@ -124,7 +124,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdlStepname=new FormData();
 		fdlStepname.left = new FormAttachment(0, 0);
 		fdlStepname.right= new FormAttachment(middle, -margin);
-		fdlStepname.top  = new FormAttachment(0, margin);
+		fdlStepname.top  = new FormAttachment(0, margin*2);
 		wlStepname.setLayoutData(fdlStepname);
 		wStepname=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		wStepname.setText(stepname);
@@ -143,7 +143,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
  		props.setLook(wlFilename);
 		fdlFilename=new FormData();
 		fdlFilename.left = new FormAttachment(0, 0);
-		fdlFilename.top  = new FormAttachment(wStepname, margin);
+		fdlFilename.top  = new FormAttachment(wStepname, margin*2);
 		fdlFilename.right= new FormAttachment(middle, -margin);
 		wlFilename.setLayoutData(fdlFilename);
 		
@@ -178,7 +178,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		wLimit.addModifyListener(lsMod);
 		fdLimit=new FormData();
 		fdLimit.left = new FormAttachment(middle, 0);
-		fdLimit.top  = new FormAttachment(wFilename, margin*2);
+		fdLimit.top  = new FormAttachment(wFilename, margin);
 		fdLimit.right= new FormAttachment(100, 0);
 		wLimit.setLayoutData(fdLimit);
 
@@ -188,7 +188,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
  		props.setLook(wlAddRownr);
 		fdlAddRownr=new FormData();
 		fdlAddRownr.left = new FormAttachment(0, 0);
-		fdlAddRownr.top  = new FormAttachment(wLimit, margin);
+		fdlAddRownr.top  = new FormAttachment(wLimit, margin*2);
 		fdlAddRownr.right= new FormAttachment(middle, -margin);
 		wlAddRownr.setLayoutData(fdlAddRownr);
 		wAddRownr=new Button(shell, SWT.CHECK );
@@ -206,7 +206,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
  		props.setLook(wlFieldRownr);
 		fdlFieldRownr=new FormData();
 		fdlFieldRownr.left = new FormAttachment(wAddRownr, margin);
-		fdlFieldRownr.top  = new FormAttachment(wLimit, margin);
+		fdlFieldRownr.top  = new FormAttachment(wLimit, margin*2);
 		wlFieldRownr.setLayoutData(fdlFieldRownr);
 		wFieldRownr=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
  		props.setLook(wFieldRownr);

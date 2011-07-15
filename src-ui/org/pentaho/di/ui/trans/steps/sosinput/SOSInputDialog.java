@@ -183,7 +183,7 @@ public class SOSInputDialog extends BaseStepDialog implements StepDialogInterfac
 		fdlStepname=new FormData();
 		fdlStepname.left = new FormAttachment(0, 0);
 		fdlStepname.right= new FormAttachment(middle, -margin);
-		fdlStepname.top  = new FormAttachment(0, margin);
+		fdlStepname.top  = new FormAttachment(0, margin*2);
 		wlStepname.setLayoutData(fdlStepname);
 		wStepname=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		wStepname.setText(stepname);

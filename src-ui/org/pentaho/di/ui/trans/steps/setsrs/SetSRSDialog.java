@@ -131,10 +131,10 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 		
 		//Geometry-field		
 		Label wlField = new Label(shell, SWT.LEFT);
-		wlField.setText("Set SRS on field:");
+		wlField.setText(Messages.getString("SetSRSDialog.SetSRSOnField.Label"));
 		FormData fdlField = new FormData();
 		fdlField.left = new FormAttachment(0, 0);
-		fdlField.top = new FormAttachment(wStepname, Const.MARGIN);
+		fdlField.top = new FormAttachment(wStepname, Const.MARGIN*2);
 		fdlField.right = new FormAttachment(25, 0);
 		wlField.setLayoutData(fdlField);
 		
@@ -147,15 +147,15 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 		fillGeometryFieldsList(wField);
 		
 		Label wlFieldInfo = new Label(shell, SWT.LEFT);
-		wlFieldInfo.setText("(only geometry fields are shown)");
+		wlFieldInfo.setText(Messages.getString("SetSRSDialog.OnlyGeomAreShown.Label"));
 		FormData fdlFieldInfo = new FormData();
 		fdlFieldInfo.left = new FormAttachment(wField, Const.MARGIN);
-		fdlFieldInfo.top = new FormAttachment(wStepname, Const.MARGIN);
+		fdlFieldInfo.top = new FormAttachment(wStepname, Const.MARGIN*2);
 		fdlFieldInfo.right = new FormAttachment(100, 0);
 		wlFieldInfo.setLayoutData(fdlFieldInfo);
 		
 		wbSRIDCode = new Button(shell, SWT.RADIO);
-		wbSRIDCode.setText("Enter EPSG Code:");
+		wbSRIDCode.setText(Messages.getString("SetSRSDialog.EPSGCode.Label"));
 		fdwbSRIDCode = new FormData();
 		fdwbSRIDCode.left = new FormAttachment(0, 0);
 		fdwbSRIDCode.top = new FormAttachment(wField, 2*Const.MARGIN + LABEL_OFFSET);
@@ -197,7 +197,7 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 		}
 		
 		wbSRIDFile = new Button(shell, SWT.RADIO);
-		wbSRIDFile.setText("Select SRS from file:");
+		wbSRIDFile.setText(Messages.getString("SetSRSDialog.SelectSRSFromFile.Label"));
 		fdwbSRIDFile = new FormData();
 		fdwbSRIDFile.left = new FormAttachment(0, 0);
 		fdwbSRIDFile.right= new FormAttachment(25, 0);
@@ -230,7 +230,7 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 		}
 		
 		wbSRIDWKT = new Button(shell, SWT.RADIO);
-		wbSRIDWKT.setText("Enter WKT Description:");
+		wbSRIDWKT.setText(Messages.getString("SetSRSDialog.WKTDescription.Label"));
 		fdwbSRIDWKT = new FormData();
 		fdwbSRIDWKT.left = new FormAttachment(0, 0);
 		fdwbSRIDWKT.right= new FormAttachment(25, 0);
@@ -255,7 +255,7 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 		setButtonPositions(new Button[] { wOK, wCancel }, Const.MARGIN, null);	
 		
 		wbCheck = new Button(shell, SWT.PUSH);
-		wbCheck.setText("Check WKT");
+		wbCheck.setText(Messages.getString("SetSRSDialog.CheckWKT.Label"));
 		wbCheck.setEnabled(false);
 		fdwbCheck = new FormData();
 		fdwbCheck.left = new FormAttachment(wbSRIDWKT, 0);
@@ -263,7 +263,7 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 		wbCheck.setLayoutData(fdwbCheck);
 		
 		wWKT = new Text(shell, SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
-		wWKT.setText("Put the WKT string here...");
+		wWKT.setText(Messages.getString("SetSRSDialog.InsertWKTHere.Label"));
 		wWKT.setEnabled(false);
 		fdwWKT = new FormData();
 		fdwWKT.left = new FormAttachment(wbSRIDWKT, 0);
@@ -317,7 +317,7 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 					setSRIDDescription(srid);
 					checkEPSG = true;
 				}else{
-					wSRIDInfo.setText("Invalid custom SRS");
+					wSRIDInfo.setText(Messages.getString("SetSRSDialog.Error.InvalidSRS"));
 					checkEPSG = false;
 				}
 				
@@ -397,7 +397,7 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 	
 	private void setSRIDDescription(String srid) {
 		if (selectedSRS.srid == ""){
-			wSRIDInfo.setText("No SRS selected");
+			wSRIDInfo.setText(Messages.getString("SetSRSDialog.Error.NoSRSSelected"));
 		}else{
 			wSRIDInfo.setText(selectedSRS.authority + ": " + selectedSRS.description);
 		}
@@ -470,7 +470,7 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 	private void ok() {
 		try {
 			if (fieldname.equals("")) {
-				throw new KettleStepException("A field name must be provided to execute a transformation.");
+				throw new KettleStepException(Messages.getString("SetSRSDialog.Error.FieldMustBeProvided"));
 			}
 			if(status == SetSRSMeta.STATUS_EPSGCODE){
 				if(checkEPSG){
