@@ -341,7 +341,7 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
 		        	break;  
 			}  
 		}	
-		return result;
+		return result.isEmpty()?null:result;
 	}
 	
 	public void getCompareRow() throws KettleStepException, KettleValueException{

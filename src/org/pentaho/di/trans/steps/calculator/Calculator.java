@@ -32,6 +32,8 @@ import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 import org.pentaho.di.trans.steps.calculator.Messages;
 
+import com.vividsolutions.jts.operation.buffer.BufferParameters;
+
 
 /**
  * Calculate new field values using pre-defined functions. 
@@ -707,7 +709,55 @@ public class Calculator extends BaseStep implements StepInterface
             					+ Messages.getString("Calculator.Buffer.Join.Mitre") + "', '" + Messages.getString("Calculator.Buffer.Join.Round")
             					+ Messages.getString("Calculator.Error.UnknownExpression3"));
             	    
-                    calcData[index] = ValueDataUtil.buffer(metaA, dataA, metaB, dataB, metaC, dataC, metaD, dataD, metaE, dataE);
+            		BufferParameters bufParams = new BufferParameters();
+            		
+                    double distance = 0;//default
+                    
+                    if (dataB!=null){
+                    	if(metaB.isBigNumber() || metaB.isInteger() || metaB.isNumber() || metaB.isNumeric())
+                    		distance = metaB.getNumber(dataB);
+                    	if(metaB.isString())
+                    		distance = Double.parseDouble(metaB.getString(dataB));       	
+                    }
+            		
+            		if (dataC!=null){//default = false
+            			if(metaC.getString(dataC).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Side.Both")))
+            				bufParams.setSingleSided(false);
+            			else if(metaC.getString(dataC).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Side.Right")))
+            				bufParams.setSingleSided(true);
+            			else if(metaC.getString(dataC).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Side.Left"))){
+            				bufParams.setSingleSided(true);
+            				distance *= -1;
+            			}
+            		}
+            		
+            		int cap = BufferParameters.CAP_ROUND;//default
+            		
+            		if (dataD!=null){
+            			if(metaD.getString(dataD).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Cap.Flat")))
+            	        	cap = BufferParameters.CAP_FLAT;
+            			else if(metaD.getString(dataD).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Cap.Round")))
+            	        	cap = BufferParameters.CAP_ROUND;
+            			else if(metaD.getString(dataD).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Cap.Square")))
+            	        	cap = BufferParameters.CAP_SQUARE;
+            		}
+            		
+            		int join = BufferParameters.JOIN_ROUND;//default
+            		
+            		if (dataE!=null){
+            	        if(metaE.getString(dataE).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Join.Bevel")))
+            	        	join = BufferParameters.JOIN_BEVEL;
+            	        else if(metaE.getString(dataE).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Join.Mitre")))
+            	        	join = BufferParameters.JOIN_MITRE;
+            	        else if(metaE.getString(dataE).equalsIgnoreCase(Messages.getString("Calculator.Buffer.Join.Round")))
+            	        	join = BufferParameters.JOIN_ROUND;
+            	    }
+            		
+            		bufParams.setEndCapStyle(cap);
+            		bufParams.setJoinStyle(join);
+            		bufParams.setMitreLimit(BufferParameters.DEFAULT_MITRE_LIMIT);
+            		
+                    calcData[index] = ValueDataUtil.buffer(metaA, dataA, distance, bufParams);
                     resultType=ValueMetaInterface.TYPE_GEOMETRY; 
                 }
                 break;

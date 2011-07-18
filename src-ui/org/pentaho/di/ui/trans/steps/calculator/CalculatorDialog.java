@@ -311,6 +311,8 @@ public class CalculatorDialog extends BaseStepDialog implements StepDialogInterf
         colinf[2].setComboValues(fieldNames);
         colinf[3].setComboValues(fieldNames);
         colinf[4].setComboValues(fieldNames);
+        colinf[5].setComboValues(fieldNames);
+        colinf[6].setComboValues(fieldNames);
     }
 
     /**
