@@ -147,11 +147,11 @@ public class CSWOutput extends BaseStep implements StepInterface {
 	
 	public void run(){
 		try{
-			logBasic(Messages.getString("Input.Log.StartingToRun"));		 //$NON-NLS-1$
+			logBasic(Messages.getString("CSWOutput.Log.StartingToRun"));		 //$NON-NLS-1$
 			while (!isStopped() && processRow(meta, data) );
 		}
 		catch(Exception e){
-			logError(Messages.getString("CSWInput.Log.Error.UnexpectedError")+" : "+e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
+			logError(Messages.getString("CSWOutput.Log.Error.UnexpectedError")+" : "+e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
             logError(Const.getStackTracker(e));
             setErrors(1);
 			stopAll();

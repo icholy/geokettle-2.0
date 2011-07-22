@@ -86,7 +86,7 @@ public class CSWWriter {
                                         "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+ "</gco:CharacterString>"+
                                     "</deliveryPoint>"+
                                     "<city>"+
-                                        "<gco:CharacterString>" +"OUAGADOUGOU" +"</gco:CharacterString>"+
+                                        "<gco:CharacterString>" + Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE") +"</gco:CharacterString>"+
                                     "</city>"+
                                     "<postalCode>"+
                                         "<gco:CharacterString>" +Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+

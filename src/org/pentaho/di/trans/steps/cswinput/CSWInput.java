@@ -92,7 +92,7 @@ public class CSWInput extends BaseStep implements StepInterface {
 	
 	public void run(){
 		try{
-			logBasic(Messages.getString("Input.Log.StartingToRun"));		 //$NON-NLS-1$
+			logBasic(Messages.getString("CSWInput.Log.StartingToRun"));		 //$NON-NLS-1$
 			while (!isStopped() && processRow(meta, data) );
 		}
 		catch(Exception e){
