@@ -62,6 +62,7 @@ public class CSWReader {
 	private String[] comparisonOperator;
 	
 	private boolean simpleSearch;
+	private boolean enableSpatialSearch;
 	private String keyword;
 	private String title;
 	private String startDate;
@@ -283,7 +284,11 @@ public class CSWReader {
 			if (ok){
 				q+=" AND ";
 			}
-			q+=buildSpatialQuery();
+			/*Build spatial query if user enabled spatial search checkbox*/
+			if (this.enableSpatialSearch==true){
+				q+=buildSpatialQuery();
+			}
+			
 			q +="</csw:CqlText>";
 		}//fin else
 		
@@ -356,7 +361,7 @@ public class CSWReader {
 			SectionComparisonOp = findElement(doc.getRootElement(), "ogc:ComparisonOperator");
 			for(Element e:SectionComparisonOp){
 				queryableElement.add(e.getText());
-				//System.out.println("zarbi "+e.getText());
+				//
 			}
 		} catch (ServletException e1) {
 			// TODO Auto-generated catch block
@@ -379,7 +384,7 @@ public class CSWReader {
 			ArrayList<Element> SectionOperation=findElement(doc.getRootElement(), "ows:Operation");
 			for(Element el:SectionOperation){
 				if (el.getAttribute("name").getValue().equalsIgnoreCase("GetRecords")){
-					//System.out.println("oooook");
+					//
 					ArrayList<Element> sectionConstraint=findElement(el, "ows:Constraint");
 					for(Element s:sectionConstraint){
 						if (s.getAttribute("name").getValue().equalsIgnoreCase("SupportedISOQueryables")){
@@ -529,7 +534,7 @@ public class CSWReader {
 						o.add("N/A");						
 					}
 				}
-				//System.out.println();
+				//
 					
 				recordList.add(o);
 		}
@@ -600,7 +605,7 @@ public class CSWReader {
 			if (this.method.equalsIgnoreCase("POST")){
 				
 				response=CSWPOST(buildGetRecordsPOSTQuery(), this.catalogUrl);
-				//System.out.println("POST Method");
+				//
 			}else
 				if(this.method.equalsIgnoreCase("SOAP")){
 					//TODO
@@ -691,7 +696,7 @@ public ArrayList<Element> getColumns(Element element)throws ServletException, IO
 	// Traverse the tree
 	GetSubElement(element.getChildren()); 
 	
-	//System.out.println("ParseResult--> "+parseResult.size());
+	
 	
 	return parseResult;
 }
@@ -1277,6 +1282,20 @@ public ArrayList<Element> findElement(Element element, String elementName)throws
 	 */
 	public String[] getComparisonOperator() {
 		return comparisonOperator;
+	}
+
+	/**
+	 * @param enableSpatialSearch the enableSpatialSearch to set
+	 */
+	public void setEnableSpatialSearch(boolean enableSpatialSearch) {
+		this.enableSpatialSearch = enableSpatialSearch;
+	}
+
+	/**
+	 * @return the enableSpatialSearch
+	 */
+	public boolean isEnableSpatialSearch() {
+		return enableSpatialSearch;
 	}
 	
 

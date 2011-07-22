@@ -31,7 +31,7 @@ public class CSWInput extends BaseStep implements StepInterface {
 	public CSWInput(StepMeta stepMeta, StepDataInterface stepDataInterface,
 			int copyNr, TransMeta transMeta, Trans trans) {
 		super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
-		// TODO Auto-generated constructor stub
+		
 	}
 	
 	public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException{
@@ -47,11 +47,7 @@ public class CSWInput extends BaseStep implements StepInterface {
         	// we just got started
             first = false;
             data.outputRowMeta=meta.getCswParam().getColumnField();
-          /* if (data.outputRowMeta==null){
-        	   data.outputRowMeta=meta.getMetaInterfaceFieds(); 
-           }*/
-           
-           
+                     
             if (data.outputRowMeta==null){
             	data.outputRowMeta = new RowMeta();
             	 meta.getFields(data.outputRowMeta, getStepname(), null, null, this);
@@ -70,11 +66,9 @@ public class CSWInput extends BaseStep implements StepInterface {
 	    		}  
 	    	}
 		} catch (ServletException e) {
-			// TODO Auto-generated catch block
 			throw new KettleException(e);
-			//e.printStackTrace();
+			//
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			throw new KettleException(e);
 		}
 		if(!isReceivingInputFields){

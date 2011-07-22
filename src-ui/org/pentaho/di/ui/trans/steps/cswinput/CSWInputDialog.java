@@ -172,6 +172,8 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 	private FormData fdwlSpatialOp;
 	private String[] queryElement;
 	private String[] comparisonOps;
+	private Button wChkActivateSpatialSearch;
+	private FormData fdwChkActivateSpatialSearch;
 	
 	public void setMethod(){
 		if (wMethod[0].getSelection() || wMethod[1].getSelection()){
@@ -684,12 +686,40 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		/**
  		 * spatial search
  		 * **/
+ 		
+ 		
+ 		wChkActivateSpatialSearch= new Button(wAdvancedGroup, SWT.CHECK);
+ 		props.setLook(wChkActivateSpatialSearch);
+ 		wChkActivateSpatialSearch.setText("Activate Spatial Search?");
+ 		fdwChkActivateSpatialSearch=new FormData();
+ 		fdwChkActivateSpatialSearch.left = new FormAttachment(0, margin);
+ 		fdwChkActivateSpatialSearch.top  = new FormAttachment(wTitle, margin);
+ 		//fdwChkActivateSpatialSearch.right= new FormAttachment(100, -1*margin);
+ 		wChkActivateSpatialSearch.setLayoutData(fdwChkActivateSpatialSearch);
+ 		
+ 		wChkActivateSpatialSearch.addSelectionListener(new SelectionAdapter() 
+        {
+            public void widgetSelected(SelectionEvent e) 
+            {
+            	input.setChanged();
+            	if (wChkActivateSpatialSearch.getSelection()==true){
+            		wAdvancedGroup.setEnabled(true);
+            		EnableDisableSpatialBox(true);
+            	}else
+            	if (wChkActivateSpatialSearch.getSelection()==false){            		
+            		EnableDisableSpatialBox(false);
+            	}           	
+            		
+            }
+        }
+ 		);
+ 		
  		wlSpatialOp= new Label(wAdvancedGroup, SWT.LEFT);
  		wlSpatialOp.setText(Messages.getString("CSWInputDialog.SpatialOperator.Label"));
  		props.setLook(wlSpatialOp);
  		
 		fdwlSpatialOp=new FormData();
-		fdwlSpatialOp.left = new FormAttachment(0,margin);
+		fdwlSpatialOp.left = new FormAttachment(wChkActivateSpatialSearch,10*margin);
 		fdwlSpatialOp.top  = new FormAttachment(wTitle, margin);		
 		wlSpatialOp.setLayoutData(fdwlSpatialOp); 
 		
@@ -1047,10 +1077,10 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		
 		wChkAdvanced.setSelection(input.getCswParam().isSimpleSearch());
 		wChkLoginService.setSelection(input.getCswParam().isUseLoginService());
-		
+		wChkActivateSpatialSearch.setSelection(input.getCswParam().isEnableSpatialSearch());
 		//wAdvancedGroup.setEnabled(wChkAdvanced.getSelection());
 		EnableDisableAdvancedQueryGroup(wChkAdvanced.getSelection());
-		//wLoginGroup.setEnabled(wChkLoginService.getSelection());
+		EnableDisableSpatialBox(wChkActivateSpatialSearch.getSelection());
 		EnableDisableLoginGroup(wChkLoginService.getSelection());
 			
 		if (!Const.isEmpty(input.getCswParam().getElementSet())){
@@ -1223,6 +1253,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		cswParam.setConstraintLanguage(wConstrainteLanguage.getText());
 		cswParam.setStartPosition(Integer.parseInt(wStartPosition.getText()));
 		cswParam.setMaxRecords(Integer.parseInt(wMaxRecord.getText()));
+		cswParam.setEnableSpatialSearch(wChkActivateSpatialSearch.getSelection());
 		
 		HashMap<String, Double> bbox=new HashMap<String, Double>();
 		bbox.put("NORTH", Double.parseDouble(wBoxNorth.getText()));
@@ -1277,14 +1308,17 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		wUser.setEnabled(ok);
 		
 	}
-	
-	private void EnableDisableAdvancedQueryGroup(boolean ok){
-		wQueryElement.setEnabled(ok);
+	private void EnableDisableSpatialBox(boolean ok){
 		wBoxEast.setEnabled(ok);
 		wBoxNorth.setEnabled(ok);
 		wBoxSouth.setEnabled(ok);
 		wBoxWest.setEnabled(ok);
 		wSpatialOperator.setEnabled(ok);
+	}
+	
+	private void EnableDisableAdvancedQueryGroup(boolean ok){
+		wQueryElement.setEnabled(ok);		
 		wGetQueryElements.setEnabled(ok);
+		wChkActivateSpatialSearch.setEnabled(ok);
 	}
 }

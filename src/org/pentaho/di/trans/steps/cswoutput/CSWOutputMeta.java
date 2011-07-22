@@ -122,7 +122,17 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 	public void readRep(Repository rep, long idStep,
 			List<DatabaseMeta> databases, Map<String, Counter> counters)
 			throws KettleException {
-		// TODO Auto-generated method stub
+		try {
+			CSWwriter.setCswUrl(rep.getStepAttributeString(idStep, "catalogurl")) ;
+			CSWwriter.setLoginUrl(rep.getStepAttributeString(idStep, "loginurl")) ;
+			CSWwriter.setUsername(rep.getStepAttributeString(idStep, "username")) ;
+			CSWwriter.setPassword(rep.getStepAttributeString(idStep, "password")) ;
+			CSWwriter.setSchema(rep.getStepAttributeString(idStep, "schema")) ;
+			
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+		}
 
 	}
 
@@ -132,8 +142,11 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 	@Override
 	public void saveRep(Repository rep, long idTransformation, long idStep)
 			throws KettleException {
-		// TODO Auto-generated method stub
-
+		rep.saveStepAttribute(idTransformation, idStep,"catalogurl",   CSWwriter.getCswUrl().toString());
+		rep.saveStepAttribute(idTransformation, idStep,"loginurl",   CSWwriter.getLoginUrl().toString());
+		rep.saveStepAttribute(idTransformation, idStep,"username",   CSWwriter.getUsername());
+		rep.saveStepAttribute(idTransformation, idStep,"password",   CSWwriter.getPassword());
+		rep.saveStepAttribute(idTransformation, idStep,"schema",   CSWwriter.getSchema());
 	}
 
 	/* (non-Javadoc)

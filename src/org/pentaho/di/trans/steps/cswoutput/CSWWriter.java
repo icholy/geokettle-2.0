@@ -4,12 +4,9 @@
 package org.pentaho.di.trans.steps.cswoutput;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -388,14 +385,14 @@ public class CSWWriter {
 			q +=query;
 			q +=FOOTPAGE_TRANSACTION_INSERT;
 			q=new String (q.getBytes(),"UTF-8");
-			try {
+			/*try {
 				
 				System.setOut(new PrintStream(new FileOutputStream("d://out.log")));
 				System.out.println(q);
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}*/
 			
 			
 			response=CSWPOST(q);

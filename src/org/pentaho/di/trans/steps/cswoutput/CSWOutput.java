@@ -83,8 +83,7 @@ public class CSWOutput extends BaseStep implements StepInterface {
 		String query=null;
 		
 		if (meta.getCSWwriter()!=null){
-			CSWWriter writer=meta.getCSWwriter();
-			System.out.println(Messages.getString("CSWOutputDialog.Schema.CSWRECORD"));
+			CSWWriter writer=meta.getCSWwriter();			
 			if (writer.getSchema().equalsIgnoreCase(Messages.getString("CSWOutputDialog.Schema.CSWRECORD"))){
 				query=CSWWriter.CSWBRIEF_XML;
 			}else{

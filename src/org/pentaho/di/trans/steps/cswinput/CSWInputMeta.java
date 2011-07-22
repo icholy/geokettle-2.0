@@ -77,22 +77,22 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 		// 
 		CheckResult cr;
 		if (Const.isEmpty(cswParam.getCatalogUrl().toString())){
-	    	cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("SOSInputMeta.CheckResult.NoURLSpecified"), stepMeta); //$NON-NLS-1$
+	    	cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("CSWInputMeta.CheckResult.NoURLSpecified"), stepMeta); //$NON-NLS-1$
             remarks.add(cr);
 	    }
 	    if (Const.isEmpty(cswParam.getVersion())){
-	    	cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("SOSInputMeta.CheckResult.NoSOSVersionSpecified"), stepMeta); //$NON-NLS-1$
+	    	cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("CSWInputMeta.CheckResult.NoSOSVersionSpecified"), stepMeta); //$NON-NLS-1$
             remarks.add(cr);
 	    }
 	    if (Const.isEmpty(cswParam.getConstraintLanguage())){
-	    	cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("SOSInputMeta.CheckResult.NoSOSVersionSpecified"), stepMeta); //$NON-NLS-1$
+	    	cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("CSWInputMeta.CheckResult.NoSOSVersionSpecified"), stepMeta); //$NON-NLS-1$
             remarks.add(cr);
 	    }
 	    if (input.length > 0){
-            cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("SOSInputMeta.CheckResult.ReceivingInfoFromOtherSteps"), stepMeta); //$NON-NLS-1$
+            cr = new CheckResult(CheckResult.TYPE_RESULT_OK, Messages.getString("CSWInputMeta.CheckResult.ReceivingInfoFromOtherSteps"), stepMeta); //$NON-NLS-1$
             remarks.add(cr);
         }else{
-            cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("SOSInputMeta.CheckResult.NoInpuReceived"), stepMeta); //$NON-NLS-1$
+            cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, Messages.getString("CSWInputMeta.CheckResult.NoInpuReceived"), stepMeta); //$NON-NLS-1$
             remarks.add(cr);
         }
 
@@ -147,6 +147,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 			cswParam.setEndDate(XMLHandler.getTagValue(stepnode, "enddate"));
 			cswParam.setSimpleSearch("Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "simplesearch")));
 			cswParam.setUseLoginService("Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "activatelogin")));
+			cswParam.setEnableSpatialSearch("Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "activatespatialsearch")));
 			
 			cswParam.setUsername(XMLHandler.getTagValue(stepnode, "username"));
 			cswParam.setPassword(XMLHandler.getTagValue(stepnode, "password"));
@@ -157,18 +158,15 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 			
 			cswParam.setConstraintLanguage(XMLHandler.getTagValue(stepnode, "constraintlanguage"));
 			
-			
 			try{
 				cswParam.setStartPosition(Integer.parseInt(XMLHandler.getTagValue(stepnode, "startposition")));
 			}catch(NumberFormatException e){
-				cswParam.setStartPosition(1);
-				//e.printStackTrace();
+				cswParam.setStartPosition(1);				
 			}
 			try{
 				cswParam.setMaxRecords(Integer.parseInt(XMLHandler.getTagValue(stepnode, "maxrecords")));
 			}catch(NumberFormatException e){
-				cswParam.setMaxRecords(10);
-				//e.printStackTrace();
+				cswParam.setMaxRecords(10);				
 			}
 			
 			
@@ -260,6 +258,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 		retval.append("    " + XMLHandler.addTagValue("enddate", cswParam.getEndDate())); 
 		retval.append("    " + XMLHandler.addTagValue("simplesearch", cswParam.isSimpleSearch())); 
 		retval.append("    " + XMLHandler.addTagValue("activatelogin", cswParam.isUseLoginService()));
+		retval.append("    " + XMLHandler.addTagValue("activatespatialsearch", cswParam.isEnableSpatialSearch()));
 		
 		retval.append("    " + XMLHandler.addTagValue("title", cswParam.getTitle()));
 		retval.append("    " + XMLHandler.addTagValue("username", cswParam.getUsername())); 
@@ -362,6 +361,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 			cswParam.setEndDate(rep.getStepAttributeString(idStep, "enddate"));
 			cswParam.setSimpleSearch("Y".equalsIgnoreCase(rep.getStepAttributeString(idStep, "simplesearch")));
 			cswParam.setUseLoginService("Y".equalsIgnoreCase(rep.getStepAttributeString(idStep, "activatelogin")));
+			cswParam.setEnableSpatialSearch("Y".equalsIgnoreCase(rep.getStepAttributeString(idStep, "activatespatialsearch")));
 			
 			cswParam.setUsername(rep.getStepAttributeString(idStep, "username"));
 			cswParam.setPassword(rep.getStepAttributeString(idStep, "password"));
@@ -377,15 +377,14 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 				int val=(int) rep.getStepAttributeInteger(idStep, "startposition");
 				cswParam.setStartPosition(val);
 			}catch(NumberFormatException e){
-				cswParam.setStartPosition(1);
-				//e.printStackTrace();
+				cswParam.setStartPosition(1);				
 			}
 			try{
 				int val=(int) rep.getStepAttributeInteger(idStep, "maxrecords");
 				cswParam.setMaxRecords(val);
 			}catch(NumberFormatException e){
 				cswParam.setMaxRecords(10);
-				//e.printStackTrace();
+				//
 			}
 			
 			
@@ -403,20 +402,30 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 			}
 			cswParam.setBBOX(bbox);			
 			
-			int nrQuery = rep.countNrStepAttributes(idStep, "query_line");
-			
-			
+			int nrQuery = rep.countNrStepAttributes(idStep, "query_line");			
 			ArrayList<String[]> queryList= new ArrayList<String[]>();
-			
-
 			for (int i = 0; i < nrQuery; i++) {
 				String ch=rep.getStepAttributeString(idStep,i, "query_line");
 				String[] s=ch.split("@");
 				queryList.add(s);				
-			}
-			
+			}			
 			cswParam.setAdvancedRequestParam(queryList);
-		}
+			
+			int nrOutputschema=rep.countNrStepAttributes(idStep, "outputschema_item");
+			String[] outputschema_list=new String[nrOutputschema];
+			for (int i = 0; i < nrOutputschema; i++) {
+				outputschema_list[i]=rep.getStepAttributeString(idStep,i, "outputschema_item");			
+			}
+			cswParam.setOutputSchemaList(outputschema_list);//end outputschema list
+			
+			int nrcompaOperator=rep.countNrStepAttributes(idStep, "comparisonoperator_item");
+			String[] comparisonoperator_list=new String[nrcompaOperator];
+			for (int i = 0; i < nrcompaOperator; i++) {
+				comparisonoperator_list[i]=rep.getStepAttributeString(idStep,i, "comparisonoperator_item");			
+			}
+			cswParam.setComparisonOperator(comparisonoperator_list);
+			
+		}//end try
 		catch(Exception e){
 			throw new KettleXMLException(Messages.getString("CSWInputMeta.Exception.UnableToReadStepInformationFromRepository"), e); //$NON-NLS-1$
 		}
@@ -440,6 +449,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 		rep.saveStepAttribute(idTransformation, idStep,"enddate", cswParam.getEndDate()); 
 		rep.saveStepAttribute(idTransformation, idStep,"simplesearch", cswParam.isSimpleSearch()); 
 		rep.saveStepAttribute(idTransformation, idStep,"activatelogin", cswParam.isUseLoginService());
+		rep.saveStepAttribute(idTransformation, idStep,"activatespatialsearch", cswParam.isEnableSpatialSearch());
 		
 		rep.saveStepAttribute(idTransformation, idStep,"title", cswParam.getTitle());
 		rep.saveStepAttribute(idTransformation, idStep,"username", cswParam.getUsername()); 
@@ -475,7 +485,23 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 				rep.saveStepAttribute(idTransformation, idStep,cpt,"query_line", temps);
 				cpt++;
 			}
-        }		
+        }//end
+        //outputschema list
+        if (cswParam.getOutputSchemaList()!=null){
+        	int cpt=0;
+        	for(String s:cswParam.getOutputSchemaList()){
+        		rep.saveStepAttribute(idTransformation, idStep,cpt,"outputschema_item", s);
+        		cpt++;
+        	}
+        }//end outputschema list
+        
+        if (cswParam.getComparisonOperator()!=null){
+        	int cpt=0;
+        	for (String s:cswParam.getComparisonOperator()){
+        		rep.saveStepAttribute(idTransformation, idStep,cpt,"comparisonoperator_item", s);
+        		cpt++;
+        	}
+        }
 
 	}
 
@@ -500,6 +526,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 		cswParam.setOutputSchemaList(null);
 		cswParam.setQueryableElement(null);
 		cswParam.setComparisonOperator(null);
+		cswParam.setEnableSpatialSearch(false);
 		
 		try {
 			cswParam.setCatalogUrl("http://catalog-server/CSW");
@@ -533,7 +560,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 	}
 	
 	/**
-	 * 
+	 *@author O.Mamadou 
 	 * */
 	private void setProfileBasedOnOutputSchemaValue(){
 		if(cswParam.getOutputSchema()!=null){
@@ -586,11 +613,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 					columnField=getFieldsFromISOTC2112005ProfileDocument(row,pattern);
 				}else{
 					columnField=getFieldsFromISOTC2112005ProfileDocument(row,pattern);
-				}
-				//
-				//columnField.addValueMeta(new ValueMeta("Geom",ValueMetaInterface.TYPE_GEOMETRY));
-				//
-				//this.fieds=columnField;
+				}				
 				cswParam.setColumnField(columnField);
 				
 				
