@@ -2,49 +2,77 @@
 - Welcome to GeoKettle -
 ------------------------
 
-Release 3.2.0-20090608 (based on Kettle 3.2.0-stable)
+Release 2.0-RC1
 
-A Spatially-Enabled version of Pentaho Data Integration (Kettle). 
-
-NOTE: This release is a beta experimental version of GeoKettle. Some 
-functionalities are not complete or fully tested. It is not recommended 
-for use in a production environment. By using this software, you 
-acknowledge and assume all the possible risks involved. The authors are 
-not responsible of any consequences or losses related to the use of this 
-software. 
+Open source spatial ETL tool for corporate data integration. 
 
 
 What is GeoKettle?
 ------------------
 
-GeoKettle is a "spatially-enabled" version of Pentaho Data Integration 
-(Kettle). Pentaho Data Integration (Kettle) is a powerful, 
-metadata-driven ETL (Extract, Transform and Load) tool dedicated to the 
-integration of different data sources for building data warehouses. It 
-is part of the open source BI (Business Intelligence) software suite 
-designed by Pentaho. 
+GeoKettle is a powerful, metadata-driven Spatial ETL tool dedicated to 
+the integration of different spatial (or not) data sources for building 
+and updating geospatial files, databases, data warehouses and web services. 
+GeoKettle enables the Extraction of data from data sources, the 
+Transformation of data in order to correct errors, make some data cleansing, 
+change the data structure, make them compliant to defined standards, and 
+the Loading of transformed data into a target DataBase Management System 
+(DBMS) in OLTP or OLAP/SOLAP mode, GIS file or Geospatial Web Service.
+
+GeoKettle is a spatially-enabled version of the generic ETL tool Kettle 
+(Pentaho Data Integration). GeoKettle also benefits from Geospatial 
+capabilities from mature, robust and well know Open Source libraries like 
+JTS, GeoTools, deegree, OGR and, via a plugin, Sextante.
+
+GeoKettle is particularly useful when a user wants to automate complex and 
+repetitive data processing without producing any specific code, to make 
+conversions between various data formats, to migrate data from one DBMS to 
+another, to perform some data feeding tasks into various DBMS, to populate 
+analytical data warehouses for decision support purposes, etc.
 
 This special distribution of Kettle includes extensions which enable the 
 use of geospatial (GIS) data. Like Kettle, GeoKettle is released under 
 the GNU Lesser General Public License (LGPL) license. 
 
-GeoKettle is a realization of the GeoSOA research group (headed by Prof. 
-Thierry Badard, http://geosoa.scg.ulaval.ca) at the Department of 
-Geomatics Sciences of Laval University, Quebec City, Quebec, Canada.
+GeoKettle is a past realization of the GeoSOA research group (headed by 
+Prof. Thierry Badard, http://geosoa.scg.ulaval.ca) at the Department of 
+Geomatics Sciences of Laval University, Quebec City, Quebec, Canada. It is 
+now developed and professionaly supported by Spatialytics 
+(http://www.spatialytics.com), a company specialized in GeoBI (Geospatial 
+Business Intelligence) software development. 
 
-The GeoKettle development team is composed of:
 
-  - Project coordinator: Thierry Badard 
-  - Lead developer: Etienne Dube 
-  - Developers: Pascal Hobus, Sven Goldinger, Jean Mathieu, Mamadou 
-    Ouattara
-  - Contributors: Mathieu Bertrand
+About GeoKettle versions numbering:
+-----------------------------------
+
+Even if the previous version of GeoKettle is numbered 3.2.0-20090609, the 
+newest release is 2.0. 
+
+3.2.0 was a reference to the version of Kettle on which GeoKettle was based. 
+Current version is an important milestone for the project as it provides an 
+important amount of new features, better performance and robustness. The 
+previous numbering system did not allow to translate this matter of fact. That 
+is why it has been decided to change the numbering of the versions and to name 
+the new version as 2.0. It emphasizes more the important work performed to 
+provide this new version.
+
+However, it is important to note that versions 2.x will be the last versions of 
+GeoKettle based on the Kettle 3.2 code base. Thanks to the tremendous work of 
+the Kettle developers, future version of GeoKettle will be more pluggable with 
+Kettle and will not be anymore a friendly and spatially enabled fork of Kettle. 
+Hence, it will be possible to add spatial extensions provided by GeoKettle to 
+any Kettle/PDI 4.x installation.
 
 
 What's new?
 -----------
 
-Since release 3.1.0-20081103 :
+Since release 3.2.0-20090609:
+
+  Please see details at:
+  http://wiki.spatialytics.org/doku.php?id=projects:geokettle:documentation:what_is_new_in_version_2.0
+
+Since release 3.1.0-20081103:
 
  - The GeoKettle extensions were ported to the new Pentaho Data
    Integration (PDI) version 3.2.0-stable. As such, this release of GeoKettle
@@ -72,7 +100,7 @@ Since release 3.1.0-20081103 :
    
  - Updated GeoTools libraries to version 2.5.5 and JTS to version 1.10.
   
-Since release 2.5.2-20080531 :
+Since release 2.5.2-20080531:
 
  - The GeoKettle extensions were ported to the new Pentaho Data
    Integration (PDI) version 3.1.0-GA. As such, this release of GeoKettle
@@ -120,9 +148,11 @@ spatially-enabled data warehouse.
 GeoKettle aims to fulfill these requirements. It offers the full range 
 of functionality of Pentaho Data Integration (Kettle), and extends it 
 with a new "Geometry" data type for geospatial vector data. It also 
-features input/output support for GIS file formats and spatial DBMS, 
-spatial analysis functions (e.g. topological predicates) and scripting 
-support (with JavaScript) for Geometry objects. 
+features input/output support for GIS file formats, spatial DBMS and
+OGC compliant web services such as SOS, CSW. It also provides 
+spatial analysis functions (e.g. topological predicates), scripting 
+support (with JavaScript) for Geometry objects and advanced geoprocessing
+capabilities.
 
 
 Using GeoKettle
@@ -130,165 +160,22 @@ Using GeoKettle
 
 GeoKettle can be used the exact same way as Pentaho Data Integration.
 Please refer to the PDI user documentation included in this
-distribution.
+distribution but also to the wiki dedicated to the GeoKettle project 
+(http://wiki.spatialytics.org/doku.php?id=projects:geokettle).
 
-Demo transformations showing the use of the geospatial
-extensions are included in this distribution, in the
-samples/transformations/geokettle directory. The new features for
-geospatial data are documented here:
+Demo transformations showing the use of the geospatial extensions are 
+included in this distribution, in the samples/transformations/geokettle 
+directory. 
 
-- Geometry field type:
-
-  In addition to the basic field types (e.g. Number, String, Date, ...) 
-  existing in PDI, GeoKettle introduces a new Geometry type, supporting 
-  vector geospatial data (geometries such as Point, Line and Polygon). A 
-  Geometry field is automatically generated when reading a geometry column 
-  from a supported spatial DBMS or GIS file format. For example, when 
-  using the "Table input" step with a table (from a PostgreSQL DBMS with 
-  the PostGIS extensions installed) containing a column with a GEOMETRY 
-  type, the corresponding Geometry field will be part of the output for 
-  this step.
-  
-  The capability to convert a Well-Known Text (WKT) string to a Geometry 
-  is also supported: changing the value type of a String to Geometry (with 
-  the "Select values" step) will yield a valid Geometry object if the 
-  string contents is a valid WKT string. Conversion from Geometry to 
-  String does the opposite (it converts the geometry to a WKT string). 
-  Well-Known Binary (WKB) conversion is also implemented: converting a 
-  Geometry field to Binary will yield the WKB representation of the 
-  geometry (in a byte[] array); when doing the inverse (Binary field to 
-  Geometry), GeoKettle will try to parse the binary value, and if it is 
-  valid WKB it will yield a valid Geometry object as a result. Internal 
-  byte order of WKB values is big endian (the same as the default byte 
-  order in Java). 
-
-  The Geometry field type is implemented using objects from the
-  JTS Topology Suite API (http://www.vividsolutions.com/jts/). All
-  geometry objects are represented with the Geometry abstract class.
-  
-  
-- Access to Geometry objects in JavaScript:
-
-  It is possible to access the JTS objects contained in Geometry fields 
-  in the "Modified Java Script Value" step. This makes possible the use of 
-  spatial analysis functions such as buffer calculations, overlays, metric 
-  operators, etc. An example transformation using Geometry fields in 
-  JavaScript is included in the distribution. 
-
-
-- Input / output with supported spatial DBMS:
-
-  This version of GeoKettle natively supports the geospatial data types 
-  in PostGIS (for PostgreSQL), Oracle Spatial (or Locator) and MySQL. 
-  
-  PostGIS support is assured by the PostGIS JDBC driver wrapper 
-  (postgis.jar), which is included in the distribution. The PostgreSQL 
-  native (JDBC) connection type is used when creating the database 
-  connection. If the database in question is configured with the PostGIS 
-  extension, all GEOMETRY columns will transparently be read as Geometry 
-  values (no need to use PostGIS' AsText() or AsBinary() geometry 
-  accessors), whether one uses the "Table input", "Database lookup" or 
-  "Database join" steps. Likewise, Geometry values will be transparently 
-  converted to the native DBMS geometry type when written to a GEOMETRY 
-  column (in any database output step, such as "Table output", "Insert / 
-  Update" or "Dimension lookup/update"). 
-
-  The same applies to Oracle Spatial (or Locator) and MySQL; please use 
-  Oracle or MySQL as the connection type, with JDBC access. Geometry 
-  columns will be handled transparently by GeoKettle, both for reading
-  and writing.
-
-  
-- Input / output with unsupported spatial DBMS:
-  
-  Spatial DBMS which are not natively supported (e.g. Microsoft SQL Server
-  2008 GEOMETRY type, IBM DB2 Spatial Extender, Ingres) can still be used
-  with GeoKettle. Reading a geometry column can be done using the WKT
-  accessor functions in SQL (e.g. ST_AsText() for OGC SFS compliant
-  DBMS) in the Table Input (or similar) step. The WKT String can then be
-  converted to a Geometry field using the "Select Values" step.
-  
-  Writing to a geometry column is more complicated: the normal "Table 
-  output", "Insert / Update" or "Update" steps cannot be used for writing 
-  WKT geometries because the DBMS expects a value of geometry type for 
-  these colums, not a character string. Instead, after converting the 
-  Geometry field to String in a "Select values" step, it is possible to 
-  insert or update tables containing a geometry column using the "Execute 
-  SQL script" step. The DBMS' geometry constructor function can be used to 
-  instanciate a geometry value from the WKT string (passed as a parameter 
-  in the INSERT or UPDATE statement). For example, a SQL statement for 
-  inserting WKT geometries in a Microsoft SQL Server 2008 spatial table 
-  could be: 
-  
-  INSERT INTO geomtable (the_geom)
-    VALUES (geometry::STGeomFromText('?', 1))
-  
-  where the_geom is the name of the geometry column, and
-  geometry::STGeomFromText() is the geometry constructor function in the
-  DBMS. Be sure to check the "Execute for each row" option and to enter
-  all the needed input fields in the Parameters list. Unfortunately,
-  when using this method, write throughput is not as high as when using
-  the "Table output" step (with supported spatial DBMS only), since batch
-  inserts cannot be used this way.
-  
-  
-- Topological predicates:
-
-  Kettle conditions (org.pentaho.di.core.Condition class) have been
-  extended with topological predicate functions, allowing the
-  comparison of Geometry fields based on topological relationships. The
-  new functions are: GIS_INTERSECTS, GIS_EQUALS, GIS_CONTAINS,
-  GIS_CROSSES, GIS_DISJOINT, GIS_WITHIN, GIS_OVERLAPS, GIS_TOUCHES and
-  GIS_ISVALID. All of them are binary predicates (comparing one field
-  to another) except for GIS_ISVALID which is unary (returns true or
-  false based on the validity of the geometry in a single field). For
-  example, if we want to know if values for a certain "City" field are
-  located within values from a "State" field, we would use the
-  GIS_WITHIN predicate. If the City point is located within the State
-  polygon for the current row, the expression evaluates to true
-  (otherwise, false). These new topological predicates can be used in
-  any step based on the Condition class, i.e. "Filter rows" and "Join
-  rows (cartesian product)". A demo transformation (intersection.ktr)
-  is included in the distribution.
-
-- "GIS file input" step:
-
-  A new "GIS file input" step is present in the Geospatial steps.
-  This supports the reading of GIS data files; for now only Shapefiles
-  are supported. The geometry (contained in the SHP file) is read to a
-  field named "the_geom" (with a Geometry field type) and all other
-  alphanumerical fields (contained in the DBF file) are read to fields
-  with the corresponding name and value type. Unlike the existing
-  "ESRI Shapefile Reader" step from PDI, which reads geometries
-  contained in the Shapefile as X and Y numeric fields representing the
-  coordinates of points, this new "GIS file input" step reads
-  geometries as real Geometry objects.
+If you face a bug or want to see a new feature added to GeoKettle, please 
+do not hesitate to post a ticket on the bug/issue tracking system available 
+at http://trac.spatialytics.com/geokettle.  
 
 
 Upcoming features
 -----------------
 
-The following features are not yet supported in GeoKettle, but are
-planned for future releases:
-
-- Implementation of data matching and conflation steps in order to allow
-  geometric data cleansing and comparison of geospatial datasets (using
-  the JCS Conflation Suite; http://www.vividsolutions.com/JCS/).
-  (This feature is currently in development and is planned for the next
-  release.)
-
-- Visual preview of Geometry values (an alternative Preview dialog
-  which displays Geometry fields in a map viewer, instead of as WKT
-  strings like in the current Preview dialog).
-  (This feature is currently in development and is planned for the next
-  release.)
-  
-- Read/write support for other GIS file formats (e.g. MapInfo TAB, GML, ...).
-  (This feature is currently in development and is planned for the next
-  release.)
-
-- Implementation of the "Spatial Analysis" step, providing for user-
-  friendly spatial analysis functions (buffers, overlays, etc.).
+A roadmap is available at http://trac.spatialytics.com/geokettle.
 
 
 License and copyright
@@ -301,9 +188,9 @@ other libraries (JDBC drivers, Oracle SDOAPI) are closed source but
 included in binary form according to their respective end-user licenses. 
 Please refer to the included LICENSE.txt file for details. 
 
-The GeoKettle extensions are Copyright (C) 2007-2009, GeoSOA research
-group, Department of geomatics sciences, Laval University, Quebec,
-Canada.
+The GeoKettle extensions are Copyright (C) Spatialytics 2009-2011, 
+(C) 2007-2009, GeoSOA research group, Department of geomatics sciences, 
+Laval University, Quebec, Canada.
 
 Pentaho Data Integration (Kettle) is Copyright (C) 2007-2008, Pentaho
 Corporation.
@@ -315,47 +202,51 @@ Contact and mailing lists
 For future releases and more information, visit us at 
 http://www.geokettle.org. 
 
-All comments or questions about GeoKettle are welcome! Two mailing lists 
-are available: 
+All comments or questions about GeoKettle are welcome! A forum is available 
+at http://www.spatialytics.com/forum. Three sections are dedicated to 
+GeoKettle: 
 
-  - geokettle-users, for problems, questions and comments about the
+  - users-spatial_etl, for problems, questions and comments about the
     usage of GeoKettle. 
-  - geokettle-devel, for problems, questions and comments relative
+  - dev-spatial_etl, for problems, questions and comments relative
     to development tasks with GeoKettle and for feature request.
+  - international_francais, for French users that are not confortable with
+    English language. They can ask for help in French in this section.
 
 To subscribe or to sign off the lists, please visit:
 
-https://lists.sourceforge.net/lists/listinfo/geokettle-users
-or
-https://lists.sourceforge.net/lists/listinfo/geokettle-devel
+http://www.spatialytics.com/forum
 
 
 How to get involved?
 --------------------
 
 There is a lot of work to do on a project like GeoKettle and your help 
-will be greatly appreciated. So we gladly welcome any contribution to 
-further development, implementation and feedback on usage of GeoKettle. 
+will be greatly appreciated. So we would gladly welcome any contribution 
+to further development, implementation and feedback on usage of GeoKettle.
 
 Nevertheless, it is often hard for new developers or users to work out 
 where they can help. To begin with, we suggest you to subscribe to the 
-mailing lists. Listen in for a while, to learn how others make 
-contributions. 
+GeoKettle forums (http://www.spatialytics.com/forum). Listen-in for a while, 
+to hear how others make contributions.
 
-You can get your local working copy of the latest code. Review the todo 
-list, choose a task or perhaps you have noticed something that needs to 
-be corrected. Make the changes, do the testing, generate a patch, and 
-post to the devel mailing list. 
+You can get your local working copy of the latest code by checking out the 
+GeoKettle's svn repository. Review the todo list, choose a task or perhaps 
+you have noticed something that needs to be corrected. Make the changes, do 
+the testing, generate a patch, and post to the GeoKettle developers forum.
 
-Document writers and translators are usually the most wanted people so 
-if you like to help but you're not familiar with the innermost technical 
-details, don't worry: we have work for you! 
+Document writers and translators are usually the most wanted people so if 
+you like to help but you're not familiar with the innermost technical details, 
+don't worry: we have work for you! ;-)
+
+Contributors to GeoKettle must sign a Contributor License Agreement 
+(http://dev.spatialytics.com/cla/contributor_license_agreement.pdf).
 
 
 Acknowledgments
 ---------------
 
-We would like to recognize the contributions to GeoKettle from the 
+We would like to recognize the past contributions to GeoKettle from the 
 following organizations and people: 
 
 The NSERC Industrial Research Chair in Geospatial Databases for Decision 
