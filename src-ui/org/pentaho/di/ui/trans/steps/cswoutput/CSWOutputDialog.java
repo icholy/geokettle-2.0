@@ -3,7 +3,14 @@
  */
 package org.pentaho.di.ui.trans.steps.cswoutput;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+
+import java.util.Iterator;
+
+
+import javax.servlet.ServletException;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -23,14 +30,20 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.jdom.Element;
 import org.pentaho.di.core.Const;
+import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
+import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.steps.cswoutput.CSWOutputMeta;
 import org.pentaho.di.trans.steps.cswoutput.CSWWriter;
 import org.pentaho.di.trans.steps.cswoutput.Messages;
+import org.pentaho.di.ui.core.widget.ColumnInfo;
 import org.pentaho.di.ui.core.widget.ComboVar;
+import org.pentaho.di.ui.core.widget.TableView;
 import org.pentaho.di.ui.core.widget.TextVar;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
@@ -68,6 +81,14 @@ public class CSWOutputDialog extends BaseStepDialog implements
 	private FormData fdwlSchemaLabel;
 	private ComboVar wSchemaLabel;
 	private FormData fdwSchemaLabel;
+	private TableView wQueryElement;
+	private FormData fdwQueryElement;
+	private Button wGetQueryElements;
+	private Listener lsGGetQueryElements;
+	private FormData fdGGetQueryElements;
+	private Group wMappingColumnGroup;
+	private FormData fdMappingGroup;
+	
 
 	/**
 	 * @param parent
@@ -80,6 +101,7 @@ public class CSWOutputDialog extends BaseStepDialog implements
 		public CSWOutputDialog(Shell parent, Object in, TransMeta tr, String sname){
 		super(parent, (BaseStepMeta)in, tr, sname);
 		input=(CSWOutputMeta)in;
+		 
 	}
 
 	/* (non-Javadoc)
@@ -261,6 +283,78 @@ public class CSWOutputDialog extends BaseStepDialog implements
 		fdGeneral.top   = new FormAttachment(wStepname, margin);
 		fdGeneral.right = new FormAttachment(100, -margin);
 		wGeneral.setLayoutData(fdGeneral);
+		
+		
+		
+		/**mapping columns*/
+		
+		 wMappingColumnGroup = new Group(shell, SWT.SHADOW_NONE);
+	        
+			props.setLook(wMappingColumnGroup);
+			wMappingColumnGroup.setText(Messages.getString("CSWOutputDialog.MappingColumn.Group"));
+			FormLayout MappingGroupLayout = new FormLayout();
+			MappingGroupLayout.marginWidth = 10;
+			MappingGroupLayout.marginHeight = 10;
+			wMappingColumnGroup.setLayout(MappingGroupLayout);
+			
+			fdMappingGroup=new FormData();
+			fdMappingGroup.left = new FormAttachment(0, margin);
+			fdMappingGroup.top  = new FormAttachment(wGeneral, 3*margin);
+			fdMappingGroup.right= new FormAttachment(100, -1*margin);
+			wMappingColumnGroup.setLayoutData(fdMappingGroup); 
+		
+		ColumnInfo[] colinfQueryElement=new ColumnInfo[3];
+ 		colinfQueryElement[0]=new ColumnInfo(Messages.getString("CSWOutputDialog.SchemaColumn"),  
+				ColumnInfo.COLUMN_TYPE_TEXT,null, false);
+ 		colinfQueryElement[1]=new ColumnInfo(Messages.getString("CSWOutputDialog.PreviousStepColumn"),  
+				ColumnInfo.COLUMN_TYPE_TEXT,null, false);
+ 		
+ 		colinfQueryElement[2]=new ColumnInfo(Messages.getString("CSWOutputDialog.DefaultValueColumn"),  
+				ColumnInfo.COLUMN_TYPE_TEXT,null, false);
+ 		
+		wQueryElement=new TableView(transMeta,wMappingColumnGroup,
+							  SWT.BORDER | SWT.MULTI | SWT.V_SCROLL, 
+							  colinfQueryElement, 
+							  5,  
+							  lsMod,
+							  props
+							  );
+		fdwQueryElement=new FormData();
+		fdwQueryElement.left  = new FormAttachment(0, 0);
+		fdwQueryElement.top   = new FormAttachment(0, 2*margin);
+		fdwQueryElement.right = new FormAttachment(100, -margin);
+		
+		wQueryElement.setLayoutData(fdwQueryElement);
+		
+		/**
+		 * queryable Element button
+		 * */
+		
+		
+		
+ 		wGetQueryElements=new Button(wMappingColumnGroup, SWT.PUSH);
+ 		wGetQueryElements.setText(Messages.getString("CSWOutputDialog.Button.GetColumn"));
+        lsGGetQueryElements = new Listener()  {
+
+		public void handleEvent(Event e){
+			getMappingInformation();
+			
+		}
+
+		
+	};
+		wGetQueryElements.addListener(SWT.Selection, lsGGetQueryElements);
+
+        
+        fdGGetQueryElements = new FormData();
+        fdGGetQueryElements.left = new FormAttachment(middle+middle, 2*margin);
+        fdGGetQueryElements.top = new FormAttachment(wQueryElement, 1*margin);
+        //
+        wGetQueryElements.setLayoutData(fdGGetQueryElements);
+		
+		/**
+		 * end queryable Element button
+		 * */
         
        
 		// Some buttons
@@ -303,6 +397,91 @@ public class CSWOutputDialog extends BaseStepDialog implements
 		
 		
 	}
+	
+	private void getMappingInformation(){
+		String str=CSWWriter.CSWBRIEF_XML;
+		ArrayList<String> schemacolumList=new ArrayList<String>(); 
+		CSWWriter cswwriter=new CSWWriter();
+        Element element=null;
+		
+        if (wSchemaLabel.getText().equalsIgnoreCase("MD_METADATA")){
+        	str=CSWWriter.MD_METADATA_XML;
+        }
+        
+		StepMeta stepMeta = transMeta.findStep(stepname);
+        wQueryElement.removeAll();
+        
+        
+		try {
+			element = cswwriter.fromStringToJDOMDocument(str).getRootElement();
+			Iterator<Element> it=cswwriter.getColumns(element).iterator();
+			//int rownr=0;
+			while (it.hasNext()){
+				Element c=it.next();
+				if (wSchemaLabel.getText().equalsIgnoreCase("MD_METADATA")){
+					schemacolumList.add(c.getParentElement().getName());
+		        }else
+				schemacolumList.add(c.getName());
+
+			}
+		} catch (KettleException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+         catch (ServletException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+        
+        if (stepMeta!=null)
+        {
+            try
+            {
+            	RowMetaInterface row = transMeta.getPrevStepFields(stepMeta);
+            	int colSize=schemacolumList.size();
+            	int prevColSize=row.size();
+            	int taille=prevColSize;
+            	if (colSize>prevColSize){
+            		taille=colSize;
+            	}            		
+            	
+            	
+                // Remember these fields...
+                for (int i=0;i<taille;i++)
+                {
+                	String colName=null;
+                	String prevColName=null;
+                	if (i<colSize){
+                		colName=schemacolumList.get(i);
+                	}
+                	if (i<prevColSize){
+                		prevColName=row.getValueMeta(i).getName();
+                	}                		
+                	
+                    wQueryElement.add(colName,prevColName);
+                	
+                }
+                wQueryElement.remove(0);
+                wQueryElement.setRowNums(); 
+                
+                ColumnInfo col=new ColumnInfo(Messages.getString("CSWOutputDialog.SchemaColumn"),  
+    					ColumnInfo.COLUMN_TYPE_CCOMBO,schemacolumList.toArray(new String[schemacolumList.size()]), false);
+                wQueryElement.setColumnInfo(0, col);
+                col=new ColumnInfo(Messages.getString("CSWOutputDialog.PreviousStepColumn"),  
+    					ColumnInfo.COLUMN_TYPE_CCOMBO,row.getFieldNames(), false);
+    			wQueryElement.setColumnInfo(1, col);
+                
+                //setComboBoxes();
+            }
+            catch(KettleException e)
+            {
+            	log.logError(toString(), Messages.getString("System.Dialog.GetFieldsFailed.Message"));
+            }
+        }
+	}
 
 	private void getData() {
 		// 
@@ -344,14 +523,12 @@ public class CSWOutputDialog extends BaseStepDialog implements
 			if (Const.isEmpty(wStepname.getText())) return;
 			stepname=wStepname.getText();
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
-		
-		
+				
 		input.setCSWwriter(cswwriter);
-		//
-		
+			
 		dispose();
 	}
 

@@ -270,7 +270,7 @@ public class CSWReader {
 							}
 						}
 						if (j==2){
-							temp +="'"+tmpValue+"' ";
+							temp +="'%"+tmpValue+"%' ";
 						}else{
 							temp +=tmpValue+" ";
 						}					
@@ -282,7 +282,7 @@ public class CSWReader {
 				}
 			}
 			if (ok){
-				q+=" AND ";
+				//q+=" AND ";
 			}
 			/*Build spatial query if user enabled spatial search checkbox*/
 			if (this.enableSpatialSearch==true){
@@ -320,7 +320,7 @@ public class CSWReader {
 							}
 						}
 						if (j==2){
-							temp +="'"+tmpValue+"'+";
+							temp +="'%"+tmpValue+"%'+";
 						}else{
 							temp +=tmpValue+"+";
 						}					
@@ -531,7 +531,8 @@ public class CSWReader {
 						o.add(e.getText());	
 						
 					}else{
-						o.add("N/A");						
+						//o.add("N/A");
+						o.add(null);
 					}
 				}
 				//
@@ -576,7 +577,7 @@ public class CSWReader {
 						o.add(e.getText());	
 						//System.out.print(e.getText());
 					}else{
-						o.add("N/A");
+						o.add(null);
 					}
 				}					
 				recordList.add(o);

@@ -13,6 +13,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -372,6 +373,7 @@ public class CSWWriter {
 	private String username;
 	private String password;
 	private String schema;
+	private ArrayList<Element> parseResult;
 	
 	/**
 	 * @throws KettleException 
@@ -385,16 +387,7 @@ public class CSWWriter {
 			q +=query;
 			q +=FOOTPAGE_TRANSACTION_INSERT;
 			q=new String (q.getBytes(),"UTF-8");
-			/*try {
-				
-				System.setOut(new PrintStream(new FileOutputStream("d://out.log")));
-				System.out.println(q);
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}*/
-			
-			
+					
 			response=CSWPOST(q);
 			//
 			return response;
@@ -583,6 +576,32 @@ public class CSWWriter {
 		}
 		return headerField;
 	}
+	
+	public ArrayList<Element> getColumns(Element element)throws ServletException, IOException{		
+		
+		parseResult = new ArrayList<Element>();
+		
+		// Traverse the tree
+		GetSubElement(element.getChildren()); 
+		
+		
+		
+		return parseResult;
+	}
+		
+		private void GetSubElement(List<?> elements) throws IOException{			
+			// Cycle through all the child nodes of the root
+			
+			Iterator<?> iter = elements.iterator();
+			while (iter.hasNext()){			
+		        Element el = (Element) iter.next();	        
+		        	if (el.getChildren().size()==0){
+		        		parseResult.add(el);
+		        	}else
+		        		GetSubElement(el.getChildren());
+			}
+			
+		}
 	
 	/**
 	 * @param cswUrl the cswUrl to set
