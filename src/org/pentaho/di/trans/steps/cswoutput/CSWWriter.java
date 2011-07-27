@@ -38,7 +38,7 @@ public class CSWWriter {
 				"<csw:Transaction service=\"CSW\" version=\"2.0.2\" xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\" xmlns:dct=\"http://purl.org/dc/terms/\">"+
 				"<csw:Insert>";
 	public static final String FOOTPAGE_TRANSACTION_INSERT="</csw:Insert></csw:Transaction>";
-	public static final String CSWBRIEF_XML="<csw:Record xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\" xmlns:dct=\"http://purl.org/dc/terms/\" xmlns:geonet=\"http://www.fao.org/geonetwork\" xmlns:ows=\"http://www.opengis.net/ows\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">"+
+	public static final String CSWBRIEF_XML="<csw:Record xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\"  xmlns:dct=\"http://purl.org/dc/terms/\" xmlns:geonet=\"http://www.fao.org/geonetwork\" xmlns:ows=\"http://www.opengis.net/ows\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">"+
 		"<dc:identifier>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dc:identifier>"+
 		"<dc:title>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dc:title>"+
 		" <dc:type>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dc:type>"+
@@ -55,7 +55,28 @@ public class CSWWriter {
 		"<ows:BoundingBox crs=\"::INFO-PROJECTION\">"+
 		"<ows:LowerCorner>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</ows:LowerCorner>"+
 		"<ows:UpperCorner>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</ows:UpperCorner>"+
-		"</ows:BoundingBox>"+
+		"</ows:BoundingBox>"+		
+		"<geonet:info xmlns:gml=\"http://www.opengis.net/gml\">"+
+		  "<id>107</id>"+ 
+		  "<schema>iso19139.che</schema>"+ 
+		  "<createDate>2008-04-23T12:00:00</createDate>"+ 
+		  "<changeDate>2011-06-08T12:22:57</changeDate>"+ 
+		  "<isTemplate>n</isTemplate>"+ 
+		  "<title> </title>"+ 
+		  "<source>7ea582d4-9ddf-422e-b28f-29760a4c0147</source>"+ 
+		  "<uuid>74d8c1de-81ed-48bf-8742-667b67b1364d</uuid>"+ 
+		  "<isHarvested>n</isHarvested>"+ 
+		  "<popularity>770</popularity>"+ 
+		  "<rating>0</rating>"+ 
+		  "<groupowner>6</groupowner>"+ 
+		  "<groupName>swisstopo</groupName>"+ 
+		  "<groupLabel>Office fédéral de topographie swisstopo</groupLabel>"+ 
+		  "<groupLogoUuid>11ef92b3-b547-4a35-af4e-7df6852c30b2</groupLogoUuid>"+ 
+		  "<groupWebsite>http://www.swisstopo.admin.ch</groupWebsite>"+ 
+		  "<view>true</view>"+ 
+		  "<notify>false</notify>"+ 
+		  "<download>false</download>"+ 
+		  "</geonet:info>"+
 		"</csw:Record>";
 	
 	public static String MD_METADATA_XML="<MD_Metadata xmlns=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">"+
@@ -374,6 +395,8 @@ public class CSWWriter {
 	private String password;
 	private String schema;
 	private ArrayList<Element> parseResult;
+	private ArrayList<String[]> mappingColumns;
+	private String[] mapColList;
 	
 	/**
 	 * @throws KettleException 
@@ -441,7 +464,8 @@ public class CSWWriter {
 		while (it.hasNext()&& (trouve==false)){
 			Element courant=(Element)it.next();
 			if (courant.getParentElement()!=null){
-				if ((courant.getParentElement().getName()+"_"+courant.getName()).equalsIgnoreCase(elementName)){					
+				//if ((courant.getParentElement().getName()+"_"+courant.getName()).equalsIgnoreCase(elementName)){
+				if ((courant.getName()).equalsIgnoreCase(elementName)){					
 					trouve=true;
 					el=courant;					
 					el.setText(text);
@@ -666,6 +690,40 @@ public class CSWWriter {
 	 */
 	public String getSchema() {
 		return schema;
+	}
+
+	/**
+	 * @param mappingColumns the mappingColumns to set
+	 */
+	public void setMappingColumns(ArrayList<String[]> mappingColumns) {
+		this.mappingColumns = mappingColumns;
+		ArrayList<String> mappingCol= new ArrayList<String>();
+		for(String[] s:mappingColumns){
+			if (s[1]!=null)
+				mappingCol.add(s[1]);
+		}
+		this.mapColList=mappingCol.toArray(new String[mappingCol.size()]);
+	}
+
+	/**
+	 * @return the mappingColumns
+	 */
+	public ArrayList<String[]> getMappingColumns() {
+		return mappingColumns;
+	}
+
+	/**
+	 * @return the mapColList
+	 */
+	public String[] getMapColList() {
+		return mapColList;
+	}
+
+	/**
+	 * @param mapColList the mapColList to set
+	 */
+	public void setMapColList(String[] mapColList) {
+		this.mapColList = mapColList;
 	}
 	
 }

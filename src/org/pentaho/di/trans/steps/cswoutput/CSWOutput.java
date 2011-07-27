@@ -8,10 +8,13 @@ package org.pentaho.di.trans.steps.cswoutput;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+
 
 import javax.servlet.ServletException;
 import org.pentaho.di.trans.steps.cswoutput.Messages;
 import org.pentaho.di.core.Const;
+
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.trans.Trans;
 import org.pentaho.di.trans.TransMeta;
@@ -32,6 +35,7 @@ public class CSWOutput extends BaseStep implements StepInterface {
 	private CSWOutputData data;
 	private boolean isReceivingInputFields=false;
 	private String allQuery="";
+	private ArrayList<String[]> mappingColumns;
 	
 	/**
 	 * @param stepMeta
@@ -51,6 +55,9 @@ public class CSWOutput extends BaseStep implements StepInterface {
 		String[] fieldName=null;
 		meta=(CSWOutputMeta)smi;
 		data=(CSWOutputData)sdi;
+		
+		mappingColumns=meta.getCSWwriter().getMappingColumns();
+		
 		Object [] r = getRow();
 		
 		if (isReceivingInputFields && r==null){
@@ -98,18 +105,21 @@ public class CSWOutput extends BaseStep implements StepInterface {
 			
 		}else{
 			data.outputRowMeta=getInputRowMeta().clone();
+			
 			fieldName=data.outputRowMeta.getFieldNames();
-			while(i<r.length){		
-				String valueToSet=null;			
+			while (i<mappingColumns.size()){
+			//while(i<r.length){		
+							
 				try {
-					String fieldname=fieldName[i];
-					if (fieldname.equalsIgnoreCase("boundingbox_lowercorner")||fieldname.equalsIgnoreCase("boundingbox_uppercorner")){
+					
+		/*			if (fieldname.equalsIgnoreCase("boundingbox_lowercorner")||fieldname.equalsIgnoreCase("boundingbox_uppercorner")){
 						Point point=(Point)r[i];						
 						valueToSet=point.getX()+" "+point.getY();
 					}else{
 						valueToSet=(String)r[i];
-					}
-					query=meta.getCSWwriter().setElementTextUsingQueryString(query,fieldname,valueToSet);
+					}*/
+					String valueToSet=findValueToSet(fieldName,r, mappingColumns.get(i));
+					query=meta.getCSWwriter().setElementTextUsingQueryString(query,mappingColumns.get(i)[0],valueToSet);
 					i++;
 				} catch (ServletException e) {
 					// TODO Auto-generated catch block
@@ -131,6 +141,28 @@ public class CSWOutput extends BaseStep implements StepInterface {
 			return false;	
         }   */        
 		return true;
+	}
+	
+	private String findValueToSet(String[] columList,Object[] o, String[] mapcols){
+		boolean trouve=false;
+		String obj=mapcols[2];
+		int i=0;
+		while (i<columList.length && !trouve){
+			String col=columList[i];
+			if (col.equalsIgnoreCase(mapcols[1])){
+				trouve=true;
+				if (col.equalsIgnoreCase("boundingbox_lowercorner")||col.equalsIgnoreCase("boundingbox_uppercorner")){
+					if (o[i]!=null){
+						Point point=(Point)o[i];						
+						obj=point.getX()+" "+point.getY();
+					}
+					
+				}else
+				obj=(String)o[i];
+			}else
+			i++;
+		}
+		return obj;
 	}
 	
 	public boolean init(StepMetaInterface smi, StepDataInterface sdi){

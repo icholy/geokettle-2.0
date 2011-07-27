@@ -5,10 +5,12 @@ package org.pentaho.di.trans.steps.cswoutput;
 
 import java.net.MalformedURLException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.pentaho.di.core.CheckResultInterface;
+import org.pentaho.di.core.Const;
 
 import org.pentaho.di.core.Counter;
 import org.pentaho.di.core.database.DatabaseMeta;
@@ -97,6 +99,26 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 			CSWwriter.setUsername(XMLHandler.getTagValue(stepnode, "username"));
 			CSWwriter.setPassword(XMLHandler.getTagValue(stepnode, "password"));
 			CSWwriter.setSchema(XMLHandler.getTagValue(stepnode, "schema"));
+			
+			
+			Node mappingColumnsNode = XMLHandler.getSubNode(stepnode, "mappingcolumns");
+			int nrMapCol = XMLHandler.countNodes(mappingColumnsNode, "mapcolumn");
+
+			//
+			ArrayList<String[]> mappingColumnList= new ArrayList<String[]>();
+			
+
+			for (int i = 0; i < nrMapCol; i++) {
+				String[] s=new String[3];
+				Node onode = XMLHandler.getSubNodeByNr(mappingColumnsNode, "mapcolumn", i);
+				s[0]=XMLHandler.getTagValue(onode, "schemacolumn");
+				s[1]=XMLHandler.getTagValue(onode, "previousstepcolumn");
+				s[2]=XMLHandler.getTagValue(onode, "defaultvalue");
+				mappingColumnList.add(s);
+				
+			}
+			
+			CSWwriter.setMappingColumns(mappingColumnList);
 		} catch (MalformedURLException e) {
 			// 
 			throw new KettleXMLException(e);
@@ -111,6 +133,31 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 		retval.append("    " + XMLHandler.addTagValue("username",   CSWwriter.getUsername()));
 		retval.append("    " + XMLHandler.addTagValue("password",   CSWwriter.getPassword()));
 		retval.append("    " + XMLHandler.addTagValue("schema",   CSWwriter.getSchema()));
+		
+		retval.append("    <mappingcolumns>").append(Const.CR);
+        if (CSWwriter.getMappingColumns()!=null){
+			for (String[] s:CSWwriter.getMappingColumns()) {
+				retval.append("      <mapcolumn>").append(Const.CR);
+				int j=0;
+				String tagName=null;
+				for (String c:s){
+					if (j==0){
+						tagName="schemacolumn";
+					}else
+					if (j==1){
+						tagName="previousstepcolumn";
+					}else
+					if (j==2){
+						tagName="defaultvalue";
+					}
+					retval.append("        ").append(XMLHandler.addTagValue(tagName, c));
+					j++;
+				}
+				
+				retval.append("      </mapcolumn>").append(Const.CR);
+			}
+        }
+		retval.append("    </mappingcolumns>").append(Const.CR);
 				
 		return retval.toString();
 	}
@@ -128,6 +175,15 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 			CSWwriter.setUsername(rep.getStepAttributeString(idStep, "username")) ;
 			CSWwriter.setPassword(rep.getStepAttributeString(idStep, "password")) ;
 			CSWwriter.setSchema(rep.getStepAttributeString(idStep, "schema")) ;
+			
+			int nrMapCol = rep.countNrStepAttributes(idStep, "mapcolumn");			
+			ArrayList<String[]> mapColList= new ArrayList<String[]>();
+			for (int i = 0; i < nrMapCol; i++) {
+				String ch=rep.getStepAttributeString(idStep,i, "mapcolumn");
+				String[] s=ch.split("@");
+				mapColList.add(s);				
+			}			
+			CSWwriter.setMappingColumns(mapColList);
 			
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -147,6 +203,23 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 		rep.saveStepAttribute(idTransformation, idStep,"username",   CSWwriter.getUsername());
 		rep.saveStepAttribute(idTransformation, idStep,"password",   CSWwriter.getPassword());
 		rep.saveStepAttribute(idTransformation, idStep,"schema",   CSWwriter.getSchema());
+		
+        if (CSWwriter.getMappingColumns()!=null){
+        	int cpt=0;
+			for (String[] s:CSWwriter.getMappingColumns()) {
+				String temps="";
+				int i=0;
+				for (String ss:s){
+					temps +=ss;
+					if (i<2){
+						temps +="@";
+					}
+					i++;
+				}
+				rep.saveStepAttribute(idTransformation, idStep,cpt,"mapcolumn", temps);
+				cpt++;
+			}
+        }//end
 	}
 
 	/* (non-Javadoc)
@@ -161,6 +234,7 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 			CSWwriter.setUsername(null);
 			CSWwriter.setPassword(null);
 			CSWwriter.setSchema(Messages.getString("CSWOutputDialog.Schema.CSWRECORD"));
+			CSWwriter.setMappingColumns(null);
 		} catch (MalformedURLException e) {
 			
 		}

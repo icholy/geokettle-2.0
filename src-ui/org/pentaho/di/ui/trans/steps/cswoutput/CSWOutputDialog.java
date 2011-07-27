@@ -363,7 +363,7 @@ public class CSWOutputDialog extends BaseStepDialog implements
 		wCancel=new Button(shell, SWT.PUSH);
 		wCancel.setText(Messages.getString("System.Button.Cancel")); //$NON-NLS-1$
 
-		setButtonPositions(new Button[] { wOK, wCancel }, margin, wGeneral);
+		setButtonPositions(new Button[] { wOK, wCancel }, margin, wMappingColumnGroup);
 
 		// Add listeners
 		lsCancel   = new Listener() { public void handleEvent(Event e) { cancel(); } };
@@ -502,6 +502,21 @@ public class CSWOutputDialog extends BaseStepDialog implements
 			wSchemaLabel.setText(cswwriter.getSchema());
 		}
 		
+		ArrayList<String[]> mapColList=cswwriter.getMappingColumns();
+		if (mapColList!=null){
+			wQueryElement.removeAll();
+			for(String[]s:mapColList){
+				wQueryElement.add(s);
+			}
+			wQueryElement.remove(0);
+			wQueryElement.setRowNums();
+		}
+		  ColumnInfo col=new ColumnInfo(Messages.getString("CSWOutputDialog.SchemaColumn"),  
+					ColumnInfo.COLUMN_TYPE_CCOMBO,wQueryElement.getItems(0), false);
+          wQueryElement.setColumnInfo(0, col);
+          col=new ColumnInfo(Messages.getString("CSWOutputDialog.PreviousStepColumn"),  
+					ColumnInfo.COLUMN_TYPE_CCOMBO,wQueryElement.getItems(1), false);
+			wQueryElement.setColumnInfo(1, col);
 		
 	}
 	private void cancel()
@@ -520,6 +535,15 @@ public class CSWOutputDialog extends BaseStepDialog implements
 			cswwriter.setUsername(this.wUser.getText());
 			cswwriter.setPassword(this.wPassword.getText());
 			cswwriter.setSchema(this.wSchemaLabel.getText());
+			
+			wQueryElement.removeEmptyRows();
+			ArrayList<String[]> mappingColList=new ArrayList<String[]>();		
+			for (int i=0;i<wQueryElement.getItemCount();i++){
+				String []s=wQueryElement.getItem(i);
+				mappingColList.add(s);		
+			}
+			cswwriter.setMappingColumns(mappingColList);
+			
 			if (Const.isEmpty(wStepname.getText())) return;
 			stepname=wStepname.getText();
 		} catch (MalformedURLException e) {
