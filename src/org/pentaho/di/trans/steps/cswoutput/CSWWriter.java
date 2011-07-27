@@ -488,7 +488,7 @@ public class CSWWriter {
 		while (it.hasNext()&& (trouve==false)){
 			Element courant=(Element)it.next();
 			String cName=courant.getParentElement().getName();
-			//boolean tr=elementName.endsWith(cName);
+			
 			//(courant.getParentElement().getName()).equalsIgnoreCase(elementName)
 				if (elementName.endsWith(cName)){				
 					trouve=true;
@@ -697,12 +697,12 @@ public class CSWWriter {
 	 */
 	public void setMappingColumns(ArrayList<String[]> mappingColumns) {
 		this.mappingColumns = mappingColumns;
-		ArrayList<String> mappingCol= new ArrayList<String>();
+		/*ArrayList<String> mappingCol= new ArrayList<String>();		
 		for(String[] s:mappingColumns){
 			if (s[1]!=null)
 				mappingCol.add(s[1]);
 		}
-		this.mapColList=mappingCol.toArray(new String[mappingCol.size()]);
+		this.mapColList=mappingCol.toArray(new String[mappingCol.size()]);*/
 	}
 
 	/**

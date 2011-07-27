@@ -301,6 +301,7 @@ public class CSWOutputDialog extends BaseStepDialog implements
 			fdMappingGroup.left = new FormAttachment(0, margin);
 			fdMappingGroup.top  = new FormAttachment(wGeneral, 3*margin);
 			fdMappingGroup.right= new FormAttachment(100, -1*margin);
+			//fdMappingGroup.bottom= new FormAttachment(100, -margin);
 			wMappingColumnGroup.setLayoutData(fdMappingGroup); 
 		
 		ColumnInfo[] colinfQueryElement=new ColumnInfo[3];
@@ -322,7 +323,7 @@ public class CSWOutputDialog extends BaseStepDialog implements
 		fdwQueryElement=new FormData();
 		fdwQueryElement.left  = new FormAttachment(0, 0);
 		fdwQueryElement.top   = new FormAttachment(0, 2*margin);
-		fdwQueryElement.right = new FormAttachment(100, -margin);
+		//fdwQueryElement.right = new FormAttachment(100, -margin);
 		
 		wQueryElement.setLayoutData(fdwQueryElement);
 		
@@ -347,8 +348,9 @@ public class CSWOutputDialog extends BaseStepDialog implements
 
         
         fdGGetQueryElements = new FormData();
-        fdGGetQueryElements.left = new FormAttachment(middle+middle, 2*margin);
+        fdGGetQueryElements.left = new FormAttachment(middle, 5*margin);
         fdGGetQueryElements.top = new FormAttachment(wQueryElement, 1*margin);
+        
         //
         wGetQueryElements.setLayoutData(fdGGetQueryElements);
 		
@@ -514,8 +516,17 @@ public class CSWOutputDialog extends BaseStepDialog implements
 		  ColumnInfo col=new ColumnInfo(Messages.getString("CSWOutputDialog.SchemaColumn"),  
 					ColumnInfo.COLUMN_TYPE_CCOMBO,wQueryElement.getItems(0), false);
           wQueryElement.setColumnInfo(0, col);
+          
+          ArrayList<String> prevcolList=new ArrayList<String>();
+          for (String ch:wQueryElement.getItems(1)){
+        	  if (ch!=null)
+        		  if (ch.trim().length()>0){
+        		  prevcolList.add(ch);
+        	  }
+          }
+        	  
           col=new ColumnInfo(Messages.getString("CSWOutputDialog.PreviousStepColumn"),  
-					ColumnInfo.COLUMN_TYPE_CCOMBO,wQueryElement.getItems(1), false);
+					ColumnInfo.COLUMN_TYPE_CCOMBO,prevcolList.toArray(new String[prevcolList.size()]), false);
 			wQueryElement.setColumnInfo(1, col);
 		
 	}

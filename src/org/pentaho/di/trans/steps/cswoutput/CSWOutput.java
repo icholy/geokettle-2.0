@@ -112,12 +112,7 @@ public class CSWOutput extends BaseStep implements StepInterface {
 							
 				try {
 					
-		/*			if (fieldname.equalsIgnoreCase("boundingbox_lowercorner")||fieldname.equalsIgnoreCase("boundingbox_uppercorner")){
-						Point point=(Point)r[i];						
-						valueToSet=point.getX()+" "+point.getY();
-					}else{
-						valueToSet=(String)r[i];
-					}*/
+		
 					String valueToSet=findValueToSet(fieldName,r, mappingColumns.get(i));
 					query=meta.getCSWwriter().setElementTextUsingQueryString(query,mappingColumns.get(i)[0],valueToSet);
 					i++;
