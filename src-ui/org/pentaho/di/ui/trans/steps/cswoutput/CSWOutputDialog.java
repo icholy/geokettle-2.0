@@ -417,13 +417,13 @@ public class CSWOutputDialog extends BaseStepDialog implements
 		try {
 			element = cswwriter.fromStringToJDOMDocument(str).getRootElement();
 			Iterator<Element> it=cswwriter.getColumns(element).iterator();
-			//int rownr=0;
+			//
 			while (it.hasNext()){
 				Element c=it.next();
 				if (wSchemaLabel.getText().equalsIgnoreCase("MD_METADATA")){
-					schemacolumList.add(c.getParentElement().getName());
+					schemacolumList.add(c.getParentElement().getParentElement().getName()+"_"+c.getParentElement().getName());
 		        }else
-				schemacolumList.add(c.getName());
+				schemacolumList.add(c.getParentElement().getName()+"_"+c.getName());
 
 			}
 		} catch (KettleException e1) {
@@ -431,10 +431,8 @@ public class CSWOutputDialog extends BaseStepDialog implements
 			e1.printStackTrace();
 		}
          catch (ServletException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
         
@@ -443,29 +441,22 @@ public class CSWOutputDialog extends BaseStepDialog implements
             try
             {
             	RowMetaInterface row = transMeta.getPrevStepFields(stepMeta);
-            	int colSize=schemacolumList.size();
-            	int prevColSize=row.size();
-            	int taille=prevColSize;
-            	if (colSize>prevColSize){
-            		taille=colSize;
-            	}            		
+            	//
+            	String [] prevColName= new String[row.size()];
+            	//
             	
             	
-                // Remember these fields...
-                for (int i=0;i<taille;i++)
-                {
-                	String colName=null;
-                	String prevColName=null;
-                	if (i<colSize){
-                		colName=schemacolumList.get(i);
-                	}
-                	if (i<prevColSize){
-                		prevColName=row.getValueMeta(i).getName();
-                	}                		
-                	
-                    wQueryElement.add(colName,prevColName);
-                	
-                }
+            	for (int k=0; k<row.size();k++){
+            		prevColName[k]=row.getValueMeta(k).getName();
+            	}
+            	
+            	            	
+               
+            	String [][] tempList=correspondanceBetweenColumn(schemacolumList.toArray(new String[schemacolumList.size()]),prevColName);
+            	for (String[] item:tempList){
+            		wQueryElement.add(item);
+            	}
+            	
                 wQueryElement.remove(0);
                 wQueryElement.setRowNums(); 
                 
@@ -483,6 +474,39 @@ public class CSWOutputDialog extends BaseStepDialog implements
             	log.logError(toString(), Messages.getString("System.Dialog.GetFieldsFailed.Message"));
             }
         }
+	}
+	
+	/**
+	 * 
+	 * */
+	private String[][] correspondanceBetweenColumn(String[] refCol, String[] colToMap){
+		ArrayList<String[]> tempList=new ArrayList<String[]>();
+		int i=0;
+		
+		
+		while (i<refCol.length){
+			String[] item=new String[3];
+			item[0]=refCol[i];
+			item[1]=null;
+			item[2]="//TODO";
+			int j=0;
+			boolean trouve=false;
+			while(j<colToMap.length && !trouve){
+				if (colToMap[j].endsWith(refCol[i])){
+					trouve=true;					
+				}else{
+					
+					j++;
+				}//end else
+			}//end while j
+			if (trouve){
+				item[1]=colToMap[j];
+				item[2]=null;
+			}
+			tempList.add(item);
+			i++;
+		}
+		return tempList.toArray(new String[tempList.size()][]);
 	}
 
 	private void getData() {
