@@ -327,7 +327,8 @@ public class CSWOutputDialog extends BaseStepDialog implements
 		fdwQueryElement=new FormData();
 		fdwQueryElement.left  = new FormAttachment(0, 0);
 		fdwQueryElement.top   = new FormAttachment(0, 2*margin);
-		//fdwQueryElement.right = new FormAttachment(100, -margin);
+		fdwQueryElement.right = new FormAttachment(100, -margin);
+		//fdwQueryElement.bottom = new FormAttachment(100, -margin);
 		
 		wQueryElement.setLayoutData(fdwQueryElement);
 		
@@ -353,7 +354,10 @@ public class CSWOutputDialog extends BaseStepDialog implements
         
         fdGGetQueryElements = new FormData();
         fdGGetQueryElements.left = new FormAttachment(middle, 5*margin);
-        fdGGetQueryElements.top = new FormAttachment(wQueryElement, 1*margin);
+        fdGGetQueryElements.top = new FormAttachment(wQueryElement, 2*margin);
+        //fdGGetQueryElements.right = new FormAttachment(100, -margin);
+        //fdGGetQueryElements.bottom = new FormAttachment(100, -margin);
+
         
         //
         wGetQueryElements.setLayoutData(fdGGetQueryElements);
