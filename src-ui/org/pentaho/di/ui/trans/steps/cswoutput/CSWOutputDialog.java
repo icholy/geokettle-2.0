@@ -92,6 +92,10 @@ public class CSWOutputDialog extends BaseStepDialog implements
 	private FormData fdGGetQueryElements;
 	private Group wMappingColumnGroup;
 	private FormData fdMappingGroup;
+	private Listener lsColumnSort;
+	private Label wlNoteLabel;
+	private FormData fdwlNoteLabel;
+	private String[] prevColName;
 	
 
 	/**
@@ -288,7 +292,17 @@ public class CSWOutputDialog extends BaseStepDialog implements
 		fdGeneral.right = new FormAttachment(100, -margin);
 		wGeneral.setLayoutData(fdGeneral);
 		
+		FontRegistry fontRegistry= new FontRegistry(Display.getCurrent());		    
+	    fontRegistry.put("font", new FontData[]{new FontData("Arial", 8, SWT.BOLD|SWT.ITALIC)} );
 		
+		wlNoteLabel=new Label(shell, SWT.LEFT);
+		wlNoteLabel.setText(Messages.getString("CSWOutputDialog.Schema.Note.Label"));
+		props.setLook(wlNoteLabel);
+		fdwlNoteLabel=new FormData();
+		fdwlNoteLabel.left = new FormAttachment(0, margin);
+		fdwlNoteLabel.top  = new FormAttachment(wGeneral, 2*margin);		
+		wlNoteLabel.setLayoutData(fdwlNoteLabel);
+		wlNoteLabel.setFont(fontRegistry.get("font"));
 		
 		/**mapping columns*/
 		
@@ -303,7 +317,7 @@ public class CSWOutputDialog extends BaseStepDialog implements
 			
 			fdMappingGroup=new FormData();
 			fdMappingGroup.left = new FormAttachment(0, margin);
-			fdMappingGroup.top  = new FormAttachment(wGeneral, 3*margin);
+			fdMappingGroup.top  = new FormAttachment(wlNoteLabel, 3*margin);
 			fdMappingGroup.right= new FormAttachment(100, -1*margin);
 			//fdMappingGroup.bottom= new FormAttachment(100, -margin);
 			wMappingColumnGroup.setLayoutData(fdMappingGroup); 
@@ -332,6 +346,7 @@ public class CSWOutputDialog extends BaseStepDialog implements
 		
 		wQueryElement.setLayoutData(fdwQueryElement);
 		
+		
 		/**
 		 * queryable Element button
 		 * */
@@ -345,13 +360,23 @@ public class CSWOutputDialog extends BaseStepDialog implements
 		public void handleEvent(Event e){
 			getMappingInformation();
 			
-		}
+		}		
+	};
+	
+	lsColumnSort = new Listener()  {
 
-		
+		public void handleEvent(Event e){
+			setElementBackgroundColor(wQueryElement,wSchemaLabel.getText());
+			
+		}
 	};
 		wGetQueryElements.addListener(SWT.Selection, lsGGetQueryElements);
-
-        
+		
+		for(int i=0; i<wQueryElement.getTable().getColumnCount();i++){
+			wQueryElement.table.getColumn(i).addListener(SWT.Selection, lsColumnSort);
+		}
+		
+		        
         fdGGetQueryElements = new FormData();
         fdGGetQueryElements.left = new FormAttachment(middle, 5*margin);
         fdGGetQueryElements.top = new FormAttachment(wQueryElement, 2*margin);
@@ -452,13 +477,14 @@ public class CSWOutputDialog extends BaseStepDialog implements
 			e1.printStackTrace();
 		}
         
+		prevColName=null;
         if (stepMeta!=null)
         {
             try
             {
             	RowMetaInterface row = transMeta.getPrevStepFields(stepMeta);
             	//
-            	String [] prevColName= new String[row.size()];
+            	prevColName= new String[row.size()];
             	//
             	
             	
@@ -483,6 +509,7 @@ public class CSWOutputDialog extends BaseStepDialog implements
     			
     			//Color color=Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND);
     			setElementBackgroundColor(wQueryElement,wSchemaLabel.getText());
+    			wQueryElement.optWidth(true);
     			
             }
             catch(KettleException e)
@@ -494,9 +521,12 @@ public class CSWOutputDialog extends BaseStepDialog implements
 	
 	private void setElementBackgroundColor(TableView wQueryElement,	String text) {
 		FontRegistry fontRegistry= new FontRegistry(Display.getCurrent());		    
-	    fontRegistry.put("font", new FontData[]{new FontData("Arial", 9, SWT.BOLD)} );
+	    fontRegistry.put("font", new FontData[]{new FontData("Arial", 9, SWT.BOLD|SWT.ITALIC)} );
 	    
-		if (text.equalsIgnoreCase("CSW_RECORD")&& wQueryElement.table.getItemCount()>=17){			
+	    FontRegistry defaultFontRegistry= new FontRegistry(Display.getCurrent());		    
+	    defaultFontRegistry.put("font", new FontData[]{new FontData("Arial", 9, SWT.NORMAL)} );
+	    wQueryElement.table.setFont(defaultFontRegistry.get("font"));
+		if (text.equalsIgnoreCase("CSW_RECORD")&& wQueryElement.table.getItemCount()>=15){			
 		    wQueryElement.table.getItem(0).setFont(fontRegistry.get("font"));		    
 			wQueryElement.table.getItem(1).setFont(fontRegistry.get("font"));
 			wQueryElement.table.getItem(6).setFont(fontRegistry.get("font"));
@@ -504,7 +534,7 @@ public class CSWOutputDialog extends BaseStepDialog implements
 			wQueryElement.table.getItem(10).setFont(fontRegistry.get("font"));
 			wQueryElement.table.getItem(13).setFont(fontRegistry.get("font"));
 			wQueryElement.table.getItem(14).setFont(fontRegistry.get("font"));
-			wQueryElement.table.getItem(17).setFont(fontRegistry.get("font"));
+			//wQueryElement.table.getItem(17).setFont(fontRegistry.get("font"));
 		}else{
 			if (text.equalsIgnoreCase("MD_METADATA")&& wQueryElement.table.getItemCount()>=51){
 				wQueryElement.table.getItem(0).setFont(fontRegistry.get("font"));
@@ -587,6 +617,10 @@ public class CSWOutputDialog extends BaseStepDialog implements
 			wSchemaLabel.setText(cswwriter.getSchema());
 		}
 		
+		if (!Const.isEmpty(cswwriter.getPrevColumnList())){
+			prevColName=cswwriter.getPrevColumnList();
+		}
+		
 		ArrayList<String[]> mapColList=cswwriter.getMappingColumns();
 		if (mapColList!=null){
 			wQueryElement.removeAll();
@@ -600,17 +634,11 @@ public class CSWOutputDialog extends BaseStepDialog implements
 					ColumnInfo.COLUMN_TYPE_CCOMBO,wQueryElement.getItems(0), false);
           wQueryElement.setColumnInfo(0, col);
           
-          ArrayList<String> prevcolList=new ArrayList<String>();
-          for (String ch:wQueryElement.getItems(1)){
-        	  if (ch!=null)
-        		  if (ch.trim().length()>0){
-        		  prevcolList.add(ch);
-        	  }
-          }
-        	  
-          col=new ColumnInfo(Messages.getString("CSWOutputDialog.PreviousStepColumn"),  
-					ColumnInfo.COLUMN_TYPE_CCOMBO,prevcolList.toArray(new String[prevcolList.size()]), false);
+          if (prevColName!=null){        	  
+        	  col=new ColumnInfo(Messages.getString("CSWOutputDialog.PreviousStepColumn"),  
+					ColumnInfo.COLUMN_TYPE_CCOMBO,prevColName, false);
 			wQueryElement.setColumnInfo(1, col);
+          }
 			setElementBackgroundColor(wQueryElement,wSchemaLabel.getText());
 		
 	}
@@ -638,6 +666,7 @@ public class CSWOutputDialog extends BaseStepDialog implements
 				mappingColList.add(s);		
 			}
 			cswwriter.setMappingColumns(mappingColList);
+			cswwriter.setPrevColumnList(prevColName);
 			
 			if (Const.isEmpty(wStepname.getText())) return;
 			stepname=wStepname.getText();

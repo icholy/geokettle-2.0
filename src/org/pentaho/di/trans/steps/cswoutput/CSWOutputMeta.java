@@ -119,6 +119,21 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 			}
 			
 			CSWwriter.setMappingColumns(mappingColumnList);
+			
+			
+			//previous columns list
+			Node prevcollistNode = XMLHandler.getSubNode(stepnode, "previouscolumnlist");
+			int nrPrevCol = XMLHandler.countNodes(prevcollistNode, "previouscolumn");
+
+			//
+			String[] prevColumnList= new String[nrPrevCol];
+			for (int i = 0; i < nrPrevCol; i++) {				
+				Node onode = XMLHandler.getSubNodeByNr(prevcollistNode, "previouscolumn", i);
+				String s=XMLHandler.getTagValue(onode, "id");				
+				prevColumnList[i]=s;				
+			}
+			CSWwriter.setPrevColumnList(prevColumnList);
+			
 		} catch (MalformedURLException e) {
 			// 
 			throw new KettleXMLException(e);
@@ -158,6 +173,17 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 			}
         }
 		retval.append("    </mappingcolumns>").append(Const.CR);
+		
+		retval.append("    <previouscolumnlist>").append(Const.CR);
+		
+		if (CSWwriter.getPrevColumnList()!=null){
+			for(String s:CSWwriter.getPrevColumnList()){
+				retval.append("      <previouscolumn>").append(Const.CR);
+				retval.append("        ").append(XMLHandler.addTagValue("id", s));
+				retval.append("      </previouscolumn>").append(Const.CR);
+			}
+		}
+		retval.append("    </previouscolumnlist>").append(Const.CR);
 				
 		return retval.toString();
 	}
@@ -184,6 +210,13 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 				mapColList.add(s);				
 			}			
 			CSWwriter.setMappingColumns(mapColList);
+			
+			int nrPrevColList=rep.countNrStepAttributes(idStep, "previouscolumn_item");
+			String[] prevcol_list=new String[nrPrevColList];
+			for (int i = 0; i < nrPrevColList; i++) {
+				prevcol_list[i]=rep.getStepAttributeString(idStep,i, "previouscolumn_item");			
+			}
+			CSWwriter.setPrevColumnList(prevcol_list);//end prevcol_list
 			
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
@@ -220,6 +253,15 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 				cpt++;
 			}
         }//end
+        
+      //previous columns list
+        if (CSWwriter.getPrevColumnList()!=null){
+        	int cpt=0;
+        	for(String s:CSWwriter.getPrevColumnList()){
+        		rep.saveStepAttribute(idTransformation, idStep,cpt,"previouscolumn_item", s);
+        		cpt++;
+        	}
+        }//previous columns list
 	}
 
 	/* (non-Javadoc)
@@ -235,6 +277,7 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 			CSWwriter.setPassword(null);
 			CSWwriter.setSchema(Messages.getString("CSWOutputDialog.Schema.CSWRECORD"));
 			CSWwriter.setMappingColumns(null);
+			CSWwriter.setPrevColumnList(null);
 		} catch (MalformedURLException e) {
 			
 		}

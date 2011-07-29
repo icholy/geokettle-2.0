@@ -13,7 +13,10 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +37,10 @@ import org.xml.sax.InputSource;
  */
 public class CSWWriter {
 	
+	
+	private static SimpleDateFormat dfm = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static String TODAY = dfm.format(new Date()) ;
+	
 	public static final String ENTETE_TRANSACTION_INSERT="<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+
 				"<csw:Transaction service=\"CSW\" version=\"2.0.2\" xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\" xmlns:dct=\"http://purl.org/dc/terms/\">"+
 				"<csw:Insert>";
@@ -49,34 +56,13 @@ public class CSWWriter {
 		"<dc:creator>Spatialytics Inc</dc:creator>"+
 		"<dc:publisher>Spatialytics Inc</dc:publisher>"+
 		"<dc:rights>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Rights")+"</dc:rights>"+
-		"<dc:date>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Date")+"</dc:date>"+
+		"<dc:date>"+TODAY+"</dc:date>"+
 		"<dc:source>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dc:source>"+
 		"<dc:description>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Description")+"</dc:description>"+
 		"<ows:BoundingBox crs=\"::INFO-PROJECTION\">"+
 		"<ows:LowerCorner>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.LowCorner")+"</ows:LowerCorner>"+
 		"<ows:UpperCorner>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.upcorner")+"</ows:UpperCorner>"+
 		"</ows:BoundingBox>"+		
-		"<geonet:info xmlns:gml=\"http://www.opengis.net/gml\">"+
-		  "<id>107</id>"+ 
-		  "<schema>iso19139</schema>"+ 
-		  "<createDate>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Date")+"</createDate>"+ 
-		  "<changeDate>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Date")+"</changeDate>"+ 
-		  "<isTemplate>Y/N</isTemplate>"+ 
-		  "<title>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Title")+"</title>"+ 
-		  "<source>7ea582d4-9ddf-422e-b28f-29760a4c0147</source>"+ 
-		  "<uuid>74d8c1de-81ed-48bf-8742-667b67b1364d</uuid>"+ 
-		  "<isHarvested>Y/N</isHarvested>"+ 
-		  "<popularity>770</popularity>"+ 
-		  "<rating>0</rating>"+ 
-		  "<groupowner>6</groupowner>"+ 
-		  "<groupName>Spatialytics Inc.</groupName>"+ 
-		  "<groupLabel>Spatialytics Corporation</groupLabel>"+ 
-		  "<groupLogoUuid>11ef92b3-b547-4a35-af4e-7df6852c30b2</groupLogoUuid>"+ 
-		  "<groupWebsite>http://www.spatialytics.com</groupWebsite>"+ 
-		  "<view>true/false</view>"+ 
-		  "<notify>true/false</notify>"+ 
-		  "<download>true/false</download>"+ 
-		  "</geonet:info>"+
 		"</csw:Record>";
 	
 	public static String MD_METADATA_XML="<MD_Metadata xmlns=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">"+
@@ -130,7 +116,7 @@ public class CSWWriter {
             "</contact>"+
     "<!-- Date the metadata was created -->"+
             "<dateStamp>"+
-                "<gco:Date>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Date")+"</gco:Date>"+
+                "<gco:Date>"+TODAY+"</gco:Date>"+
             "</dateStamp>"+
             "<metadataStandardName>"+
                 "<gco:CharacterString>ISO 19115 Geographic Information Metadata</gco:CharacterString>"+
@@ -165,7 +151,7 @@ public class CSWWriter {
                             "<date>"+
                                 "<CI_Date>"+
                                 "    <date>"+
-                                        "<gco:Date>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Date")+"</gco:Date>"+
+                                        "<gco:Date>"+TODAY+"</gco:Date>"+
                                     "</date>"+
                                     "<dateType>"+
                                         "<CI_DateTypeCode codeList=\"http://www.isotc211.org/2005/resources/codeList.xml#CI_DateTypeCode\" codeListValue=\"publication\"/>"+
@@ -397,6 +383,7 @@ public class CSWWriter {
 	private ArrayList<Element> parseResult;
 	private ArrayList<String[]> mappingColumns;
 	private String[] mapColList;
+	private String[] prevColumnList;
 	
 	/**
 	 * @throws KettleException 
@@ -464,8 +451,8 @@ public class CSWWriter {
 		while (it.hasNext()&& (trouve==false)){
 			Element courant=(Element)it.next();
 			if (courant.getParentElement()!=null){
-				//if ((courant.getParentElement().getName()+"_"+courant.getName()).equalsIgnoreCase(elementName)){
-				if ((courant.getName()).equalsIgnoreCase(elementName)){					
+				if ((courant.getParentElement().getName()+"_"+courant.getName()).equalsIgnoreCase(elementName)){
+				//if ((courant.getName()).equalsIgnoreCase(elementName)){					
 					trouve=true;
 					el=courant;					
 					el.setText(text);
@@ -724,6 +711,20 @@ public class CSWWriter {
 	 */
 	public void setMapColList(String[] mapColList) {
 		this.mapColList = mapColList;
+	}
+
+	/**
+	 * @param prevColumnList the prevColumnList to set
+	 */
+	public void setPrevColumnList(String[] prevColumnList) {
+		this.prevColumnList = prevColumnList;
+	}
+
+	/**
+	 * @return the prevColumnList
+	 */
+	public String[] getPrevColumnList() {
+		return prevColumnList;
 	}
 	
 }

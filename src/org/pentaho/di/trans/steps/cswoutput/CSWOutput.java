@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 
 import javax.servlet.ServletException;
+
 import org.pentaho.di.trans.steps.cswoutput.Messages;
 import org.pentaho.di.core.Const;
 
@@ -64,8 +65,9 @@ public class CSWOutput extends BaseStep implements StepInterface {
 			setOutputDone();
 			
 			String response;
+			
 			try {
-				response = meta.getCSWwriter().cswINSERTTransaction(allQuery);
+				response = meta.getCSWwriter().cswINSERTTransaction(allQuery);				
 				logBasic(response);
 			} catch (UnsupportedEncodingException e) {
 				// TODO Auto-generated catch block

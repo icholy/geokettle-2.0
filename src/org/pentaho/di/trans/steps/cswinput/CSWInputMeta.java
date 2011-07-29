@@ -486,6 +486,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 				cpt++;
 			}
         }//end
+        
         //outputschema list
         if (cswParam.getOutputSchemaList()!=null){
         	int cpt=0;
