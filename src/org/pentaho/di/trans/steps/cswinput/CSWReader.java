@@ -171,7 +171,7 @@ public class CSWReader {
         query +="</csw:Constraint>";
 		query +=" </csw:Query>";
 		query +="</csw:GetRecords>";
-		System.out.println(query);
+		//System.out.println(query);
 		return query;
 	}
 	
@@ -198,7 +198,7 @@ public class CSWReader {
 		query +="&maxRecords="+this.maxRecords;
 		query=buildConstrainteRequest(query);
 		//
-		System.out.println(query);		
+		//System.out.println(query);		
 		
 		return query;
 	}
@@ -620,7 +620,7 @@ public class CSWReader {
 		response=new String (b,"UTF-8");
 		
 		
-		System.out.println(response);		
+		//System.out.println(response);		
 		return response;
 	}
 	

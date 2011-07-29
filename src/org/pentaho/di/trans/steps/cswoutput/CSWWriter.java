@@ -39,52 +39,52 @@ public class CSWWriter {
 				"<csw:Insert>";
 	public static final String FOOTPAGE_TRANSACTION_INSERT="</csw:Insert></csw:Transaction>";
 	public static final String CSWBRIEF_XML="<csw:Record xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\"  xmlns:dct=\"http://purl.org/dc/terms/\" xmlns:geonet=\"http://www.fao.org/geonetwork\" xmlns:ows=\"http://www.opengis.net/ows\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">"+
-		"<dc:identifier>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dc:identifier>"+
-		"<dc:title>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dc:title>"+
-		" <dc:type>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dc:type>"+
-		"<dc:subject>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dc:subject>"+
-		"<dc:format>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dc:format>"+
-		"<dct:abstract>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dct:abstract>"+
-		"<dc:language>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dc:language>"+
-		"<dc:creator>SPATIALYTICS</dc:creator>"+
-		"<dc:publisher>SPATIALYTICS</dc:publisher>"+
-		"<dc:rights>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dc:rights>"+
-		"<dc:date>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dc:date>"+
+		"<dc:identifier>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Identifier")+"</dc:identifier>"+
+		"<dc:title>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Title")+"</dc:title>"+
+		" <dc:type>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Type")+"</dc:type>"+
+		"<dc:subject>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Subject")+"</dc:subject>"+
+		"<dc:format>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Format")+"</dc:format>"+
+		"<dct:abstract>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Abstract")+"</dct:abstract>"+
+		"<dc:language>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Language")+"</dc:language>"+
+		"<dc:creator>Spatialytics Inc</dc:creator>"+
+		"<dc:publisher>Spatialytics Inc</dc:publisher>"+
+		"<dc:rights>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Rights")+"</dc:rights>"+
+		"<dc:date>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Date")+"</dc:date>"+
 		"<dc:source>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dc:source>"+
-		"<dc:description>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</dc:description>"+
+		"<dc:description>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Description")+"</dc:description>"+
 		"<ows:BoundingBox crs=\"::INFO-PROJECTION\">"+
-		"<ows:LowerCorner>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</ows:LowerCorner>"+
-		"<ows:UpperCorner>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</ows:UpperCorner>"+
+		"<ows:LowerCorner>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.LowCorner")+"</ows:LowerCorner>"+
+		"<ows:UpperCorner>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.upcorner")+"</ows:UpperCorner>"+
 		"</ows:BoundingBox>"+		
 		"<geonet:info xmlns:gml=\"http://www.opengis.net/gml\">"+
 		  "<id>107</id>"+ 
-		  "<schema>iso19139.che</schema>"+ 
-		  "<createDate>2008-04-23T12:00:00</createDate>"+ 
-		  "<changeDate>2011-06-08T12:22:57</changeDate>"+ 
-		  "<isTemplate>n</isTemplate>"+ 
-		  "<title> </title>"+ 
+		  "<schema>iso19139</schema>"+ 
+		  "<createDate>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Date")+"</createDate>"+ 
+		  "<changeDate>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Date")+"</changeDate>"+ 
+		  "<isTemplate>Y/N</isTemplate>"+ 
+		  "<title>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Title")+"</title>"+ 
 		  "<source>7ea582d4-9ddf-422e-b28f-29760a4c0147</source>"+ 
 		  "<uuid>74d8c1de-81ed-48bf-8742-667b67b1364d</uuid>"+ 
-		  "<isHarvested>n</isHarvested>"+ 
+		  "<isHarvested>Y/N</isHarvested>"+ 
 		  "<popularity>770</popularity>"+ 
 		  "<rating>0</rating>"+ 
 		  "<groupowner>6</groupowner>"+ 
-		  "<groupName>swisstopo</groupName>"+ 
-		  "<groupLabel>Office fédéral de topographie swisstopo</groupLabel>"+ 
+		  "<groupName>Spatialytics Inc.</groupName>"+ 
+		  "<groupLabel>Spatialytics Corporation</groupLabel>"+ 
 		  "<groupLogoUuid>11ef92b3-b547-4a35-af4e-7df6852c30b2</groupLogoUuid>"+ 
-		  "<groupWebsite>http://www.swisstopo.admin.ch</groupWebsite>"+ 
-		  "<view>true</view>"+ 
-		  "<notify>false</notify>"+ 
-		  "<download>false</download>"+ 
+		  "<groupWebsite>http://www.spatialytics.com</groupWebsite>"+ 
+		  "<view>true/false</view>"+ 
+		  "<notify>true/false</notify>"+ 
+		  "<download>true/false</download>"+ 
 		  "</geonet:info>"+
 		"</csw:Record>";
 	
 	public static String MD_METADATA_XML="<MD_Metadata xmlns=\"http://www.isotc211.org/2005/gmd\" xmlns:gco=\"http://www.isotc211.org/2005/gco\" xmlns:gml=\"http://www.opengis.net/gml\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">"+
     "<fileIdentifier>"+
-     "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+     "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Identifier")+"</gco:CharacterString>"+
            " </fileIdentifier>"+
            " <language>"+
-                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Language")+"</gco:CharacterString>"+
             "</language>"+
             "<hierarchyLevel>"+
                 "<MD_ScopeCode codeList=\"http://www.isotc211.org/2005/resources/codeList.xml#MD_ScopeCode\" codeListValue=\"dataset\"/>"+
@@ -95,29 +95,29 @@ public class CSWWriter {
             "<contact>"+
                 "<CI_ResponsibleParty>"+
                     "<individualName>"+
-                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+ "</gco:CharacterString>"+
+                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.IndividualName")+ "</gco:CharacterString>"+
                     "</individualName>"+
                     "<organisationName>"+
-                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.OrganisationName")+"</gco:CharacterString>"+
                     "</organisationName>"+
                     "<contactInfo>"+
                         "<CI_Contact>"+
                             "<address>"+
                                 "<CI_Address>"+
                                     "<deliveryPoint>"+
-                                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+ "</gco:CharacterString>"+
+                                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.City")+ "</gco:CharacterString>"+
                                     "</deliveryPoint>"+
                                     "<city>"+
-                                        "<gco:CharacterString>" + Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE") +"</gco:CharacterString>"+
+                                        "<gco:CharacterString>" + Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.City") +"</gco:CharacterString>"+
                                     "</city>"+
                                     "<postalCode>"+
-                                        "<gco:CharacterString>" +Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                        "<gco:CharacterString>" +Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.PostalCode")+"</gco:CharacterString>"+
                                     "</postalCode>"+
                                     "<country>"+
-                                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Country")+"</gco:CharacterString>"+
                                     "</country>"+
                                     "<electronicMailAddress>"+
-                                        "<gco:CharacterString>spatialytics@spatialytics.org</gco:CharacterString>"+
+                                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Email")+"</gco:CharacterString>"+
                                     "</electronicMailAddress>"+
                                 "</CI_Address>"+
                             "</address>"+
@@ -130,7 +130,7 @@ public class CSWWriter {
             "</contact>"+
     "<!-- Date the metadata was created -->"+
             "<dateStamp>"+
-                "<gco:Date>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:Date>"+
+                "<gco:Date>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Date")+"</gco:Date>"+
             "</dateStamp>"+
             "<metadataStandardName>"+
                 "<gco:CharacterString>ISO 19115 Geographic Information Metadata</gco:CharacterString>"+
@@ -144,7 +144,7 @@ public class CSWWriter {
                     "<referenceSystemIdentifier>"+
                         "<RS_Identifier>"+
                             "<code>"+
-                                "<gco:CharacterString>26912</gco:CharacterString>"+
+                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.RefSystID")+"</gco:CharacterString>"+
                             "</code>"+
                             "<codeSpace>"+
                                 "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.REFERENCE_SYSTEM.DEFAULT_VALUE")+"</gco:CharacterString>"+
@@ -160,12 +160,12 @@ public class CSWWriter {
                     "<citation>"+
                         "<CI_Citation>"+
                             "<title>"+
-                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Title")+"</gco:CharacterString>"+
                             "</title>"+
                             "<date>"+
                                 "<CI_Date>"+
                                 "    <date>"+
-                                        "<gco:Date>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:Date>"+
+                                        "<gco:Date>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Date")+"</gco:Date>"+
                                     "</date>"+
                                     "<dateType>"+
                                         "<CI_DateTypeCode codeList=\"http://www.isotc211.org/2005/resources/codeList.xml#CI_DateTypeCode\" codeListValue=\"publication\"/>"+
@@ -173,12 +173,12 @@ public class CSWWriter {
                                 "</CI_Date>"+
                             "</date>"+
                             "<edition>"+
-                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Edition")+"</gco:CharacterString>"+
                             "</edition>"+
                             "<identifier>"+
                                 "<MD_Identifier>"+
                                     "<code>"+
-                                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Identifier")+"</gco:CharacterString>"+
                                     "</code>"+
                                 "</MD_Identifier>"+
                             "</identifier>"+
@@ -188,7 +188,7 @@ public class CSWWriter {
                                         "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
                                     "</name>"+
                                     "<issueIdentification>"+
-                                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Issue")+"</gco:CharacterString>"+
                                     "</issueIdentification>"+
                                 "</CI_Series>"+
                             "</series>"+
@@ -200,10 +200,10 @@ public class CSWWriter {
                         "</CI_Citation>"+
                     "</citation>"+
                     "<abstract>"+
-                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Abstract")+"</gco:CharacterString>"+
                     "</abstract>"+
                     "<purpose>"+
-                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Purpose")+"</gco:CharacterString>"+
                     "</purpose>"+
                     "<status>"+
                         "<MD_ProgressCode codeList=\"http://www.isotc211.org/2005/resources/codeList.xml#MD_ProgressCode\" codeListValue=\"completed\"/>"+
@@ -224,10 +224,10 @@ public class CSWWriter {
                     "<pointOfContact>"+
                         "<CI_ResponsibleParty>"+
                             "<individualName>"+
-                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.IndividualName")+"</gco:CharacterString>"+
                             "</individualName>"+
                             "<organisationName>"+
-                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.OrganisationName")+"</gco:CharacterString>"+
                             "</organisationName>"+
                             "<positionName>"+
                                 "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
@@ -237,32 +237,32 @@ public class CSWWriter {
                                     "<phone>"+
                                         "<CI_Telephone>"+
                                             "<voice>"+
-                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Telephone")+"</gco:CharacterString>"+
                                             "</voice>"+
                                             "<facsimile>"+
-                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Telephone")+"</gco:CharacterString>"+
                                             "</facsimile>"+
                                         "</CI_Telephone>"+
                                     "</phone>"+
                                     "<address>"+
                                         "<CI_Address>"+
                                             "<deliveryPoint>"+
-                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Address")+"</gco:CharacterString>"+
                                             "</deliveryPoint>"+
                                             "<city>"+
-                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.City")+"</gco:CharacterString>"+
                                             "</city>"+
                                             "<administrativeArea>"+
-                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.City")+"</gco:CharacterString>"+
                                             "</administrativeArea>"+
                                             "<postalCode>"+
-                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.PostalCode")+"</gco:CharacterString>"+
                                             "</postalCode>"+
                                             "<country>"+
-                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Country")+"</gco:CharacterString>"+
                                             "</country>"+
                                             "<electronicMailAddress>"+
-                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Email")+"</gco:CharacterString>"+
                                             "</electronicMailAddress>"+
                                         "</CI_Address>"+
                                     "</address>"+
@@ -278,7 +278,7 @@ public class CSWWriter {
                     "<descriptiveKeywords>"+
                     "    <MD_Keywords>"+
                             "<keyword>"+
-                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Keyword")+"</gco:CharacterString>"+
                             "</keyword>"+                              
                             "<type>"+
                                 "<MD_KeywordTypeCode codeList=\"http://metadata.dgiwg.org/codelistRegistry?MD_KeywordTypeCode\" codeListValue=\"theme\"/>"+
@@ -289,10 +289,10 @@ public class CSWWriter {
                         "<MD_SpatialRepresentationTypeCode codeList=\"http://www.isotc211.org/2005/resources/codeList.xml#MD_SpatialRepresentationTypeCode\" codeListValue=\"vector\"/>"+
                     "</spatialRepresentationType>"+
                     "<language>"+
-                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                        "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Language")+"</gco:CharacterString>"+
                     "</language>"+
                     "<topicCategory>"+
-                        "<MD_TopicCategoryCode>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</MD_TopicCategoryCode>"+
+                        "<MD_TopicCategoryCode>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Category")+"</MD_TopicCategoryCode>"+
                     "</topicCategory>"+
             "<!-- Method one for indicating data coverage area -->"+
             "<!-- Use EX_GeographicBoundingBoxType to describe -->"+
@@ -304,16 +304,16 @@ public class CSWWriter {
                             "<geographicElement>"+
                                 "<EX_GeographicBoundingBox>"+
                                     "<westBoundLongitude>"+
-                                        "<gco:Decimal>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:Decimal>"+
+                                        "<gco:Decimal>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.BBOX")+"</gco:Decimal>"+
                                     "</westBoundLongitude>"+
                                     "<eastBoundLongitude>"+
-                                        "<gco:Decimal>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:Decimal>"+
+                                        "<gco:Decimal>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.BBOX")+"</gco:Decimal>"+
                                     "</eastBoundLongitude>"+
                                     "<southBoundLatitude>"+
-                                        "<gco:Decimal>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:Decimal>"+
+                                        "<gco:Decimal>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.BBOX")+"</gco:Decimal>"+
                                     "</southBoundLatitude>"+
                                     "<northBoundLatitude>"+
-                                        "<gco:Decimal>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:Decimal>"+
+                                        "<gco:Decimal>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.BBOX")+"</gco:Decimal>"+
                                     "</northBoundLatitude>"+
                                 "</EX_GeographicBoundingBox>"+
                             "</geographicElement>"+
@@ -325,8 +325,8 @@ public class CSWWriter {
                                 "<EX_TemporalExtent>"+
                                     "<extent>"+                                    
                                         "<gml:TimePeriod>"+
-                                            "<gml:beginPosition>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gml:beginPosition>"+
-                                            "<gml:endPosition>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gml:endPosition>"+
+                                            "<gml:beginPosition>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Date")+"</gml:beginPosition>"+
+                                            "<gml:endPosition>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Date")+"</gml:endPosition>"+
                                         "</gml:TimePeriod>"+
                                     "</extent>"+
                                 "</EX_TemporalExtent>"+
@@ -340,7 +340,7 @@ public class CSWWriter {
                                     "<geographicIdentifier>"+
                                         "<RS_Identifier>"+
                                             "<code>"+
-                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE")+"</gco:CharacterString>"+
+                                                "<gco:CharacterString>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.RefSystID")+"</gco:CharacterString>"+
                                             "</code>"+
                                         "</RS_Identifier>"+
                                     "</geographicIdentifier>"+

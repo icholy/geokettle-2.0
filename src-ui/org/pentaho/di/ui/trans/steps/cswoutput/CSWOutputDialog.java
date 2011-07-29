@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 
+import org.eclipse.jface.resource.FontRegistry;
 import java.util.Iterator;
 
 
@@ -19,6 +20,9 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
+
+import org.eclipse.swt.graphics.FontData;
+
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -402,7 +406,9 @@ public class CSWOutputDialog extends BaseStepDialog implements
 	
 	private void getMappingInformation(){
 		String str=CSWWriter.CSWBRIEF_XML;
-		ArrayList<String> schemacolumList=new ArrayList<String>(); 
+		ArrayList<String> schemacolumList=new ArrayList<String>();
+		ArrayList<String> defaultValueList=new ArrayList<String>();
+		
 		CSWWriter cswwriter=new CSWWriter();
         Element element=null;
 		
@@ -420,10 +426,16 @@ public class CSWOutputDialog extends BaseStepDialog implements
 			//
 			while (it.hasNext()){
 				Element c=it.next();
+				String [] temp=new String[2];
+				temp[1]=c.getText();
 				if (wSchemaLabel.getText().equalsIgnoreCase("MD_METADATA")){
 					schemacolumList.add(c.getParentElement().getParentElement().getName()+"_"+c.getParentElement().getName());
-		        }else
-				schemacolumList.add(c.getParentElement().getName()+"_"+c.getName());
+					defaultValueList.add(c.getText());
+		        }else{
+		        	
+		        	schemacolumList.add(c.getParentElement().getName()+"_"+c.getName());
+		        	defaultValueList.add(c.getText());
+		        }			
 
 			}
 		} catch (KettleException e1) {
@@ -449,10 +461,8 @@ public class CSWOutputDialog extends BaseStepDialog implements
             	for (int k=0; k<row.size();k++){
             		prevColName[k]=row.getValueMeta(k).getName();
             	}
-            	
-            	            	
-               
-            	String [][] tempList=correspondanceBetweenColumn(schemacolumList.toArray(new String[schemacolumList.size()]),prevColName);
+            	            
+            	String [][] tempList=correspondanceBetweenColumn(schemacolumList.toArray(new String[schemacolumList.size()]),prevColName,defaultValueList.toArray(new String[defaultValueList.size()]));
             	for (String[] item:tempList){
             		wQueryElement.add(item);
             	}
@@ -466,8 +476,10 @@ public class CSWOutputDialog extends BaseStepDialog implements
                 col=new ColumnInfo(Messages.getString("CSWOutputDialog.PreviousStepColumn"),  
     					ColumnInfo.COLUMN_TYPE_CCOMBO,row.getFieldNames(), false);
     			wQueryElement.setColumnInfo(1, col);
-                
-                //setComboBoxes();
+    			
+    			//Color color=Display.getCurrent().getSystemColor(SWT.COLOR_TITLE_INACTIVE_BACKGROUND);
+    			setElementBackgroundColor(wQueryElement,wSchemaLabel.getText());
+    			
             }
             catch(KettleException e)
             {
@@ -476,10 +488,52 @@ public class CSWOutputDialog extends BaseStepDialog implements
         }
 	}
 	
+	private void setElementBackgroundColor(TableView wQueryElement,	String text) {
+		FontRegistry fontRegistry= new FontRegistry(Display.getCurrent());		    
+	    fontRegistry.put("font", new FontData[]{new FontData("Arial", 9, SWT.BOLD)} );
+	    
+		if (text.equalsIgnoreCase("CSW_RECORD")&& wQueryElement.table.getItemCount()>=17){			
+		    wQueryElement.table.getItem(0).setFont(fontRegistry.get("font"));		    
+			wQueryElement.table.getItem(1).setFont(fontRegistry.get("font"));
+			wQueryElement.table.getItem(6).setFont(fontRegistry.get("font"));
+			wQueryElement.table.getItem(7).setFont(fontRegistry.get("font"));
+			wQueryElement.table.getItem(10).setFont(fontRegistry.get("font"));
+			wQueryElement.table.getItem(13).setFont(fontRegistry.get("font"));
+			wQueryElement.table.getItem(14).setFont(fontRegistry.get("font"));
+			wQueryElement.table.getItem(17).setFont(fontRegistry.get("font"));
+		}else{
+			if (text.equalsIgnoreCase("MD_METADATA")&& wQueryElement.table.getItemCount()>=51){
+				wQueryElement.table.getItem(0).setFont(fontRegistry.get("font"));
+				wQueryElement.table.getItem(1).setFont(fontRegistry.get("font"));
+				wQueryElement.table.getItem(4).setFont(fontRegistry.get("font"));
+				wQueryElement.table.getItem(5).setFont(fontRegistry.get("font"));
+				wQueryElement.table.getItem(12).setFont(fontRegistry.get("font"));
+				wQueryElement.table.getItem(17).setFont(fontRegistry.get("font"));
+				wQueryElement.table.getItem(18).setFont(fontRegistry.get("font"));
+				wQueryElement.table.getItem(25).setFont(fontRegistry.get("font"));
+				wQueryElement.table.getItem(43).setFont(fontRegistry.get("font"));
+				wQueryElement.table.getItem(46).setFont(fontRegistry.get("font"));
+				wQueryElement.table.getItem(47).setFont(fontRegistry.get("font"));
+				wQueryElement.table.getItem(48).setFont(fontRegistry.get("font"));
+				wQueryElement.table.getItem(49).setFont(fontRegistry.get("font"));
+				wQueryElement.table.getItem(50).setFont(fontRegistry.get("font"));
+				wQueryElement.table.getItem(51).setFont(fontRegistry.get("font"));
+			}
+		}
+			
+			/*wQueryElement.table.getItem(0).setBackground(color);
+			wQueryElement.table.getItem(1).setBackground(color);
+			wQueryElement.table.getItem(7).setBackground(color);
+			wQueryElement.table.getItem(13).setBackground(color);
+			wQueryElement.table.getItem(14).setBackground(color);
+			wQueryElement.table.getItem(14).setBackground(color);*/
+		
+	}
+
 	/**
 	 * 
 	 * */
-	private String[][] correspondanceBetweenColumn(String[] refCol, String[] colToMap){
+	private String[][] correspondanceBetweenColumn(String[] refCol, String[] colToMap,String[] defaultValueList){
 		ArrayList<String[]> tempList=new ArrayList<String[]>();
 		int i=0;
 		
@@ -495,13 +549,14 @@ public class CSWOutputDialog extends BaseStepDialog implements
 				if (colToMap[j].endsWith(refCol[i])){
 					trouve=true;					
 				}else{
-					
 					j++;
 				}//end else
 			}//end while j
 			if (trouve){
 				item[1]=colToMap[j];
 				item[2]=null;
+			}else{
+				item[2]=defaultValueList[i];
 			}
 			tempList.add(item);
 			i++;
@@ -552,6 +607,7 @@ public class CSWOutputDialog extends BaseStepDialog implements
           col=new ColumnInfo(Messages.getString("CSWOutputDialog.PreviousStepColumn"),  
 					ColumnInfo.COLUMN_TYPE_CCOMBO,prevcolList.toArray(new String[prevcolList.size()]), false);
 			wQueryElement.setColumnInfo(1, col);
+			setElementBackgroundColor(wQueryElement,wSchemaLabel.getText());
 		
 	}
 	private void cancel()
