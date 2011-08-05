@@ -251,18 +251,6 @@ public class GISFileOutputDialog extends BaseStepDialog implements StepDialogInt
 	    fdEncoding.top  = new FormAttachment(wFileNameField, margin);
 	    fdEncoding.right= new FormAttachment(100, 0);
 	    wEncoding.setLayoutData(fdEncoding);
-//	    wEncoding.addFocusListener(new FocusListener(){
-//	    	public void focusLost(org.eclipse.swt.events.FocusEvent e){
-//	    	}
-//
-//	    	public void focusGained(org.eclipse.swt.events.FocusEvent e){
-//	    		Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
-//	    		shell.setCursor(busy);
-//	    		setEncodings();
-//	    		shell.setCursor(null);
-//	    		busy.dispose();
-//	    	}
-//	    });
       
 		// Some buttons
 		wOK=new Button(shell, SWT.PUSH);

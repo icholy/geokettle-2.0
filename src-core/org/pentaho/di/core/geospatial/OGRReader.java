@@ -69,8 +69,14 @@ public class OGRReader
  	        // Try to find the suitable driver for this data source
  	        Driver ogrDriver = ogrDataSource.GetDriver(); 	    	
  	    	
- 	        // Here we assume that each data source has at least one layer and we process the first one only
- 	        ogrLayer =  ogrDataSource.GetLayer(0);
+ 	        // Here we assume that each data source has at least one layer and we process the first one
+ 	        // that is not empty
+ 	        int nbLayers = ogrDataSource.GetLayerCount();
+ 	        for (int i=0;i<nbLayers;i++) {
+ 	        	ogrLayer =  ogrDataSource.GetLayer(i);
+ 	        	if (ogrLayer.GetFeatureCount()>0)
+ 	        		break;
+ 	        }
 			ogrLayerDefinition = ogrLayer.GetLayerDefn();
 			
 		}
