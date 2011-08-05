@@ -283,22 +283,23 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 		wEncoding=new CCombo(shell, SWT.BORDER | SWT.READ_ONLY);
 		wEncoding.setEditable(true);
 		props.setLook(wEncoding);
+		setEncodings();
 		wEncoding.addModifyListener(lsMod);
 		fdEncoding=new FormData();
 		fdEncoding.left = new FormAttachment(middle, 0);
 		fdEncoding.top  = new FormAttachment(wFileNameField, margin);
 		fdEncoding.right= new FormAttachment(100, 0);
 		wEncoding.setLayoutData(fdEncoding);
-		wEncoding.addFocusListener(new FocusListener(){
-			public void focusLost(org.eclipse.swt.events.FocusEvent e){}
-			public void focusGained(org.eclipse.swt.events.FocusEvent e){
-				Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
-				shell.setCursor(busy);
-				setEncodings();
-				shell.setCursor(null);
-				busy.dispose();
-			}
-		});
+//		wEncoding.addFocusListener(new FocusListener(){
+//			public void focusLost(org.eclipse.swt.events.FocusEvent e){}
+//			public void focusGained(org.eclipse.swt.events.FocusEvent e){
+//				Cursor busy = new Cursor(shell.getDisplay(), SWT.CURSOR_WAIT);
+//				shell.setCursor(busy);
+//				setEncodings();
+//				shell.setCursor(null);
+//				busy.dispose();
+//			}
+//		});
 
 		// Limit input ...
 		wlLimit=new Label(shell, SWT.RIGHT);
@@ -461,8 +462,11 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 			}
 
 			// Now select the default!
-			String defEncoding = Const.getEnvironmentVariable("file.encoding", "UTF-8");
-			int idx = Const.indexOfString(defEncoding, wEncoding.getItems() );
+			String defEncoding;
+			if (input.getGisFileCharset()!=null)
+				defEncoding = input.getGisFileCharset();
+			else defEncoding = Const.getEnvironmentVariable("file.encoding", "UTF-8");
+			int idx = Const.indexOfString(defEncoding, wEncoding.getItems());
 			if (idx>=0) 
 				wEncoding.select( idx );
 		}
