@@ -3,8 +3,6 @@
  */
 package org.pentaho.di.ui.trans.steps.setsrs;
 
-// TODO: finish i18n
-
 import java.io.File;
 import java.util.TreeSet;
 
@@ -54,7 +52,7 @@ import org.pentaho.di.ui.trans.step.BaseStepDialog;
 /**
  * Dialog for the {@link SetSRS} step.
  * 
- * @author phobus, sgoldinger
+ * @author phobus, sgoldinger, tbadard
  * @since 25-nov-2008
  */
 public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface {
@@ -479,7 +477,7 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 					storeMetadata(input);
 					dispose();
 				}else{
-					return;
+					throw new KettleStepException(Messages.getString("SetSRSDialog.Error.EpsgCodeMustBeProvided"));
 				}
 			}else if(status == SetSRSMeta.STATUS_FILE){
 				createSRSFromSelectedFile(path);
@@ -496,7 +494,7 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 			}
 		} catch (KettleStepException e) {
 			new ErrorDialog(shell, Messages.getString("System.Warning"), "Set SRS step error", e);
-			dispose();
+			//dispose();
 		}
 	}
 
