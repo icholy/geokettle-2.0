@@ -518,9 +518,9 @@
 	       ==========================
 	  -->
 		
-	  <target name="zip-plugins" depends="distrib-plugins" description="generate the ${impl.productID}-${version}-r${revision}.zip file (Including plugins)">
-	  	<echo>Generating the GeoKettle distribution package ${impl.productID}-${version}-r${revision}.zip (including plugins)...</echo>
-	  	<jar jarfile="${dist.dir}/${impl.productID}-${version}-r${revision}.zip" 
+	  <target name="zip-plugins" depends="distrib-plugins" description="generate the ${impl.productID}-${version}-r${revision}-with_plugins.zip file (Including plugins)">
+	  	<echo>Generating the GeoKettle distribution package ${impl.productID}-${version}-r${revision}-with_plugins.zip (including plugins)...</echo>
+	  	<jar jarfile="${dist.dir}/${impl.productID}-${version}-r${revision}-with_plugins.zip" 
 	    	 basedir="${distrib}" 
 	    	 includes="**/*"
 	  	     excludes="**/Thumbs.db"
