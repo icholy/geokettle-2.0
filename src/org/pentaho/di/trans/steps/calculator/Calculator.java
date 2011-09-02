@@ -115,7 +115,7 @@ public class Calculator extends BaseStep implements StepInterface
                         if (data.fieldIndexes[i].indexA<0)
                         {
                             // Nope: throw an exception
-                            throw new KettleStepException("Unable to find the first argument field '"+function.getFieldName()+" for calculation #"+(i+1));
+                            throw new KettleStepException("Unable to find the first argument field '"+function.getFieldA()+" for calculation #"+(i+1));
                         }
                     }
                     else
@@ -134,7 +134,7 @@ public class Calculator extends BaseStep implements StepInterface
                     if (data.fieldIndexes[i].indexB<0)
                     {
                         // Nope: throw an exception
-                        throw new KettleStepException("Unable to find the second argument field '"+function.getFieldName()+" for calculation #"+(i+1));
+                        throw new KettleStepException("Unable to find the second argument field '"+function.getFieldB()+"' for calculation #"+(i+1));
                     }
                 }
                 data.fieldIndexes[i].indexC=-1;
@@ -144,7 +144,7 @@ public class Calculator extends BaseStep implements StepInterface
                     if (data.fieldIndexes[i].indexC<0)
                     {
                         // Nope: throw an exception
-                        throw new KettleStepException("Unable to find the third argument field '"+function.getFieldName()+" for calculation #"+(i+1));
+                        throw new KettleStepException("Unable to find the third argument field '"+function.getFieldC()+"' for calculation #"+(i+1));
                     }
                 }
                  
@@ -155,7 +155,7 @@ public class Calculator extends BaseStep implements StepInterface
                     if (data.fieldIndexes[i].indexD<0)
                     {
                         // Nope: throw an exception
-                        throw new KettleStepException("Unable to find the third argument field '"+function.getFieldName()+" for calculation #"+(i+1));
+                        throw new KettleStepException("Unable to find the fourth argument field '"+function.getFieldD()+"' for calculation #"+(i+1));
                     }
                 }
                 
@@ -166,7 +166,7 @@ public class Calculator extends BaseStep implements StepInterface
                     if (data.fieldIndexes[i].indexE<0)
                     {
                         // Nope: throw an exception
-                        throw new KettleStepException("Unable to find the third argument field '"+function.getFieldName()+" for calculation #"+(i+1));
+                        throw new KettleStepException("Unable to find the fifth argument field '"+function.getFieldE()+"' for calculation #"+(i+1));
                     }
                 }
                 
