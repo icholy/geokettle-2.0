@@ -210,7 +210,7 @@ GeoKettle:
     usage of GeoKettle. 
   - dev-spatial_etl, for problems, questions and comments relative
     to development tasks with GeoKettle and for feature request.
-  - international_francais, for French users that are not confortable with
+  - international-francais, for French users that are not confortable with
     English language. They can ask for help in French in this section.
 
 To subscribe or to sign off the forum, please visit:
