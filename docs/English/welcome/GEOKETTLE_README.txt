@@ -2,7 +2,7 @@
 - Welcome to GeoKettle -
 ------------------------
 
-Release 2.0-RC1
+Release 2.0
 
 Open source spatial ETL tool for corporate data integration. 
 
