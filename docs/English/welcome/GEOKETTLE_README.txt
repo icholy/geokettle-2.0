@@ -213,7 +213,7 @@ GeoKettle:
   - international_francais, for French users that are not confortable with
     English language. They can ask for help in French in this section.
 
-To subscribe or to sign off the lists, please visit:
+To subscribe or to sign off the forum, please visit:
 
 http://www.spatialytics.com/forum
 
