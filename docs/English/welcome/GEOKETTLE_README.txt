@@ -188,7 +188,7 @@ other libraries (JDBC drivers, Oracle SDOAPI) are closed source but
 included in binary form according to their respective end-user licenses. 
 Please refer to the included LICENSE.txt file for details. 
 
-The GeoKettle extensions are Copyright (C) Spatialytics 2009-2011, 
+The GeoKettle extensions are Copyright (C) 2009- Spatialytics, 
 (C) 2007-2009, GeoSOA research group, Department of geomatics sciences, 
 Laval University, Quebec, Canada.
 
