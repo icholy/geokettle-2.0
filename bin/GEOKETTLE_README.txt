@@ -2,7 +2,7 @@
 - Welcome to GeoKettle -
 ------------------------
 
-Release 2.0-RC1
+Release 2.0
 
 Open source spatial ETL tool for corporate data integration. 
 
@@ -188,7 +188,7 @@ other libraries (JDBC drivers, Oracle SDOAPI) are closed source but
 included in binary form according to their respective end-user licenses. 
 Please refer to the included LICENSE.txt file for details. 
 
-The GeoKettle extensions are Copyright (C) Spatialytics 2009-2011, 
+The GeoKettle extensions are Copyright (C) 2009- Spatialytics, 
 (C) 2007-2009, GeoSOA research group, Department of geomatics sciences, 
 Laval University, Quebec, Canada.
 
@@ -210,10 +210,10 @@ GeoKettle:
     usage of GeoKettle. 
   - dev-spatial_etl, for problems, questions and comments relative
     to development tasks with GeoKettle and for feature request.
-  - international_francais, for French users that are not confortable with
+  - international-francais, for French users that are not confortable with
     English language. They can ask for help in French in this section.
 
-To subscribe or to sign off the lists, please visit:
+To subscribe or to sign off the forum, please visit:
 
 http://www.spatialytics.com/forum
 
