@@ -498,12 +498,22 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
 		wAnalysis.select(input.getSpatialAnalysisByDesc());
 		if (input.getDistField()!=null) 
 			wDistField.setText(input.getDistField());
+		
 		if (input.getSide() != null) 
 			wSide.setText(input.getSide());
+		else
+			wSide.setText(SpatialAnalysisMeta.bufferSides[2]);
+		
 		if (input.getJoin() != null) 
 			wJoin.setText(input.getJoin());
+		else
+			wJoin.setText(SpatialAnalysisMeta.bufferJoins[2]);
+		
 		if (input.getCap() != null) 
 			wCap.setText(input.getCap());
+		else
+			wCap.setText(SpatialAnalysisMeta.bufferCaps[1]);
+		
 		if (input.getResultFieldName()!=null) 
 			wResult.setText(input.getResultFieldName());
 		if (input.getReferenceStepName() != null) 
