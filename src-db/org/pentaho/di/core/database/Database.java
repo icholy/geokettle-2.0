@@ -3445,8 +3445,11 @@ public class Database implements VariableSpace
 		{
 	      ValueMetaInterface v=fields.getValueMeta(geometryFieldIndex);
 		  retval.append(Const.CR);
-		  //TODO : Find a way to retrieve the actual geometry type (POINT, LINESTRING, POLYGON, etc.) and the geometry dimension. 
-		  retval.append("SELECT AddGeometryColumn('"+tableName+"','"+v.getName()+"',"+v.getGeometrySRS().getSRID()+",'"+"GEOMETRY"+"',2);");
+		  //TODO : Find a way to retrieve the actual geometry type (POINT, LINESTRING, POLYGON, etc.) and the geometry dimension.
+		  int pointIndex=tableName.lastIndexOf(".");
+		  if (pointIndex==-1)
+			  retval.append("SELECT AddGeometryColumn('"+tableName+"','"+v.getName()+"',"+v.getGeometrySRS().getSRID()+",'"+"GEOMETRY"+"',2);");
+		  else retval.append("SELECT AddGeometryColumn('"+tableName.substring(0, pointIndex)+"','"+tableName.substring(pointIndex+1)+"','"+v.getName()+"',"+v.getGeometrySRS().getSRID()+",'"+"GEOMETRY"+"',2);");
 		  retval.append(Const.CR);
 		}
 		// -- End GeoKettle modification --
