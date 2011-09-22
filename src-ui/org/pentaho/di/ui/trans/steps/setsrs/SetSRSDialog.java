@@ -323,23 +323,6 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 				input.setChanged();
 			}
 
-			private boolean validateSRID(String srid) {
-				int tempSrid = 0;
-				boolean digitMatch = srid.matches("-[0-9]+|[0-9]*");
-				if(digitMatch){
-					if(srid !=""){
-						try{
-							tempSrid = Integer.parseInt(srid);
-						}catch(Exception NumberFormatException){
-							return false;
-						}
-					}
-				}
-				if (digitMatch && tempSrid <= Integer.MAX_VALUE && tempSrid >= Integer.MIN_VALUE){
-					return true;
-				}
-				return false;
-			}
 		});
 		
 		wbSRIDCode.addSelectionListener(new SelectionListener() {
@@ -392,6 +375,25 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 		}
 		return stepname;
 	}
+	
+	private boolean validateSRID(String srid) {
+		int tempSrid = 0;
+		boolean digitMatch = srid.matches("-[0-9]+|[0-9]*");
+		if(digitMatch){
+			if(srid !=""){
+				try{
+					tempSrid = Integer.parseInt(srid);
+				}catch(Exception NumberFormatException){
+					return false;
+				}
+			}
+		}
+		if (digitMatch && tempSrid <= Integer.MAX_VALUE && tempSrid >= Integer.MIN_VALUE){
+			return true;
+		}
+		return false;
+	}
+
 	
 	private void setSRIDDescription(String srid) {
 		if (selectedSRS.srid == ""){
@@ -471,8 +473,8 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 				throw new KettleStepException(Messages.getString("SetSRSDialog.Error.FieldMustBeProvided"));
 			}
 			if(status == SetSRSMeta.STATUS_EPSGCODE){
-				if(checkEPSG){
-					String srid = wcSRID.getText();
+				String srid = wcSRID.getText();
+				if(validateSRID(srid)){
 					createComboSelectionSRS(srid);
 					storeMetadata(input);
 					dispose();
