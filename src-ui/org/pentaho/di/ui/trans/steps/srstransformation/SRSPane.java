@@ -2,6 +2,11 @@ package org.pentaho.di.ui.trans.steps.srstransformation;
 
 // TODO: i18n
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
@@ -23,10 +28,11 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Tree;
+import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.geospatial.SRS;
 import org.pentaho.di.trans.steps.srstransformation.Messages;
@@ -55,13 +61,16 @@ public class SRSPane extends Composite {
 	// Controls
 	private SashForm wSRSSashForm;
 	private Composite wSRSExistingPane, wSRSNewFromWKTPane;
-	private Button wbSRSExisting, wbSRSNewFromWKT, wCheck, wDetail, wbClose;
-	private Text wSRS, wWKT;
+	private Button wbSRSExisting, wbSRSNewFromWKT, wCheck, wDetail, wbClose, wbSearch;
+	private Text wSRS, wWKT, wSearch;
 	private Listener lsCheck, lsDetail, lsClose;
 	private Color green, red, white, markYellow;
 	private Display display = Display.getDefault();
 	private String wkt;
 	public Tree tree;
+	private boolean ascending = true;
+	private Map<String, String> allSRS;
+	private Map<String, SRS> dataMap;
 	
 	/**
 	 * Create a new {@link SRSPane} composite.
@@ -98,20 +107,39 @@ public class SRSPane extends Composite {
 		// Group for transformation settings
 		Group wgTransSettings = new Group(this, SWT.SHADOW_ETCHED_IN);
 		wgTransSettings.setText(text);
-		GridLayoutFactory.fillDefaults().numColumns(3).generateLayout(wgTransSettings);
+		GridLayoutFactory.fillDefaults().numColumns(4).generateLayout(wgTransSettings);
 		
 		// Radio buttons
 		wbSRSExisting = new Button(wgTransSettings, SWT.RADIO);
 		wbSRSExisting.setText(Messages.getString("SRSTransformationDialog.Existing.Label")); //$NON-NLS-1$
 		wbSRSNewFromWKT = new Button(wgTransSettings, SWT.RADIO);
 		wbSRSNewFromWKT.setText(Messages.getString("SRSTransformationDialog.WKT.Label")); //$NON-NLS-1$
+		GridData gridData = new GridData();
+		gridData.grabExcessHorizontalSpace = true;
+		gridData.horizontalAlignment = GridData.BEGINNING;
+		wbSRSNewFromWKT.setLayoutData(gridData);
 		
+		//Search button
+		wbSearch = new Button(wgTransSettings, SWT.RIGHT);
+		wbSearch.setText(Messages.getString("SRSTransformationDialog.Search.Label"));
+		GridData gridDataButton = new GridData();
+		gridDataButton.grabExcessHorizontalSpace = true;
+		gridDataButton.horizontalAlignment = GridData.END;
+		wbSearch.setLayoutData(gridDataButton);
+		
+		//search text
+		wSearch = new Text(wgTransSettings, SWT.LEFT | SWT.BORDER);
+		GridData gridDataText = new GridData();
+		gridDataText.grabExcessHorizontalSpace = true;
+		gridDataText.horizontalAlignment = GridData.FILL;
+	    wSearch.setLayoutData(gridDataText);
+
 		wSRS = new Text(wgTransSettings, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-		GridDataFactory.fillDefaults().grab(true, false).span(2, 1).applyTo(wSRS);
-		
+		GridDataFactory.fillDefaults().grab(true, false).span(4, 1).applyTo(wSRS);
+
 		// Sash
 		wSRSSashForm = new SashForm(wgTransSettings, SWT.HORIZONTAL);
-		GridDataFactory.fillDefaults().grab(true, true).span(2, 1).applyTo(wSRSSashForm);
+		GridDataFactory.fillDefaults().grab(true, true).span(4, 1).applyTo(wSRSSashForm);
 		
 		// Existing pane
 		wSRSExistingPane = new Composite(wSRSSashForm, SWT.BORDER);
@@ -127,7 +155,7 @@ public class SRSPane extends Composite {
 		// The WKT area
 		wWKT = new Text(wSRSNewFromWKTPane, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
 		wWKT.setText("Put here the WKT-String...");
-		GridDataFactory.fillDefaults().grab(true, true).span(3, 1).applyTo(wWKT);
+		GridDataFactory.fillDefaults().grab(true, true).span(4, 1).applyTo(wWKT);
 		
 		// Listeners
 		wbSRSExisting.addSelectionListener(new SelectionListener() {
@@ -140,6 +168,12 @@ public class SRSPane extends Composite {
 			public void widgetDefaultSelected(SelectionEvent e) { }
 			public void widgetSelected(SelectionEvent e) {
 				setStatus(SRSTransformationMeta.STATUS_WKT);
+			}
+		});
+		wbSearch.addSelectionListener(new SelectionListener() {
+			public void widgetDefaultSelected(SelectionEvent e) { }
+			public void widgetSelected(SelectionEvent e) {
+				 searchSRSMap();
 			}
 		});
 		
@@ -167,6 +201,27 @@ public class SRSPane extends Composite {
 			}
 		};
 		wDetail.addListener( SWT.Selection, lsDetail);
+	}
+	
+	public void buildNewItem(Map.Entry<String, String> entry){
+		String[] values = {entry.getKey(), entry.getValue()};
+    	TreeItem item = new TreeItem(tree, SWT.NONE);
+    	item.setText(values);	
+	}
+	
+	public void searchSRSMap(){
+		tree.removeAll();
+		String text = wSearch.getText().toLowerCase();
+		if(Const.isEmpty(text)){
+			for (Map.Entry<String, String> entry : allSRS.entrySet()) {
+				buildNewItem(entry);			    			    
+			}
+		}else{
+			for (Map.Entry<String, String> entry : allSRS.entrySet()) {
+			    if(entry.getKey().toLowerCase().indexOf(text) != -1 || entry.getValue().toLowerCase().indexOf(text) != -1)			    	
+			    	buildNewItem(entry);				    
+			}
+		}		
 	}
 	
 	/**
@@ -269,6 +324,12 @@ public class SRSPane extends Composite {
 		return this.status;
 	}
 	
+	public void setTableEnabled(boolean isAuto){
+		tree.setEnabled(isAuto);
+		wSearch.setEnabled(isAuto);
+		wbSearch.setEnabled(isAuto);
+	}
+	
 	public void setStatus(int newStatus) {
 		wSRS.setText(selectedSRS.description);
 		wSRS.setBackground(white);
@@ -289,6 +350,9 @@ public class SRSPane extends Composite {
 			thread.markSelection(selectedSRS.description);
 			wSRS.setEditable(true);
 			wSRS.setEnabled(true);
+			wSearch.setEditable(true);
+			wSearch.setEnabled(true);
+			wbSearch.setEnabled(true);
 			wbSRSExisting.setEnabled(true);
 			wbSRSNewFromWKT.setEnabled(true);
 			break;
@@ -296,6 +360,9 @@ public class SRSPane extends Composite {
 			wSRSSashForm.setMaximizedControl(wSRSNewFromWKTPane);
 			wSRS.setEditable(false);
 			wSRS.setEnabled(true);
+			wSearch.setEditable(false);
+			wSearch.setEnabled(false);
+			wbSearch.setEnabled(false);
 			wbSRSExisting.setEnabled(true);
 			wbSRSNewFromWKT.setEnabled(true);
 			
@@ -324,7 +391,7 @@ public class SRSPane extends Composite {
 	public void setSRS(SRS srs) {
 		this.selectedSRS = srs;
 	}
-	
+
 	/**
 	 * Creates a tree containing two root-nodes, containing favorite SRS
 	 * and a list of all available SRS.
@@ -336,6 +403,7 @@ public class SRSPane extends Composite {
 		tree.setLinesVisible(true);
 		tree.setLayoutData(new GridData(GridData.FILL_BOTH));
 		tree.setHeaderVisible(true);
+
 		TreeColumn tc1 = new TreeColumn(tree, SWT.NONE);
 		tc1.setWidth(300);
 		tc1.setText("Spatial Reference System");
@@ -345,27 +413,92 @@ public class SRSPane extends Composite {
 		tc2.setText("Code");
 		tc2.setResizable(true);
 		tc2.setMoveable(false);
+
+	    Listener sortListener = new Listener() {
+	        public void handleEvent(Event e) {
+	        	TreeColumn column = (TreeColumn) e.widget;
+	        	ascending = !ascending;
+
+	        	Map<String, String> srsMap = new HashMap<String, String>(tree.getItemCount());
+	        	
+	    		for (TreeItem item : tree.getItems()){
+	    			srsMap.put(item.getText(0), item.getText(1));
+	    		}
+	    		
+	        	tree.removeAll();	 
+	        	
+	        	Map<String, String> sortedSRS;
+	        	
+	        	class KeyComparatorAsc implements Comparator<String> {
+	        		public int compare(String i1,String i2){
+	        			return i1.compareToIgnoreCase(i2);
+	        		}
+	        	}
+	        	
+	        	class KeyComparatorDesc implements Comparator<String> {
+	        		public int compare(String i1,String i2){
+	        			return i2.compareToIgnoreCase(i1);
+	        		}
+	        	}
+	        	
+	        	class ValueComparatorAsc implements Comparator<String> {
+	        		Map<String, String> base;
+	        		public ValueComparatorAsc(Map<String, String>  base) {
+	        		    this.base = base;
+	        		}
+	        		public int compare(String i1,String i2){
+	        			return base.get(i1).compareToIgnoreCase(base.get(i2));
+	        		}
+	        	}
+	        	
+	        	class ValueComparatorDesc implements Comparator<String> {
+	        		Map<String, String> base;
+	        		public ValueComparatorDesc(Map<String, String>  base) {
+	        		    this.base = base;
+	        		}
+	        		public int compare(String i1,String i2){
+	        			return base.get(i2).compareToIgnoreCase(base.get(i1));
+	        		}
+	        	}
+	        	
+	        	if(tree.indexOf(column) == 0) //sorting keys
+	        		sortedSRS = ascending ?  new TreeMap<String, String>(new KeyComparatorAsc()) : new TreeMap<String, String>(new KeyComparatorDesc());
+	        	else //sorting keys
+	        		sortedSRS = ascending ?  new TreeMap<String, String>(new ValueComparatorAsc(srsMap)) : new TreeMap<String, String>(new ValueComparatorDesc(srsMap));		        				        	
+	        	
+	        	sortedSRS.putAll(srsMap);
+	        	
+				for (Map.Entry<String, String> entry : sortedSRS.entrySet()) {		    	
+				    buildNewItem(entry);				    
+				}
+				
+	        	tree.setSortColumn(column);
+	        	tree.setSortDirection(ascending?SWT.UP:SWT.DOWN);	
+	        }
+	    };
+	        
+	    tc1.addListener(SWT.Selection, sortListener);
+	    tc2.addListener(SWT.Selection, sortListener);
 		
-		TreeItem nodeFavorites = new TreeItem (tree, SWT.NONE);
-		nodeFavorites.setText("Favorites");
-		
-		TreeItem nodeAll = new TreeItem(tree, SWT.NONE);
-		nodeAll.setText("All");
-		
-		tree.addSelectionListener(new SelectionListener() {
+	    tree.addSelectionListener(new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) { makeSelection(e); }
 			public void widgetSelected(SelectionEvent e) { makeSelection(e); }
 			private void makeSelection(SelectionEvent event) {
 				TreeItem node = (TreeItem) event.item;
-				SRS entry = (SRS) node.getData();
-				if (entry != null) {
-					selectedSRS = entry;
-					wSRS.setText(entry.description);
-					meta.setChanged();
+				if(!node.isDisposed()) { 
+					SRS entry = dataMap.get(node.getText(0));
+					if (entry != null) {
+						selectedSRS = entry;
+						wSRS.setText(entry.description);
+						meta.setChanged();
+					}
 				}
 			}
 		});
 		
-		thread = new SRSTreeView(treeData, nodeFavorites, nodeAll, selectedSRS.description);
+		thread = new SRSTreeView(treeData, tree, selectedSRS.description);
+		
+		allSRS = thread.getSRSMap();
+		dataMap = thread.getDataMap();
 	}
 }

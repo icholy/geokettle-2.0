@@ -181,21 +181,19 @@ public class SRSTransformationDialog extends BaseStepDialog implements StepDialo
 			public void widgetDefaultSelected(SelectionEvent e) { }
 			public void widgetSelected(SelectionEvent e) {
 				fieldname = wField.getText();
-				if (sourceGUIStatus == SRSTransformationMeta.STATUS_AUTO){
+				if (sourceGUIStatus == SRSTransformationMeta.STATUS_AUTO)
 					setStatus(SRSTransformationMeta.STATUS_AUTO, targetGUIStatus);
-				}
 				input.setChanged();
 			}
 		};
 		SelectionListener lsAuto = new SelectionListener() {
 			public void widgetDefaultSelected(SelectionEvent e) { }
-			public void widgetSelected(SelectionEvent e) {
-				if (wbAutoDetect.getSelection()){
-					setStatus(SRSTransformationMeta.STATUS_AUTO, wTargetSRSPane.getStatus());
-				}
-				else{
-					setStatus(SRSTransformationMeta.STATUS_EXISTING, wTargetSRSPane.getStatus());
-				}
+			public void widgetSelected(SelectionEvent e){
+				boolean auto = wbAutoDetect.getSelection();
+				if (auto)
+					setStatus(SRSTransformationMeta.STATUS_AUTO, wTargetSRSPane.getStatus());				
+				else
+					setStatus(SRSTransformationMeta.STATUS_EXISTING, wTargetSRSPane.getStatus());	
 			}
 		};
 		ModifyListener lsMod = new ModifyListener() { public void modifyText(ModifyEvent e) { input.setChanged();}};
@@ -256,9 +254,8 @@ public class SRSTransformationDialog extends BaseStepDialog implements StepDialo
 		
 		// set the default selection from loaded repo/xml
 		int existingSelection = combo.indexOf(fieldname);
-		if (existingSelection > -1) {
+		if (existingSelection > -1)
 			combo.select(existingSelection);
-		}
 	}
 
 	/**
@@ -332,18 +329,14 @@ public class SRSTransformationDialog extends BaseStepDialog implements StepDialo
 		try {
 			waitForTreeInitialization();
 			boolean checkTarget = true, checkSource = true;
-			if (wSourceSRSPane.getStatus() == SRSTransformationMeta.STATUS_WKT) {
+			if (wSourceSRSPane.getStatus() == SRSTransformationMeta.STATUS_WKT)
 				checkSource = wSourceSRSPane.checkWKT();
-			}
-			if (wTargetSRSPane.getStatus() == SRSTransformationMeta.STATUS_WKT) {
+			if (wTargetSRSPane.getStatus() == SRSTransformationMeta.STATUS_WKT)
 				checkTarget = wTargetSRSPane.checkWKT();
-			}
-			if (!checkSource || !checkTarget) {
+			if (!checkSource || !checkTarget)
 				return;
-			}
-			if (fieldname.equals("")) {
+			if (fieldname.equals(""))
 				throw new KettleStepException("A field-name must be provided to execute a transformation.");
-			}
 			storeMetadata(input);
 		} catch (KettleStepException e) {
 			new ErrorDialog(shell, Messages.getString("System.Warning"), "SRS Transformation step error", e); //$NON-NLS-1$ //$NON-NLS-2$
@@ -373,9 +366,8 @@ public class SRSTransformationDialog extends BaseStepDialog implements StepDialo
 	private void applyLookAndFeel(Composite parent) {
 		props.setLook(parent);
 		for (Control c : parent.getChildren()) {
-			if (c.getData(SRSPane.IGNORE_LOOK_AND_FEEL) == null || !((Boolean) c.getData("ignorelookandfeel"))){
-				props.setLook(c);
-			}
+			if (c.getData(SRSPane.IGNORE_LOOK_AND_FEEL) == null || !((Boolean) c.getData("ignorelookandfeel")))
+				props.setLook(c);			
 			if (c instanceof Composite)
 				applyLookAndFeel((Composite)c);
 		}
@@ -388,9 +380,11 @@ public class SRSTransformationDialog extends BaseStepDialog implements StepDialo
 	 * @param newTargetStatus Status for the target-SRS pane.
 	 */
 	private void setStatus(int newSourceStatus, int newTargetStatus) {
-		if (newSourceStatus == SRSTransformationMeta.STATUS_AUTO) {
-			wSourceSRSPane.setSRS( autodetectSourceSRS() );
-		}
+		if (newSourceStatus == SRSTransformationMeta.STATUS_AUTO){
+			wSourceSRSPane.setSRS(autodetectSourceSRS());
+			wSourceSRSPane.setTableEnabled(false);
+		}else
+			wSourceSRSPane.setTableEnabled(true);
 		wSourceSRSPane.setStatus(newSourceStatus);
 		wTargetSRSPane.setStatus(newTargetStatus);
 		sourceGUIStatus = newSourceStatus;

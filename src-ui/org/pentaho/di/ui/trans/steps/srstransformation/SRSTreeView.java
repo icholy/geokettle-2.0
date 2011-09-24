@@ -1,11 +1,13 @@
 package org.pentaho.di.ui.trans.steps.srstransformation;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeSet;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.pentaho.di.core.geospatial.SRS;
@@ -25,66 +27,48 @@ import org.pentaho.di.trans.steps.srstransformation.SRSList;
 public class SRSTreeView extends Thread {
 	public static final String SELECTION_CODE = "code";
 	public static final String SELECTION_FACTORY = "FACTORY";
-	//	private TreeItem nodeFavorites;
-	private TreeItem nodeAll;
-	private SRSList srsList;
-	private String selectedNodeText;
+	private Tree tree;
 	private HashMap<String, TreeItem> selectionMap;
-	private Object mutex = new Object(); 
+	private Object mutex = new Object();
+	private SRSTreeFiller treeFiller;
 
 	/**
 	 * Create a new instance of {@link SRSTreeView} that is a {@link Thread} and
 	 * start it.
 	 * 
 	 * @param srsList The {@link Thread} that creates the list with all available SRS.
-	 * @param nodeFavorites The {@link TreeItem} containing the favorite SRS.
-	 * @param nodeAll The {@link TreeItem} containing all SRS.
 	 */
-	public SRSTreeView(SRSList srsList, TreeItem nodeFavorites, TreeItem nodeAll, String selectedNodeText) {
-		//		this.nodeFavorites = nodeFavorites;
-		this.nodeAll = nodeAll;
-		this.srsList = srsList;
-		this.selectedNodeText = selectedNodeText;
+	public SRSTreeView(SRSList srsList, Tree tree, String selectedNodeText) {
+		this.tree = tree;
+		this.treeFiller = new SRSTreeFiller(srsList.getAllSRS(), tree, selectedNodeText);
 		start();
 	}
 
+	public Map<String, String> getSRSMap(){
+		return treeFiller.getSRSMap();
+	}
+	
+	public Map<String, SRS> getDataMap(){
+		return treeFiller.getDataMap();
+	}
+	
 	public void run() {
 		Display display = Display.getDefault();
-		// Favorite SRS (sorted, manually added). Identical SRS have the same
-		// comperator-result and will have the same Hash in the TreeSet.
-		//		TreeSet<SRS> favoriteSRS = new TreeSet<SRS>();
-		//		favoriteSRS.add(new SRS(DefaultGeographicCRS.WGS84));
-		//		favoriteSRS.add(new SRS(DefaultGeographicCRS.WGS84_3D));
-		//		favoriteSRS.add(new SRS(DefaultGeocentricCRS.CARTESIAN));
-		//		favoriteSRS.add(new SRS(DefaultGeocentricCRS.SPHERICAL));
-		//		favoriteSRS.add(new SRS(DefaultEngineeringCRS.CARTESIAN_2D));
-		//		favoriteSRS.add(new SRS(DefaultEngineeringCRS.CARTESIAN_3D));
-		//		favoriteSRS.add(new SRS(DefaultEngineeringCRS.GENERIC_2D));
-		//		favoriteSRS.add(new SRS(DefaultEngineeringCRS.GENERIC_3D));
-		//		favoriteSRS.add(new SRS(DefaultVerticalCRS.ELLIPSOIDAL_HEIGHT));
-
-		// Create the TreeItems for the favorite-SRS (SYNC). Because it is a short list of
-		// favorite SRS, this call does not need to be asynchronous.
-		//		display.syncExec( new SRSTreeFiller(favoriteSRS, nodeFavorites, selectedNodeText) );
-
-		// Create the TreeItems for all SRS (ASYNC)
-		display.asyncExec( new SRSTreeFiller(srsList.getAllSRS(), nodeAll, selectedNodeText) );
+		display.asyncExec(treeFiller);
 	}
 
 	public void markSelection(String selectedNodeText) {
 		synchronized (mutex) {
 			TreeItem selectedNode = selectionMap != null ? selectionMap.get(selectedNodeText) : null;
-			if(!nodeAll.isDisposed()) { 
+			if(!tree.isDisposed()) { 
 				if (selectedNode != null) {
-					nodeAll.getParent().setSelection(selectedNode);
+					tree.setSelection(selectedNode);
 					Event e = new Event();
 					e.item = selectedNode;
 					e.type = SWT.Selection;
-					nodeAll.getParent().notifyListeners(SWT.Selection, e);
-					nodeAll.setExpanded(true);
-				} else {
-					nodeAll.getParent().deselectAll();
-				}
+					tree.notifyListeners(SWT.Selection, e);
+				} else 
+					tree.deselectAll();
 			}
 		}
 	}
@@ -98,9 +82,11 @@ public class SRSTreeView extends Thread {
 	 * @since 15-nov-2008
 	 */
 	class SRSTreeFiller implements Runnable {
-		private TreeItem parent;
+		private Tree tree;
 		private TreeSet<SRS> treeEntries;
 		private String selection;
+		private Map<String, String> srsMap;
+		private Map<String, SRS> dataMap;
 
 		/**
 		 * Creates a new {@link SRSTreeFiller} instance that can be invoked by a GUI thread.
@@ -109,12 +95,22 @@ public class SRSTreeView extends Thread {
 		 * @param parent The parent {@link TreeItem}.
 		 * @param selection The text of the {@link TreeItem} that should be selected.
 		 */
-		public SRSTreeFiller(TreeSet<SRS> treeEntries, TreeItem parent, String selection) {
+		public SRSTreeFiller(TreeSet<SRS> treeEntries, Tree tree, String selection) {
 			this.treeEntries = treeEntries;
-			this.parent = parent;
+			this.tree = tree;
 			this.selection = selection;
+			this.srsMap = new HashMap<String, String>(treeEntries.size());
+			this.dataMap = new HashMap<String, SRS>(treeEntries.size());
 		}
-
+		
+		public Map<String, String> getSRSMap(){
+			return srsMap;
+		}
+		
+		public Map<String, SRS> getDataMap(){
+			return dataMap;
+		}
+		
 		public void run() {
 			// The selectionMap is used to quickly select an item. By using a HashMap
 			// more memory is used, but the GUI thread is blocked for a much shorter time.
@@ -123,28 +119,27 @@ public class SRSTreeView extends Thread {
 
 			synchronized (mutex) {
 				selectionMap = selected ? new HashMap<String, TreeItem>() : null;
-
-				// Building the list
-				// synchronized (treeEntries) {
 				for (SRS entry : treeEntries) {
-					if (!parent.isDisposed()) {
-						TreeItem child = new TreeItem(parent, SWT.NONE);
-						child.setText(0, entry.description);
-						child.setText(1, entry.authority + ":" + entry.srid);
+					if (!tree.isDisposed()) {
+						TreeItem child = new TreeItem(tree, SWT.NONE);
+						String name = entry.description;
+						StringBuffer code = new StringBuffer(entry.authority);
+						code.append(":");
+						code.append(entry.srid);
+						child.setText(0, name);
+						child.setText(1, code.toString());
+						srsMap.put(name, code.toString());
 						child.setData(entry);
-						if (selected) {
-							//synchronized(selectionMap) {
+						dataMap.put(name, entry);
+						if (selected)
 							selectionMap.put(entry.description, child);
-							//}
-						}
-					} else break;
+					} else 
+						break;
 				}
 			}
 
-			// Select an item
-			if (selected) {
+			if (selected)
 				markSelection(selection);
-			}
 		}
 	}
 }
