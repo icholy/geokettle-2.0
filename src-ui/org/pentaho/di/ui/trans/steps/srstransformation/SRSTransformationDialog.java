@@ -271,7 +271,7 @@ public class SRSTransformationDialog extends BaseStepDialog implements StepDialo
 					  : meta.getSourceSRS(transMeta.getPrevStepFields(stepname));
 		} catch (KettleStepException e) {
 			sourceSRS = SRS.UNKNOWN;
-			new ErrorDialog(shell,"Error", "Could not restore previous source-SRS. Using an empty SRS instead.", e);
+			new ErrorDialog(shell, Messages.getString("SRSTransformationDialog.Error"), Messages.getString("SRSTransformationDialog.CouldNotRestoreSourceSRS"), e);
 		}
 		targetSRS = meta.getTargetSRS();
 		
@@ -336,7 +336,7 @@ public class SRSTransformationDialog extends BaseStepDialog implements StepDialo
 			if (!checkSource || !checkTarget)
 				return;
 			if (fieldname.equals(""))
-				throw new KettleStepException("A field-name must be provided to execute a transformation.");
+				throw new KettleStepException(Messages.getString("SRSTransformationDialog.FieldNameMustBeProvided"));
 			storeMetadata(input);
 		} catch (KettleStepException e) {
 			new ErrorDialog(shell, Messages.getString("System.Warning"), "SRS Transformation step error", e); //$NON-NLS-1$ //$NON-NLS-2$

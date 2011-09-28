@@ -154,7 +154,7 @@ public class SRSPane extends Composite {
 		
 		// The WKT area
 		wWKT = new Text(wSRSNewFromWKTPane, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
-		wWKT.setText("Put here the WKT-String...");
+		wWKT.setText(Messages.getString("SRSTransformationDialog.WKT.Text"));
 		GridDataFactory.fillDefaults().grab(true, true).span(4, 1).applyTo(wWKT);
 		
 		// Listeners
@@ -182,10 +182,10 @@ public class SRSPane extends Composite {
 		
 		// Buttons
 		wCheck = new Button(wSRSNewFromWKTPane, SWT.PUSH);
-		wCheck.setText("Check WKT");
+		wCheck.setText(Messages.getString("SRSTransformationDialog.WKT.Check"));
 		
 		wDetail = new Button(wSRSExistingPane, SWT.PUSH);
-		wDetail.setText("Details...");
+		wDetail.setText(Messages.getString("SRSTransformationDialog.Details.Label"));
 		
 		//Add Button Listener
 		lsCheck = new Listener() { public void handleEvent(Event e) { checkWKT();}};
@@ -193,11 +193,10 @@ public class SRSPane extends Composite {
 		
 		lsDetail = new Listener() { 
 			public void handleEvent(Event e) {
-				if (selectedSRS.equals(SRS.UNKNOWN)){
-					wSRS.setText("No SRS selected");
-				}else{
-					showSrsDetail();
-				}
+				if (selectedSRS == null || selectedSRS.equals(SRS.UNKNOWN))
+					wSRS.setText(Messages.getString("SRSTransformationDialog.NoSRSSelected"));
+				else
+					showSrsDetail();			
 			}
 		};
 		wDetail.addListener( SWT.Selection, lsDetail);
@@ -242,7 +241,7 @@ public class SRSPane extends Composite {
 
 		} catch (Exception e) {
 			wSRS.setBackground(red);
-			wSRS.setText("Invalid WKT");
+			wSRS.setText(Messages.getString("SRSTransformationDialog.InvalidWKT"));
 			// Dummy SRS in case of exception
 			selectedSRS = SRS.UNKNOWN;
 			tree.deselectAll();
@@ -256,7 +255,7 @@ public class SRSPane extends Composite {
 	 */
 	public void showSrsDetail() {
 		final Shell detailShell = new Shell (display, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
-		detailShell.setText("WKT details");
+		detailShell.setText(Messages.getString("SRSTransformationDialog.WKTDetails"));
 		detailShell.setSize (550, 400);
 		
 		FormLayout formLayout = new FormLayout();
@@ -265,9 +264,9 @@ public class SRSPane extends Composite {
 		StyledText wDetailWkt = new StyledText (detailShell, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
 		wDetailWkt.setEditable(false);
 		try {
-			wDetailWkt.setText ((selectedSRS.getCRS()).toWKT());
+			wDetailWkt.setText (selectedSRS.getCRS().toWKT());			
 		} catch (Exception e) {
-			wDetailWkt.setText("This SRS is not fully supported by GeoKettle.");
+			wDetailWkt.setText(Messages.getString("SRSTransformationDialog.UnsupportedSRS"));
 		}
 		
 		markYellow = new org.eclipse.swt.graphics.Color(display, 255, 241, 173);
@@ -301,7 +300,7 @@ public class SRSPane extends Composite {
 
 		
 		wbClose = new Button (detailShell, SWT.PUSH);
-		wbClose.setText ("Close");
+		wbClose.setText (Messages.getString("SRSTransformationDialog.Close"));
 		lsClose = new Listener() { public void handleEvent(Event e) {detailShell.close();}};
 		wbClose.addListener( SWT.Selection, lsClose);
 		
@@ -368,11 +367,10 @@ public class SRSPane extends Composite {
 			
 			if (this.status != SRSTransformationMeta.STATUS_WKT) {
 				try {
-					wWKT.setText((selectedSRS.getCRS()).toWKT());
+					if (!selectedSRS.equals(SRS.UNKNOWN))
+						wWKT.setText((selectedSRS.getCRS()).toWKT());
 				} catch (KettleException ke) {
-					if (!selectedSRS.equals(SRS.UNKNOWN)) {
-						new ErrorDialog(this.getShell(), "Error", "Could not create the WKT representation.", ke);
-					}
+					new ErrorDialog(this.getShell(), Messages.getString("SRSTransformationDialog.Error"),  Messages.getString("SRSTransformationDialog.CouldNotCreateWKTError"), ke);				
 				}
 			}
 			
@@ -406,11 +404,11 @@ public class SRSPane extends Composite {
 
 		TreeColumn tc1 = new TreeColumn(tree, SWT.NONE);
 		tc1.setWidth(300);
-		tc1.setText("Spatial Reference System");
+		tc1.setText(Messages.getString("SRSTransformationDialog.SpatialRefSystem"));
 		
 		TreeColumn tc2 = new TreeColumn(tree, SWT.NONE);
 		tc2.setWidth(100);
-		tc2.setText("Code");
+		tc2.setText(Messages.getString("SRSTransformationDialog.Code"));
 		tc2.setResizable(true);
 		tc2.setMoveable(false);
 
