@@ -133,7 +133,9 @@ public class OGRWriter
 				if (value.getType()==ValueMeta.TYPE_GEOMETRY) {
 					SRS srs = value.getGeometrySRS();
 					if (srs!=null) {
-						sr.ImportFromWkt(srs.getCRS().toWKT());
+						if (srs.getCRS()!=null) {
+							sr.ImportFromWkt(srs.getCRS().toWKT());
+						}
 					}				
 					break;
 				}
@@ -245,8 +247,10 @@ public class OGRWriter
 						ogrGeometry = org.gdal.ogr.Geometry.CreateFromWkt(((Geometry)r[i]).toText());
 						SRS srs = value.getGeometrySRS();
 						if (srs!=null) {
-							ogrSpatialReference.ImportFromWkt(srs.getCRS().toWKT());
-							ogrGeometry.AssignSpatialReference(ogrSpatialReference);
+							if (srs.getCRS()!=null) {
+								ogrSpatialReference.ImportFromWkt(srs.getCRS().toWKT());
+								ogrGeometry.AssignSpatialReference(ogrSpatialReference);
+							}
 						}
 				        ogrFeature.SetGeometry(ogrGeometry);
 						break;					

@@ -209,8 +209,9 @@ public class GeotoolsWriter
 					}else {
 						// TODO: internationalize error message
 						throw new KettleException(
-								"The attribute type is not the one expected..."
-								+ rowCopy[i].getClass().toString() + " :: " 
+								"The type of attribute [ "+featureType.getAttributeDescriptors().get(i).getName()
+								+" ] is not the one expected ..."
+								+ rowCopy[i].getClass().getName() + " :: " 
 								+ featureType.getAttributeDescriptors().get(i).getType().getBinding());	
 					}
 				}
