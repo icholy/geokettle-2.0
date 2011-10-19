@@ -140,7 +140,7 @@ public class OGRWriter
 					break;
 				}
 			}
-			ogrLayer = ogrDataDestination.CreateLayer(ogrLayerName,sr,ogrGeomType);
+			ogrLayer = ogrDataDestination.CreateLayer(ogrLayerName,sr,ogrGeomType,ogrDataDestinationOptions);
 			
 			// Fetch all field information
 			//
