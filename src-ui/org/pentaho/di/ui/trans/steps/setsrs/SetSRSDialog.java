@@ -187,7 +187,7 @@ public class SetSRSDialog extends BaseStepDialog implements StepDialogInterface 
 			wSRIDInfo.setEnabled(true);
 			setSRIDDescription(selectedSRS.srid);
 			// Selection of saved selectedSRS
-			if (selectedSRS.description == "Custom") {
+			if (selectedSRS.description.equals("Custom")) {
 				wcSRID.setText(selectedSRS.srid);
 			} else {
 				wcSRID.select(wcSRID.indexOf(selectedSRS.srid));
