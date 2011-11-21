@@ -13,26 +13,47 @@
 package org.pentaho.di.core.row;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.security.MessageDigest;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Locale;
-import java.util.zip.CheckedInputStream;
 import java.util.zip.Adler32;
 import java.util.zip.CRC32;
-import java.security.MessageDigest;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.codec.language.Metaphone;
+import java.util.zip.CheckedInputStream;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.codec.language.DoubleMetaphone;
-
-import org.pentaho.di.core.vfs.KettleVFS;
-
+import org.apache.commons.codec.language.Metaphone;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.provider.local.LocalFile;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONWriter;
+import org.mapfish.geo.MfFeature;
+import org.mapfish.geo.MfGeoFactory;
+import org.mapfish.geo.MfGeoJSONReader;
+import org.mapfish.geo.MfGeoJSONWriter;
+import org.mapfish.geo.MfGeometry;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleValueException;
+import org.pentaho.di.core.vfs.KettleVFS;
+import org.xml.sax.SAXException;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKBReader;
+import com.vividsolutions.jts.io.WKBWriter;
+import com.vividsolutions.jts.io.WKTReader;
+import com.vividsolutions.jts.io.gml2.GMLReader;
+import com.vividsolutions.jts.io.gml2.GMLWriter;
 import com.vividsolutions.jts.operation.buffer.BufferOp;
 import com.vividsolutions.jts.operation.buffer.BufferParameters;
 
@@ -1203,4 +1224,156 @@ public class ValueDataUtil
         	return null;      
     	return metaA.getGeometry(dataA).reverse();       
     }
+    public static String asWkt(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return null;      
+    	return metaA.getGeometry(dataA).toText();       
+    }
+    public static Geometry fromWkt(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+    	Geometry geom = null;
+    	WKTReader wktReader = new WKTReader();
+        if (dataA==null || !metaA.isString()) 
+        	return null;
+        try {
+			geom = wktReader.read(metaA.getString(dataA));
+			return geom;
+		} catch (ParseException e) {
+			return null;
+		}
+    }
+    public static String asXY(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return null;
+        Geometry geom = metaA.getGeometry(dataA);
+        if (geom.getNumPoints()>1)
+    	    return null;
+        return geom.getCoordinate().x+" "+geom.getCoordinate().y;
+    }
+    public static Geometry fromXY(ValueMetaInterface metaA, Object dataA, ValueMetaInterface metaB, Object dataB) throws KettleValueException{
+    	Geometry geom = null;
+    	WKTReader wktReader = new WKTReader();
+    	if ((dataA==null || dataB==null) || (!metaB.isNumeric() || !metaA.isNumeric())) 
+        	return null;
+        try {
+			geom = wktReader.read("POINT(+"+metaA.getNumber(dataA)+" "+metaB.getNumber(dataB)+")");
+			return geom;
+		} catch (ParseException e) {
+			return null;
+		}      
+    }
+    public static String asGeoJson(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return null;
+
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		JSONWriter jsonBuilder = new JSONWriter(pw);
+		MfGeoJSONWriter geoJson = new MfGeoJSONWriter(jsonBuilder);
+		try {
+			geoJson.encodeGeometry(metaA.getGeometry(dataA));
+			return sw.toString();
+		} catch (JSONException e) {
+			return null;
+		}    	       
+    }
+    public static Geometry fromGeoJson(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+    	if (dataA==null || !metaA.isString()) 
+    		return null;
+
+    	MfGeoFactory mgf = new MfGeoFactory() {
+    		public MfFeature createFeature(final String id, final MfGeometry geometry, final JSONObject properties) { 
+    			return new MfFeature() { 
+    				public String getFeatureId() { 
+    					return id; 
+    				} 
+    				public MfGeometry getMfGeometry() { 
+    					return geometry; 
+    				} 
+    				public void toJSON(JSONWriter builder) throws JSONException { 
+    					Iterator iter = properties.keys(); 
+    					while (iter.hasNext()){ 
+    						String key = (String) iter.next(); 
+    						Object value = properties.get(key); 
+    						builder.key(key).value(value);                           
+    					} 
+    				}         	
+    			};
+    		}
+    	};
+    	MfGeoJSONReader geoJsonReader = new MfGeoJSONReader(mgf);
+    	try {
+			MfGeometry mfGeom = (MfGeometry)geoJsonReader.decode(metaA.getString(dataA));
+			return mfGeom.getInternalGeometry();
+		} catch (JSONException e) {
+			return null;
+		}
+    	
+    }
+    public static String asWkb(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return null;
+        WKBWriter wkbWriter = new WKBWriter();
+        return wkbWriter.bytesToHex(wkbWriter.write(metaA.getGeometry(dataA)));
+    }
+    public static Geometry fromWkb(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+    	Geometry geom = null;
+    	WKBReader wkbReader = new WKBReader();
+        if (dataA==null || !metaA.isString()) 
+        	return null;
+        try {
+			geom = wkbReader.read(wkbReader.hexToBytes(metaA.getString(dataA)));
+			return geom;
+		} catch (ParseException e) {
+			return null;
+		}
+    }
+    public static String asGml(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return null;
+        GMLWriter gmlWriter = new GMLWriter();
+        if ((metaA.getGeometrySRS()!=null) && (metaA.getGeometrySRS().getSRID()!=-1))
+        	gmlWriter.setSrsName("EPSG:"+metaA.getGeometrySRS().getSRID());
+        gmlWriter.setPrefix("gml");
+        return gmlWriter.write(metaA.getGeometry(dataA));        
+    }
+    public static Geometry fromGml(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+    	Geometry geom = null;
+    	GMLReader gmlReader = new GMLReader();
+        if (dataA==null || !metaA.isString()) 
+        	return null;
+		try {
+			geom = gmlReader.read(metaA.getString(dataA), new GeometryFactory());
+			return geom;
+		} catch (SAXException e) {
+			return null;
+		} catch (IOException e) {
+			return null;
+		} catch (ParserConfigurationException e) {
+			return null;
+		}
+    }
+    public static String asKml(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+        if (dataA==null || !metaA.isGeometry()) 
+        	return null;
+        GMLWriter kmlWriter = new GMLWriter();
+        kmlWriter.setPrefix("kml");
+        return kmlWriter.write(metaA.getGeometry(dataA));        
+    }
+    public static Geometry fromKml(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
+    	Geometry geom = null;
+    	GMLReader kmlReader = new GMLReader();
+        if (dataA==null || !metaA.isString()) 
+        	return null;
+		try {
+			geom = kmlReader.read(metaA.getString(dataA), new GeometryFactory());
+			return geom;
+		} catch (SAXException e) {
+			return null;
+		} catch (IOException e) {
+			return null;
+		} catch (ParserConfigurationException e) {
+			return null;
+		}
+    }
+
 }

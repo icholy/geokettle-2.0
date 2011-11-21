@@ -761,10 +761,82 @@ public class Calculator extends BaseStep implements StepInterface
                     resultType=ValueMetaInterface.TYPE_GEOMETRY; 
                 }
                 break;
-                case CalculatorMetaFunction.CALC_GEOM_DISTANCE   : // Calculate distance between geometries
+                case CalculatorMetaFunction.CALC_GEOM_DISTANCE   : // Compute distance between geometries
                 {
                     calcData[index] = ValueDataUtil.distance(metaA, dataA, metaB, dataB);
                     resultType=ValueMetaInterface.TYPE_NUMBER; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_ASWKT   : // Give the WKT representation of a geometry
+                {
+                    calcData[index] = ValueDataUtil.asWkt(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_STRING; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_FROMWKT   : // Convert a WKT representation to a geometry
+                {
+                    calcData[index] = ValueDataUtil.fromWkt(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_FROMXY   : // Convert coordinates to a point geometry
+                {
+                    calcData[index] = ValueDataUtil.fromXY(metaA, dataA, metaB, dataB);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_ASXY   : // Give the coordinates of a point geometry
+                {
+                    calcData[index] = ValueDataUtil.asXY(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_STRING; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_ASGEOJSON   : // Give the GeoJSON representation of a geometry
+                {
+                    calcData[index] = ValueDataUtil.asGeoJson(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_STRING; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_FROMGEOJSON   : // Give the GeoJSON representation of a geometry
+                {
+                    calcData[index] = ValueDataUtil.fromGeoJson(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_ASWKB   : // Give the WKB representation of a geometry
+                {
+                    calcData[index] = ValueDataUtil.asWkb(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_STRING; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_FROMWKB   : // Convert a WKB representation to a geometry
+                {
+                    calcData[index] = ValueDataUtil.fromWkb(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_ASGML   : // Give the GML representation of a geometry
+                {
+                    calcData[index] = ValueDataUtil.asGml(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_STRING; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_FROMGML   : // Convert a GML fragment to a geometry
+                {
+                    calcData[index] = ValueDataUtil.fromGml(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_ASKML   : // Give the GML representation of a geometry
+                {
+                    calcData[index] = ValueDataUtil.asKml(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_STRING; 
+                }
+                break;
+                case CalculatorMetaFunction.CALC_GEOM_FROMKML   : // Convert a GML fragment to a geometry
+                {
+                    calcData[index] = ValueDataUtil.fromKml(metaA, dataA);
+                    resultType=ValueMetaInterface.TYPE_GEOMETRY; 
                 }
                 break;
                 default:

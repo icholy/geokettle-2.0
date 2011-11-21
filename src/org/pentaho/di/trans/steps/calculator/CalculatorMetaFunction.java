@@ -93,6 +93,18 @@ public class CalculatorMetaFunction implements Cloneable
     public static final int CALC_GEOM_CONVEX_HULL =  66;
     public static final int CALC_GEOM_REVERSE =  67;
     public static final int CALC_GEOM_DISTANCE =  68;
+    public static final int CALC_GEOM_ASWKT =  69;
+    public static final int CALC_GEOM_FROMWKT =  70;
+    public static final int CALC_GEOM_ASXY =  71;
+    public static final int CALC_GEOM_FROMXY =  72;
+    public static final int CALC_GEOM_ASGEOJSON =  73;
+    public static final int CALC_GEOM_FROMGEOJSON =  74;
+    public static final int CALC_GEOM_ASWKB =  75;
+    public static final int CALC_GEOM_FROMWKB =  76;
+    public static final int CALC_GEOM_ASGML =  77;
+    public static final int CALC_GEOM_FROMGML =  78;
+    public static final int CALC_GEOM_ASKML =  79;
+    public static final int CALC_GEOM_FROMKML =  80;
     
     public static final String calc_desc[] = 
         { 
@@ -164,7 +176,19 @@ public class CalculatorMetaFunction implements Cloneable
             "GEOMETRY_ENVELOPE",
             "GEOMETRY_CONVEX_HULL",
             "GEOMETRY_REVERSE",
-            "GEOMETRY_DISTANCE"
+            "GEOMETRY_DISTANCE",
+            "GEOMETRY_ASWKT",
+            "GEOMETRY_FROMWKT",
+            "GEOMETRY_ASXY",
+            "GEOMETRY_FROMXY",
+            "GEOMETRY_ASGEOJSON",
+            "GEOMETRY_FROMGEOJSON",
+            "GEOMETRY_ASWKB",
+            "GEOMETRY_FROMWKB",
+            "GEOMETRY_ASGML",
+            "GEOMETRY_FROMGML",
+            "GEOMETRY_ASKML",
+            "GEOMETRY_FROMKML"
         };
     
     public static final String calcLongDesc[] = 
@@ -238,6 +262,19 @@ public class CalculatorMetaFunction implements Cloneable
             Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomConvexHull"),
             Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomReverse"),
             Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomDistance"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomAsWKT"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomFromWKT"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomAsXY"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomFromXY"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomAsGeoJson"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomFromGeoJson"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomAsWKB"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomFromWKB"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomAsGml"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomFromGml"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomAsKml"),
+            Messages.getString("CalculatorMetaFunction.CalcFunctions.GeomFromKml")
+
         };
    
     private String fieldName;
