@@ -304,10 +304,10 @@ public class EnterValueDialog extends Dialog {
     String string = wInputString.getText();
 
     // remove white spaces if needed
-    if (string.startsWith(" ") || string.endsWith(" ")) {
+    /*if (string.startsWith(" ") || string.endsWith(" ")) {
       string = Const.trim(string);
       wInputString.setText(string);
-    }
+    }*/
     switch (type) {
       case ValueMetaInterface.TYPE_INTEGER:
         wFormat.setItems(Const.getNumberFormats());
