@@ -9,10 +9,11 @@
 # set MOZILLA_FIVE_HOME=/usr/local/mozilla
 # set LD_LIBRARY_PATH=/usr/local/mozilla
 
-set MOZILLA_FIVE_HOME=/usr/lib/xulrunner-1.9.1.9/
-set LD_LIBRARY_PATH=${MOZILLA_FIVE_HOME}:${LD_LIBRARY_PATH}
+MOZILLA_FIVE_HOME=$(find /usr/lib -maxdepth 1 -name xulrunner-[0-9]* | tail -1)
+LD_LIBRARY_PATH=${MOZILLA_FIVE_HOME}:${LD_LIBRARY_PATH}
 export MOZILLA_FIVE_HOME LD_LIBRARY_PATH
 export GDK_NATIVE_WINDOWS=true 
+export LIBOVERLAY_SCROLLBAR=0
 
 # **************************************************
 # ** Libraries used by Kettle:                    **
