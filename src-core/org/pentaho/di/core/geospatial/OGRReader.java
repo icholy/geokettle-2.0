@@ -32,18 +32,20 @@ import com.vividsolutions.jts.io.WKTReader;
  */
 public class OGRReader
 {
-    private LogWriter   log;
+    private LogWriter log;
     private String ogrDataSourcePath;
-    private boolean     error;
+    private boolean error;
+    private boolean skipFailure;
     
     private DataSource ogrDataSource;
     private Layer ogrLayer;
     private FeatureDefn ogrLayerDefinition;
 
-    public OGRReader(String dataSourcePath)
+    public OGRReader(String dataSourcePath, boolean skipFailure)
     {
         this.log      = LogWriter.getInstance();
         this.ogrDataSourcePath = dataSourcePath; 
+        this.skipFailure = skipFailure;
         error         = false;
         ogrDataSource = null;
         ogrLayer = null;
@@ -180,6 +182,8 @@ public class OGRReader
     {
         
     	String debug = "";
+    	int ogrFieldsCount = 0;
+		int k = 0;
     	
         try
         {
@@ -196,16 +200,15 @@ public class OGRReader
        		if (ogrFeature == null)
         		return null;
         	
-        	int ogrFieldsCount = ogrFeature.GetFieldCount();
+        	ogrFieldsCount = ogrFeature.GetFieldCount();
 			org.gdal.ogr.Geometry ogrGeometry = ogrFeature.GetGeometryRef();
-			int k = 0;
 
 			for (k = 0; k < ogrFieldsCount; k++) {
 				debug = "getting value #"+k;
 				int ogrFieldType = ogrFeature.GetFieldType(k);
 
 				if (ogrFeature.IsFieldSet(k)) {
-
+					
 					switch (ogrFieldType) {
 						case ogrConstants.OFTInteger:
 							debug = "integer attribute";
@@ -250,8 +253,15 @@ public class OGRReader
         catch(Exception e)
 		{
             log.logError(toString(), "Unexpected error in part ["+debug+"] : "+e.toString());
-            error = true;
-            throw new KettleException("Unable to read row from the OGR data source", e);
+            if (skipFailure) {
+            	log.logError(toString(), "But \"Skip failures\" option activated ... Continue processing with next row!");
+            	for (int i=k;i<ogrFieldsCount+1;i++)
+            		r[i]=null;
+            	return r;
+            } else {
+            	error = true;
+            	throw new KettleException("Unable to read row from the OGR data source", e);
+            }
 		}
         
         return r;

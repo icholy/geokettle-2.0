@@ -35,7 +35,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 {
 	private String 	gisFileName;
 	private int 	rowLimit;
-	private boolean rowNrAdded;
+	private boolean skipFailureAdded,rowNrAdded;
 	private String  rowNrField;
 	
 
@@ -108,6 +108,19 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
         this.rowNrAdded = rowNrAdded;
     }
 
+    /**
+     * @return Returns the skipFailureAdded.
+     */
+	public boolean isSkipFailureAdded() {
+		return skipFailureAdded;
+	}
+
+    /**
+     * @param skipFailureAdded The skipFailureAdded to set.
+     */
+	public void setSkipFailureAdded(boolean skipFailureAdded) {
+		this.skipFailureAdded = skipFailureAdded;
+	}
 
     public void loadXML(Node stepnode, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleXMLException {
 		readData(stepnode);
@@ -125,6 +138,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		try
 		{
 			gisFileName        = XMLHandler.getTagValue(stepnode, "file_gis"); //$NON-NLS-1$
+			skipFailureAdded   = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "skip_failure")); //$NON-NLS-1$ //$NON-NLS-2$
 			rowLimit           = Const.toInt(XMLHandler.getTagValue(stepnode, "limit"), 0); //$NON-NLS-1$
 			rowNrAdded         = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "add_rownr")); //$NON-NLS-1$ //$NON-NLS-2$
 			rowNrField         = XMLHandler.getTagValue(stepnode, "field_rownr"); //$NON-NLS-1$
@@ -138,10 +152,11 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 
 	public void setDefault()
 	{
-		gisFileName    = null;
-		rowLimit    = 0;
-		rowNrAdded   = false;
-		rowNrField = null;
+		gisFileName      = null;
+		skipFailureAdded = false;
+		rowLimit         = 0;
+		rowNrAdded       = false;
+		rowNrField       = null;
 	}
 	
     
@@ -165,10 +180,10 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
         	
         	if (Const.isWindows()) {
         		ogr_path = ogr_path.substring(3).replace('/', '\\');
-        		ogrReader = new OGRReader(ogr_path);
+        		ogrReader = new OGRReader(ogr_path, skipFailureAdded);
         	} else {
         		ogr_path = ogr_path.substring(2);
-        		ogrReader = new OGRReader(ogr_path);
+        		ogrReader = new OGRReader(ogr_path, skipFailureAdded);
         	}
 
             ogrReader.open();
@@ -188,7 +203,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
         {
             if (ogrReader!=null) ogrReader.close();
         }
-	    
+        	    
 	    if (rowNrAdded && rowNrField!=null && rowNrField.length()>0)
 	    {
 	    	ValueMetaInterface rnr = new ValueMeta(rowNrField, ValueMetaInterface.TYPE_INTEGER);
@@ -217,6 +232,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		StringBuffer retval=new StringBuffer();
 		
 		retval.append("    " + XMLHandler.addTagValue("file_gis",    gisFileName)); //$NON-NLS-1$ //$NON-NLS-2$
+		retval.append("    " + XMLHandler.addTagValue("skip_failure",skipFailureAdded)); //$NON-NLS-1$ //$NON-NLS-2$
 		retval.append("    " + XMLHandler.addTagValue("limit",       rowLimit)); //$NON-NLS-1$ //$NON-NLS-2$
 		retval.append("    " + XMLHandler.addTagValue("add_rownr",   rowNrAdded)); //$NON-NLS-1$ //$NON-NLS-2$
 		retval.append("    " + XMLHandler.addTagValue("field_rownr", rowNrField)); //$NON-NLS-1$ //$NON-NLS-2$
@@ -229,10 +245,11 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	{
 		try
 		{
-			gisFileName              =      rep.getStepAttributeString (id_step, "file_gis"); //$NON-NLS-1$
-			rowLimit              = (int)rep.getStepAttributeInteger(id_step, "limit"); //$NON-NLS-1$
-			rowNrAdded             =      rep.getStepAttributeBoolean(id_step, "add_rownr"); //$NON-NLS-1$
-			rowNrField           =      rep.getStepAttributeString (id_step, "field_rownr"); //$NON-NLS-1$
+			gisFileName      = rep.getStepAttributeString (id_step, "file_gis"); //$NON-NLS-1$
+			skipFailureAdded = rep.getStepAttributeBoolean(id_step, "skip_failure"); //$NON-NLS-1$
+			rowLimit         = (int)rep.getStepAttributeInteger(id_step, "limit"); //$NON-NLS-1$
+			rowNrAdded       = rep.getStepAttributeBoolean(id_step, "add_rownr"); //$NON-NLS-1$
+			rowNrField       = rep.getStepAttributeString (id_step, "field_rownr"); //$NON-NLS-1$
             
 		}
 		catch(Exception e)
@@ -247,6 +264,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		try
 		{
 			rep.saveStepAttribute(id_transformation, id_step, "file_gis",        gisFileName); //$NON-NLS-1$
+			rep.saveStepAttribute(id_transformation, id_step, "skip_failure",    skipFailureAdded); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "limit",           rowLimit); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "add_rownr",       rowNrAdded); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "field_rownr",     rowNrField); //$NON-NLS-1$
@@ -279,10 +297,10 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
             	String ogr_path = getURLfromFileName(transMeta.environmentSubstitute(gisFileName)).getPath();
             	if (Const.isWindows()) {
             		ogr_path = ogr_path.substring(3).replace('/', '\\');
-            		ogrReader = new OGRReader(ogr_path);
+            		ogrReader = new OGRReader(ogr_path, skipFailureAdded);
             	} else {
             		ogr_path = ogr_path.substring(2);
-            		ogrReader = new OGRReader(ogr_path);
+            		ogrReader = new OGRReader(ogr_path, skipFailureAdded);
             	}
 
             	ogrReader.open();

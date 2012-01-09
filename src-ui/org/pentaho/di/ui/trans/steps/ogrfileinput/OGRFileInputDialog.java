@@ -67,6 +67,10 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 	private TextVar      wFilename;
 	private FormData     fdlFilename, fdbFilename, fdFilename;
     
+	private Label        wlSkipFailure;
+	private Button       wSkipFailure;
+	private FormData     fdlSkipFailure,fdSkipFailure;
+	
 	private Label        wlLimit;
 	private Text         wLimit;
 	private FormData     fdlLimit, fdLimit;
@@ -80,7 +84,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 	private FormData     fdlFieldRownr, fdFieldRownr;
     
 	private OGRFileInputMeta input;
-	private boolean backupChanged, backupAddRownr;
+	private boolean backupChanged, backupAddRownr, backupSkipFailure;
 
 	public OGRFileInputDialog(Shell parent, Object in, TransMeta tr, String sname)
 	{
@@ -105,6 +109,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 			}
 		};
 		backupChanged = input.hasChanged();
+		backupSkipFailure = input.isSkipFailureAdded();
 		backupAddRownr = input.isRowNrAdded();
 
 		FormLayout formLayout = new FormLayout ();
@@ -135,7 +140,6 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdStepname.top  = new FormAttachment(0, margin);
 		fdStepname.right= new FormAttachment(100, 0);
 		wStepname.setLayoutData(fdStepname);
-
 	
 		// Filename line
 		wlFilename=new Label(shell, SWT.RIGHT);
@@ -164,6 +168,24 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdFilename.top  = new FormAttachment(wStepname, margin);
 		wFilename.setLayoutData(fdFilename);
         
+		//Skip failures
+		wlSkipFailure=new Label(shell, SWT.RIGHT);
+		wlSkipFailure.setText(Messages.getString("OGRFileInputDialog.Dialog.SkipFailure.Label")); //$NON-NLS-1$
+ 		props.setLook(wlSkipFailure);
+		fdlSkipFailure=new FormData();
+		fdlSkipFailure.left = new FormAttachment(0, 0);
+		fdlSkipFailure.top  = new FormAttachment(wFilename, margin*2);
+		fdlSkipFailure.right= new FormAttachment(middle, -margin);
+		wlSkipFailure.setLayoutData(fdlSkipFailure);
+		wSkipFailure=new Button(shell, SWT.CHECK );
+ 		props.setLook(wSkipFailure);
+		wSkipFailure.setToolTipText(Messages.getString("OGRFileInputDialog.SkipFailure.Tooltip")); //$NON-NLS-1$
+		fdSkipFailure=new FormData();
+		fdSkipFailure.left = new FormAttachment(middle, 0);
+		fdSkipFailure.top  = new FormAttachment(wFilename, margin);
+		wSkipFailure.setLayoutData(fdSkipFailure);
+		wSkipFailure.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { input.setChanged(); setFlags(); } } );
+
 		// Limit input ...
 		wlLimit=new Label(shell, SWT.RIGHT);
 		wlLimit.setText(Messages.getString("OGRFileInputDialog.LimitSize.Label")); //$NON-NLS-1$
@@ -171,14 +193,14 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdlLimit=new FormData();
 		fdlLimit.left = new FormAttachment(0, 0);
 		fdlLimit.right= new FormAttachment(middle, -margin);
-		fdlLimit.top  = new FormAttachment(wFilename, margin*2);
+		fdlLimit.top  = new FormAttachment(wSkipFailure, margin*2);
 		wlLimit.setLayoutData(fdlLimit);
 		wLimit=new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
  		props.setLook(wLimit);
 		wLimit.addModifyListener(lsMod);
 		fdLimit=new FormData();
 		fdLimit.left = new FormAttachment(middle, 0);
-		fdLimit.top  = new FormAttachment(wFilename, margin);
+		fdLimit.top  = new FormAttachment(wSkipFailure, margin);
 		fdLimit.right= new FormAttachment(100, 0);
 		wLimit.setLayoutData(fdLimit);
 
@@ -308,6 +330,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 			wFilename.setText(input.getGisFileName());
 			wFilename.setToolTipText(transMeta.environmentSubstitute(input.getGisFileName()));
 		}
+		wSkipFailure.setSelection(input.isSkipFailureAdded());
 		wLimit.setText(Integer.toString(input.getRowLimit())); //$NON-NLS-1$
 		wAddRownr.setSelection(input.isRowNrAdded());
 		if (input.getRowNrField()!=null) wFieldRownr.setText(input.getRowNrField());
@@ -320,6 +343,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 	private void cancel()
 	{
 		stepname=null;
+		input.setRowNrAdded( backupSkipFailure );
 		input.setRowNrAdded( backupAddRownr );
 		input.setChanged(backupChanged);
 		dispose();
@@ -329,6 +353,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 	{
 		// copy info to Meta class (input)
 		meta.setGisFileName( wFilename.getText() );
+		meta.setSkipFailureAdded( wSkipFailure.getSelection() );
 		meta.setRowLimit( Const.toInt(wLimit.getText(), 0 ) );
         meta.setRowNrAdded( wAddRownr.getSelection() );
 		meta.setRowNrField( wFieldRownr.getText() );
