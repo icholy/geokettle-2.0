@@ -64,12 +64,12 @@ public class LayerCollection implements Observer
 		return featureIndexes;
 	}
 	
-	public int getGeometryCount(){
+	public int getDisplayCount(){
 		int size = 0;
-		size+=layers.get(Layer.POINT_LAYER).getGeometryCount();
-		size+=layers.get(Layer.LINE_LAYER).getGeometryCount();
-		size+=layers.get(Layer.POLYGON_LAYER).getGeometryCount();
-		size+=layers.get(Layer.COLLECTION_LAYER).getGeometryCount();
+		size+=layers.get(Layer.POINT_LAYER).getDisplayCount();
+		size+=layers.get(Layer.LINE_LAYER).getDisplayCount();
+		size+=layers.get(Layer.POLYGON_LAYER).getDisplayCount();
+		size+=layers.get(Layer.COLLECTION_LAYER).getDisplayCount();
 		return size;
 	}
 
@@ -88,17 +88,32 @@ public class LayerCollection implements Observer
 			if(geom instanceof Point || geom instanceof MultiPoint){
 				type = Layer.POINT_LAYER;
 				layers.get(type).addGeometry((Geometry)geom, batchMode);
+				featureIndexes.get(type).add(featureIndex);
 			}else if(geom instanceof LineString || geom instanceof MultiLineString){
 				type = Layer.LINE_LAYER;
 				layers.get(type).addGeometry((Geometry)geom, batchMode);
+				featureIndexes.get(type).add(featureIndex);
 			}else if(geom instanceof Polygon || geom instanceof MultiPolygon){
 				type = Layer.POLYGON_LAYER;
 				layers.get(type).addGeometry((Geometry)geom, batchMode);
+				featureIndexes.get(type).add(featureIndex);
 			}else if(geom instanceof GeometryCollection){
 				type = Layer.COLLECTION_LAYER;
-				layers.get(type).addGeometry((Geometry)geom, batchMode);
+				layers.get(type).setDisplayCount(layers.get(type).getDisplayCount()+1);
+				addGeometryCollection(geom, batchMode, featureIndex);				
 			}
-			featureIndexes.get(type).add(featureIndex);
+		}
+	}
+	
+	private void addGeometryCollection(Geometry geom, boolean batchMode, int featureIndex){
+		for(int i = 0; i < geom.getNumGeometries(); i++){
+			Geometry subGeom = geom.getGeometryN(i);
+			if(GeometryCollection.class.isAssignableFrom(subGeom.getClass()))
+				addGeometryCollection(subGeom, batchMode, featureIndex);
+			else{
+				layers.get(Layer.COLLECTION_LAYER).addGeometry(subGeom, batchMode);	
+				featureIndexes.get(Layer.COLLECTION_LAYER).add(featureIndex);
+			}
 		}
 	}
 
@@ -124,7 +139,8 @@ public class LayerCollection implements Observer
 	}
 
 	public void update (Observable observable, Object object){
-		if (observable instanceof Layer) layerChanged((Layer) object);		
+		if (observable instanceof Layer) 
+			layerChanged((Layer) object);		
 	}
 	
 	public boolean isVisible(){
@@ -135,7 +151,8 @@ public class LayerCollection implements Observer
 		this.isVisible=isVisible;
 		if(changeLayersVisibility){
 			Iterator<Layer> it = getLayers().iterator();
-			while(it.hasNext())it.next().setVisible(isVisible);
+			while(it.hasNext())
+				it.next().setVisible(isVisible);
 		}
 	}
 }

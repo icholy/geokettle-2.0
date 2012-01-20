@@ -47,17 +47,15 @@ public class GraphicsConverter
 	}
 
 	public Graphics2D getGraphics2D() {
-		if (awtImage == null) 
-			return null;
-
-		return (Graphics2D) awtImage.getGraphics();
+		return awtImage == null?null:(Graphics2D) awtImage.getGraphics();
 	}
 
 	public void render(GC gc) {
-		if (awtImage == null)return;
-		Rectangle clip = gc.getClipping();
-		transferPixels(clip.x, clip.y, clip.width, clip.height);
-		gc.drawImage(swtImage, clip.x, clip.y, clip.width, clip.height, clip.x, clip.y, clip.width, clip.height);
+		if (awtImage != null){
+			Rectangle clip = gc.getClipping();
+			transferPixels(clip.x, clip.y, clip.width, clip.height);
+			gc.drawImage(swtImage, clip.x, clip.y, clip.width, clip.height, clip.x, clip.y, clip.width, clip.height);
+		}
 	}
 
 	private void transferPixels(int clipX, int clipY, int clipW, int clipH) {
@@ -76,13 +74,16 @@ public class GraphicsConverter
 			}
 		}
 
-		if (swtImage != null) swtImage.dispose();
-			swtImage = new Image(Display.getDefault(), swtImageData);
+		if (swtImage != null) 
+			swtImage.dispose();
+		swtImage = new Image(Display.getDefault(), swtImageData);
 	}
 
 	public void dispose() {
-		if (awtImage != null) awtImage.flush();
-		if (swtImage != null) swtImage.dispose();
+		if (awtImage != null) 
+			awtImage.flush();
+		if (swtImage != null) 
+			swtImage.dispose();
 
 		awtImage = null;
 		swtImageData = null;

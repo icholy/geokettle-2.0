@@ -29,7 +29,6 @@ public class SWTMapRenderer
    
 	private GC gc;
 
-	protected MapContext map;
     protected MapLayer[] layers;
 	
     public SWTMapRenderer(GC gc){	

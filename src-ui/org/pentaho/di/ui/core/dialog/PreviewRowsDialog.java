@@ -424,12 +424,13 @@ public class PreviewRowsDialog extends Dialog
         wGeoCanvas.addListener(SWT.MouseEnter, lsMouseListener);
         wGeoCanvas.addListener(SWT.MouseExit, lsMouseListener);
         wGeoCanvas.addListener(SWT.MouseMove, lsMouseListener);
-        		
+
         wGeoCanvas.addListener(SWT.Paint, new Listener(){   	
 			public void handleEvent(Event event) {
+				geoFeaturesManager.updateGeoFeatures();
 	        	if (geoFeaturesManager.getGeometryCount() <= 0)return;
 	        	//Rectangle clientArea = event.display.getClientArea(); /////crash on mac OSX
-	        	//event.gc.setClipping(clientArea);/////crash on mac OSX	            
+	        	//event.gc.setClipping(clientArea);/////crash on mac OSX
 	        	SWTMapRenderer mapRenderer = new SWTMapRenderer(event.gc);
 	            mapRenderer.render(geoFeaturesManager.getMapContext(), geoFeaturesManager.getEnvelope());
 			}        	
@@ -565,6 +566,7 @@ public class PreviewRowsDialog extends Dialog
         bounds = shell.getBounds();
         hscroll = wFields.getHorizontalBar().getSelection();
         vscroll = wFields.getVerticalBar().getSelection();
+        geoFeaturesManager.dispose();
         shell.dispose();
     }
 

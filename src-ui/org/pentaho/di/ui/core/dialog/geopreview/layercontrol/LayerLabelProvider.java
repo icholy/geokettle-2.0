@@ -26,58 +26,57 @@ public class LayerLabelProvider extends LabelProvider implements ITableLabelProv
 		this.tableViewer=tableViewer;
 	}
 	
-	public String getColumnText(Object element, int columnIndex) {				
+	public String getColumnText(Object element, int columnIndex) {	
+		String label = "";
 		if(columnIndex == 0){
 			if(element instanceof LayerCollection)
-				return ((LayerCollection)element).getName()+" ("+((LayerCollection)element).getGeometryCount()+")";
-			if(element instanceof Layer){
+				label = ((LayerCollection)element).getName()+" ("+((LayerCollection)element).getDisplayCount()+")";
+			else if(element instanceof Layer){
 				tableViewer.setChecked(element, ((Layer)element).isVisible());
 				if (((Layer)element).getType()==Layer.POINT_LAYER)
-					return ((Layer)element).labels[Layer.POINT_LAYER]+" ("+((Layer)element).getGeometryCount()+")";
+					label = ((Layer)element).labels[Layer.POINT_LAYER]+" ("+((Layer)element).getDisplayCount()+")";
 				if (((Layer)element).getType()==Layer.COLLECTION_LAYER)
-					return ((Layer)element).labels[Layer.COLLECTION_LAYER]+" ("+((Layer)element).getGeometryCount()+")";
+					label = ((Layer)element).labels[Layer.COLLECTION_LAYER]+" ("+((Layer)element).getDisplayCount()+")";
 				if (((Layer)element).getType()==Layer.LINE_LAYER)
-					return ((Layer)element).labels[Layer.LINE_LAYER]+" ("+((Layer)element).getGeometryCount()+")";
+					label = ((Layer)element).labels[Layer.LINE_LAYER]+" ("+((Layer)element).getDisplayCount()+")";
 				if (((Layer)element).getType()==Layer.POLYGON_LAYER)
-					return ((Layer)element).labels[Layer.POLYGON_LAYER]+" ("+((Layer)element).getGeometryCount()+")";		
-			}
-			if (element instanceof Symbolisation){
+					label = ((Layer)element).labels[Layer.POLYGON_LAYER]+" ("+((Layer)element).getDisplayCount()+")";		
+			}else if (element instanceof Symbolisation){
 				tableViewer.setChecked(element, ((Symbolisation)element).isCustom());
-				return ((Symbolisation)element).getUsage(((Symbolisation)element).getStyleUsage());
+				int index = ((Symbolisation)element).getStyleUsage();
+				if(((Symbolisation)element).getLayerParent().getType()==Layer.COLLECTION_LAYER)
+					index+=10;
+				label = ((Symbolisation)element).getUsage(index);
 			}
-			return "";
-		}else if(columnIndex == 1){
-			if (element instanceof Symbolisation)
-				return ((Symbolisation)element).getFeatureStyle().toString();
-			return "";
-		}			
-		return "";
+		}else if(columnIndex == 1)
+			label = element instanceof Symbolisation?((Symbolisation)element).getFeatureStyle().toString():"";					
+		return label;
 	}
 
-	public Image getColumnImage(Object element, int columnIndex) {			
+	public Image getColumnImage(Object element, int columnIndex) {		
+		Image img = null;
 		if (columnIndex == 0){	
 			if (element instanceof Symbolisation){
-				if((((Symbolisation)element).getStyleUsage()==Symbolisation.PointColor)||(((Symbolisation)element).getStyleUsage()==Symbolisation.PolygonFillColor)||(((Symbolisation)element).getStyleUsage()==Symbolisation.LineStrokeColor) ||(((Symbolisation)element).getStyleUsage()==Symbolisation.PolygonStrokeColor) ||(((Symbolisation)element).getStyleUsage()==Symbolisation.CollectionColor)){
+				if((((Symbolisation)element).getStyleUsage()==Symbolisation.PointColor)||(((Symbolisation)element).getStyleUsage()==Symbolisation.PolygonFillColor)||(((Symbolisation)element).getStyleUsage()==Symbolisation.LineStrokeColor) ||(((Symbolisation)element).getStyleUsage()==Symbolisation.PolygonStrokeColor)){
 					Display d =  Display.getCurrent();							
 					PaletteData paletteData = new PaletteData(new RGB[] {(RGB)((Symbolisation)element).getFeatureStyle(), (RGB)((Symbolisation)element).getFeatureStyle()});
 					ImageData sourceData = new ImageData(10,10,1,paletteData);			
-					return new Image(d,sourceData);
+					img = new Image(d,sourceData);
 				}
-				return null;
 			}
-			return null;
 		}			
-		return null;
+		return img;
     }
 
 	public boolean getChecked(Object element){
+		boolean checked;
 		if(element instanceof LayerCollection)
-			return ((LayerCollection)element).isVisible();
-		if(element instanceof Layer)
-			return ((Layer)element).isVisible();
-		if(element instanceof Symbolisation)
-			return ((Symbolisation)element).isCustom();
-		return true;		
+			checked = ((LayerCollection)element).isVisible();
+		else if(element instanceof Layer)
+			checked = ((Layer)element).isVisible();
+		else 
+			checked = ((Symbolisation)element).isCustom();
+		return checked;		
 	}	
 	
 	public boolean getGrayed(Object element){

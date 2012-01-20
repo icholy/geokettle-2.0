@@ -1,6 +1,7 @@
 package org.pentaho.di.ui.core.util.geo.renderer.swt;
 
 import java.awt.Color;
+import java.util.Arrays;
 import java.util.Random;
 
 import org.eclipse.swt.graphics.RGB;
@@ -23,7 +24,6 @@ import org.geotools.styling.Stroke;
 import org.geotools.styling.Style;
 import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
-import org.geotools.styling.Symbolizer;
 import org.opengis.filter.FilterFactory;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -41,7 +41,6 @@ public class LayerFactory
     private final String DEFAULT_POINT_LAYER_STYLE_NAME = "Point Layer Style";
     private final String DEFAULT_POLYGON_LAYER_STYLE_NAME = "Polygon Layer Style";
     private final String DEFAULT_LINE_LAYER_STYLE_NAME = "Line Layer Style";
-    private final String DEFAULT_COLLECTION_LAYER_STYLE_NAME = "Collection Layer Style";
     private final String DEFAULT_ALL_STYLE_LAYER_NAME = "All Style";
     
     private final double DEFAULT_POINT_ROTATION = 0;
@@ -50,23 +49,6 @@ public class LayerFactory
     public static final String DEFAULT_COLOR = "#000000"; 
     public static final String DEFAULT_STROKE_WIDTH = "1";
     public static final String DEFAULT_RADIUS = "6"; 
-
-	/*private final String DEFAULT_CRS_WKT = "PROJCS[\"WGS 84 / UPS South\"," +
-    "GEOGCS[\"WGS 84\"," +
-        "DATUM[\"WGS_1984\"," +
-            "SPHEROID[\"WGS 84\",6378137,298.257223563, AUTHORITY[\"EPSG\",\"7030\"]]," +
-            "AUTHORITY[\"EPSG\",\"6326\"]]," +
-        "PRIMEM[\"Greenwich\", 0,AUTHORITY[\"EPSG\",\"8901\"]]," +
-        "UNIT[\"degree\",0.01745329251994328,AUTHORITY[\"EPSG\",\"9122\"]]," +
-        "AUTHORITY[\"EPSG\",\"4326\"]]," +
-    "PROJECTION[\"Polar_Stereographic\"]," +
-    "PARAMETER[\"latitude_of_origin\",-90]," +
-    "PARAMETER[\"central_meridian\",0]," +
-    "PARAMETER[\"scale_factor\",0.994]," +
-    "PARAMETER[\"false_easting\",0000000]," +
-    "PARAMETER[\"false_northing\",0000000]," +
-    "UNIT[\"metre\",1,AUTHORITY[\"EPSG\",\"9001\"]]," +
-    "AUTHORITY[\"EPSG\",\"32761\"]]";*/
 
     private CoordinateReferenceSystem DEFAULT_CRS;
     private StyleFactory sf;
@@ -111,7 +93,6 @@ public class LayerFactory
 		return context;
 	}
 
-	@SuppressWarnings("deprecation")
 	private FeatureTypeStyle createDefaultPolygonFeatureTypeStyle(String strokeColor, String strokeWidth, String fillColor, String opacity){
 		Stroke polygonStroke = sf.getDefaultStroke();
         polygonStroke.setWidth(filterFactory.literal(new Integer(strokeWidth)));
@@ -127,43 +108,12 @@ public class LayerFactory
         polySym.setStroke(polygonStroke);
 
         Rule polygonRule = sf.createRule();
-        polygonRule.setSymbolizers(new Symbolizer[]{polySym});
+        polygonRule.symbolizers().add(polySym);
         FeatureTypeStyle polygonFeatureTypeStyle = sf.createFeatureTypeStyle(new Rule[]{polygonRule});
         
         return polygonFeatureTypeStyle;
 	}
-	
-	@SuppressWarnings("deprecation")
-	private FeatureTypeStyle createDefaultCollectionFeatureTypeStyle(String color, String opacity){
-		Stroke collectionStroke = sf.getDefaultStroke();
-		collectionStroke.setWidth(filterFactory.literal(new Integer(DEFAULT_STROKE_WIDTH)));
-		collectionStroke.setColor(filterFactory.literal(color));
-		collectionStroke.setOpacity(filterFactory.literal(opacity));
-        
-        Fill collectionFill = sf.getDefaultFill();        
-        collectionFill.setColor(filterFactory.literal(color));        
-        collectionFill.setOpacity(filterFactory.literal(opacity));      
-        
-		StyleBuilder sb = new StyleBuilder();
-		Mark circle = sb.createMark(StyleBuilder.MARK_CIRCLE, collectionFill,collectionStroke);
-		Graphic graph = sb.createGraphic(null, circle, null,Double.parseDouble(opacity), Double.parseDouble(DEFAULT_RADIUS), DEFAULT_POINT_ROTATION);
-        PointSymbolizer pointSymbolizer = sb.createPointSymbolizer(graph);
-        
-        LineSymbolizer lineSymbolizer = sf.createLineSymbolizer();
-        lineSymbolizer.setStroke(collectionStroke);
-        
-        PolygonSymbolizer polySymbolizer = sf.createPolygonSymbolizer();
-        polySymbolizer.setFill(collectionFill);
-        polySymbolizer.setStroke(collectionStroke);
 
-        Rule collectionRule = sf.createRule();
-        collectionRule.setSymbolizers(new Symbolizer[]{pointSymbolizer, lineSymbolizer, polySymbolizer});
-        FeatureTypeStyle polygonFeatureTypeStyle = sf.createFeatureTypeStyle(new Rule[]{collectionRule});
-        
-        return polygonFeatureTypeStyle;
-	}
-
-	@SuppressWarnings("deprecation")
 	private FeatureTypeStyle createDefaultPointFeatureTypeStyle(String radius, String color, String opacity){	
 		Fill pointFill = sf.getDefaultFill();        
 		pointFill.setColor(filterFactory.literal(color));        
@@ -179,15 +129,13 @@ public class LayerFactory
 		Graphic graph = sb.createGraphic(null, circle, null, Double.parseDouble(opacity), Double.parseDouble(radius) , DEFAULT_POINT_ROTATION);
         PointSymbolizer pointSymbolizer = sb.createPointSymbolizer(graph);		
         
-        // Rule
         Rule pointRule = sf.createRule();
-        pointRule.setSymbolizers(new Symbolizer[]{pointSymbolizer});
+        pointRule.symbolizers().add(pointSymbolizer);
         FeatureTypeStyle pointFeatureTypeStyle = sf.createFeatureTypeStyle(new Rule[]{pointRule});
 		
         return pointFeatureTypeStyle;
 	}
 
-	@SuppressWarnings("deprecation")
 	private FeatureTypeStyle createDefaultLineFeatureTypeStyle(String strokeWidth, String strokeColor, String opacity){		
 		StyleFactory sf = CommonFactoryFinder.getStyleFactory(new Hints(Hints.KEY_RENDERING, Hints.VALUE_RENDER_SPEED));
 		FilterFactory filterFactory = new FilterFactoryImpl();
@@ -201,61 +149,46 @@ public class LayerFactory
         lineSymbolizer.setStroke(lineStroke);
         
         Rule lineRule = sf.createRule();
-        lineRule.setSymbolizers(new Symbolizer[]{lineSymbolizer});
+        lineRule.symbolizers().add(lineSymbolizer);
         FeatureTypeStyle lineFeatureTypeStyle = sf.createFeatureTypeStyle(new Rule[]{lineRule});
         
         return lineFeatureTypeStyle;
 	}
 
-	@SuppressWarnings("deprecation")
-	public Style createDefaultPolygonLayerStyle(String strokeColor, String strokeWidth, String fillColor,String opacity){
-		FeatureTypeStyle fts = createDefaultPolygonFeatureTypeStyle(strokeColor, strokeWidth, fillColor,opacity);
+	public Style createDefaultPolygonLayerStyle(String strokeColor, String strokeWidth, String fillColor, String opacity){
+		FeatureTypeStyle polygonFeatureTypeStyle = createDefaultPolygonFeatureTypeStyle(strokeColor, strokeWidth, fillColor, opacity);
 		Style polygonStyle = sf.createStyle();
-        polygonStyle.setFeatureTypeStyles(new FeatureTypeStyle[]{fts});
+		polygonStyle.featureTypeStyles().add(polygonFeatureTypeStyle);
 		polygonStyle.setName(DEFAULT_POLYGON_LAYER_STYLE_NAME);
 		
 		return polygonStyle;
 	}
 
-	@SuppressWarnings("deprecation")
 	public Style createDefaultLineLayerStyle(String strokeWidth, String strokeColor, String opacity){
 		FeatureTypeStyle lineFeatureTypeStyle = createDefaultLineFeatureTypeStyle(strokeWidth, strokeColor, opacity);
 		Style lineStyle = sf.createStyle();
-        lineStyle.setFeatureTypeStyles(new FeatureTypeStyle[]{lineFeatureTypeStyle});
+		lineStyle.featureTypeStyles().add(lineFeatureTypeStyle);
 		lineStyle.setName(DEFAULT_LINE_LAYER_STYLE_NAME);
 		
 		return lineStyle;	
 	}
 
-	@SuppressWarnings("deprecation")
 	public Style createDefaultPointLayerStyle(String radius, String color, String opacity){
 		FeatureTypeStyle pointFeatureTypeStyle = createDefaultPointFeatureTypeStyle(radius, color, opacity);		
 		Style pointStyle = sf.createStyle();
-        pointStyle.setFeatureTypeStyles(new FeatureTypeStyle[]{pointFeatureTypeStyle});
+		pointStyle.featureTypeStyles().add(pointFeatureTypeStyle);
 		pointStyle.setName(DEFAULT_POINT_LAYER_STYLE_NAME);
 		
 		return pointStyle;	
 	}
-	
-	@SuppressWarnings("deprecation")
-	public Style createDefaultCollectionLayerStyle(String color, String opacity){
-		FeatureTypeStyle collectionFeatureTypeStyle = createDefaultCollectionFeatureTypeStyle(color, opacity);		
-		Style collectionStyle = sf.createStyle();
-		collectionStyle.setFeatureTypeStyles(new FeatureTypeStyle[]{collectionFeatureTypeStyle});
-		collectionStyle.setName(DEFAULT_COLLECTION_LAYER_STYLE_NAME);
-		
-		return collectionStyle;	
-	}
 
-	@SuppressWarnings("deprecation")
 	public Style createDefaultLayerStyles(){
-		FeatureTypeStyle collectionFeatureTypeStyle = createDefaultCollectionFeatureTypeStyle(DEFAULT_COLOR, DEFAULT_OPACITY);
 		FeatureTypeStyle polygonFeatureTypeStyle = createDefaultPolygonFeatureTypeStyle(DEFAULT_COLOR, DEFAULT_STROKE_WIDTH, DEFAULT_COLOR, DEFAULT_OPACITY);
 		FeatureTypeStyle pointFeatureTypeStyle = createDefaultPointFeatureTypeStyle(DEFAULT_RADIUS, DEFAULT_COLOR, DEFAULT_OPACITY);
 		FeatureTypeStyle lineFeatureTypeStyle = createDefaultLineFeatureTypeStyle(DEFAULT_STROKE_WIDTH, DEFAULT_COLOR, DEFAULT_OPACITY);
 
 		Style allStyle = sf.createStyle();
-        allStyle.setFeatureTypeStyles(new FeatureTypeStyle[]{polygonFeatureTypeStyle, pointFeatureTypeStyle, lineFeatureTypeStyle, collectionFeatureTypeStyle});
+		allStyle.featureTypeStyles().addAll(Arrays.asList(new FeatureTypeStyle[]{polygonFeatureTypeStyle, pointFeatureTypeStyle, lineFeatureTypeStyle}));
         allStyle.setName(DEFAULT_ALL_STYLE_LAYER_NAME);
 		
 		return allStyle;		

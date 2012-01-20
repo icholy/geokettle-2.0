@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 
-
 import org.pentaho.di.ui.core.util.geo.renderer.swt.LayerFactory;
 import org.pentaho.di.ui.core.dialog.geopreview.layercontrol.Messages;
 import com.vividsolutions.jts.geom.Geometry;
@@ -36,6 +35,8 @@ public class Layer extends Observable
 	private String name;
 	
 	private int type;
+	
+	private int displayCount;
 
 	private boolean visible; 
 
@@ -46,6 +47,7 @@ public class Layer extends Observable
 	private LayerCollection layerCollectionParent;
 
 	public Layer(String name, int layerType, LayerCollection layerCollectionParent){
+		displayCount = 0;
 		Symbolisation s;
 		this.name = name+labels[layerType];
 		this.type= layerType;
@@ -92,10 +94,35 @@ public class Layer extends Observable
 				style.add(s);
 	        	break;
 	        case COLLECTION_LAYER:
-	        	s=new Symbolisation(Symbolisation.CollectionColor,(Object)LayerFactory.getRandomColor());
+	        	Object color = (Object)LayerFactory.getRandomColor();
+	        	s=new Symbolisation(Symbolisation.PointColor, color);
 				s.setLayerParent(this);
 				style.add(s);
-				s=new Symbolisation(Symbolisation.CollectionOpacity, LayerFactory.DEFAULT_OPACITY);
+				s=new Symbolisation(Symbolisation.Radius,LayerFactory.DEFAULT_RADIUS );
+				s.setLayerParent(this);
+				style.add(s);
+				s=new Symbolisation(Symbolisation.PointOpacity, LayerFactory.DEFAULT_OPACITY);
+				s.setLayerParent(this);
+				style.add(s);
+				s=new Symbolisation(Symbolisation.LineStrokeWidth, LayerFactory.DEFAULT_STROKE_WIDTH);
+				s.setLayerParent(this);
+				style.add(s);
+				s=new Symbolisation(Symbolisation.LineStrokeColor,color);
+				s.setLayerParent(this);			
+				style.add(s);
+				s=new Symbolisation(Symbolisation.LineOpacity, LayerFactory.DEFAULT_OPACITY);
+				s.setLayerParent(this);
+				style.add(s);
+				s=new Symbolisation(Symbolisation.PolygonStrokeWidth,LayerFactory.DEFAULT_STROKE_WIDTH);
+				s.setLayerParent(this);
+				style.add(s);
+				s=new Symbolisation(Symbolisation.PolygonStrokeColor,(Object)LayerFactory.getDefaultColor());
+				s.setLayerParent(this);
+				style.add(s);
+				s=new Symbolisation(Symbolisation.PolygonFillColor,color);
+				s.setLayerParent(this);
+				style.add(s);
+				s=new Symbolisation(Symbolisation.PolygonOpacity, LayerFactory.DEFAULT_OPACITY);
 				s.setLayerParent(this);
 				style.add(s);
 	        	break;
@@ -147,6 +174,14 @@ public class Layer extends Observable
 	
 	public int getGeometryCount(){
 		return geodata.size();
+	}
+	
+	public void setDisplayCount(int count){
+		displayCount = count;
+	}
+	
+	public int getDisplayCount(){
+		return this.type == COLLECTION_LAYER?displayCount:getGeometryCount();
 	}
 
 	public GeometryWrapper getGeometry(int index){
