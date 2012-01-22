@@ -4913,7 +4913,7 @@ public class Database implements VariableSpace
 					if (string.contains("'")) {
 						switch(databaseMeta.getDatabaseType()) {
 						case DatabaseMeta.TYPE_DATABASE_MYSQL: string = string.replace("'", "\\'"); break;
-						default: string.replace("'", "''"); break;
+						default: string = string.replace("'", "''"); break;
 						}
 					}
 					ins.append("'" + string + "'") ;
