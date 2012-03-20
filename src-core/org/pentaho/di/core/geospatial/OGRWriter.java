@@ -1,6 +1,7 @@
 package org.pentaho.di.core.geospatial;
 
 import java.io.File;
+import java.util.Date;
 import java.util.Vector;
 
 import org.gdal.ogr.DataSource;
@@ -11,6 +12,7 @@ import org.gdal.ogr.Layer;
 import org.gdal.ogr.ogr;
 import org.gdal.ogr.ogrConstants;
 import org.gdal.osr.SpatialReference;
+import org.mortbay.log.Log;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.logging.LogWriter;
@@ -222,8 +224,7 @@ public class OGRWriter
 						break;
 					case ValueMeta.TYPE_DATE:
 						debug = "date attribute "+i;
-						//TODO Handle correctly writing of OGR datetime data types 
-						ogrFeature.SetField(j, (String)r[i]);
+						ogrFeature.SetField(j, ((Date)r[i]).getYear()+1900, ((Date)r[i]).getMonth()+1, ((Date)r[i]).getDate(), ((Date)r[i]).getHours(), ((Date)r[i]).getMinutes(), ((Date)r[i]).getSeconds(), ((Date)r[i]).getTimezoneOffset());
 						j++;
 						break;
 					case ValueMeta.TYPE_BOOLEAN:

@@ -1,5 +1,7 @@
 package org.pentaho.di.core.geospatial;
 
+import java.util.Date;
+
 import org.gdal.ogr.DataSource;
 import org.gdal.ogr.Driver;
 import org.gdal.ogr.Feature;
@@ -223,6 +225,14 @@ public class OGRReader
 				int ogrFieldType = ogrFeature.GetFieldType(k);
 
 				if (ogrFeature.IsFieldSet(k)) {
+
+					int[] pnYear = new int[1];
+					int[] pnMonth = new int[1];
+					int[] pnDay = new int[1];
+					int[] pnHour = new int[1];
+					int[] pnMinute = new int[1];
+					int[] pnSecond = new int[1];
+					int[] pnTZFlag = new int[1];
 					
 					switch (ogrFieldType) {
 						case ogrConstants.OFTInteger:
@@ -241,15 +251,22 @@ public class OGRReader
 							debug = "widestring attribute";
 							r[k] = ogrFeature.GetFieldAsString(k);
 							break;
-//						case ogrConstants.OFTDate:
-//							debug = "date attribute";
-//							r[k] = ogrFeature.GetFieldAsDateTime(k, pnYear, pnMonth, pnDay, pnHour, pnMinute, pnSecond, pnTZFlag);
-//							break;
-						// TODO Add the cases of OGR datetime (date, time, datetime) data types and other datatypes (binary, integer|real|string lists, etc.)
-//						case ogrConstants.OFTDate:
-//							System.out.print(ogrFeature.GetFieldAsDateTime(id, pnYear, pnMonth, pnDay, pnHour, pnMinute, pnSecond, pnTZFlag);
-//									+ ",");
-//							break;
+						case ogrConstants.OFTDate:
+							debug = "date attribute";
+							ogrFeature.GetFieldAsDateTime(k, pnYear, pnMonth, pnDay, pnHour, pnMinute, pnSecond, pnTZFlag);
+							r[k] = new Date(pnYear[0]-1900, pnMonth[0]-1, pnDay[0], pnHour[0], pnMinute[0], pnSecond[0]); 
+							break;
+						case ogrConstants.OFTDateTime:
+							debug = "date attribute";
+							ogrFeature.GetFieldAsDateTime(k, pnYear, pnMonth, pnDay, pnHour, pnMinute, pnSecond, pnTZFlag);
+							r[k] = new Date(pnYear[0]-1900, pnMonth[0]-1, pnDay[0], pnHour[0], pnMinute[0], pnSecond[0]); 
+							break;
+						case ogrConstants.OFTTime:
+							debug = "date attribute";
+							ogrFeature.GetFieldAsDateTime(k, pnYear, pnMonth, pnDay, pnHour, pnMinute, pnSecond, pnTZFlag);
+							r[k] = new Date(pnYear[0]-1900, pnMonth[0]-1, pnDay[0], pnHour[0], pnMinute[0], pnSecond[0]); 
+							break;
+						// TODO Add the cases of other data types (binary, integer|real|string lists, etc.)
 						default:
 							debug = "default datatype attribute";
 							r[k] = ogrFeature.GetFieldAsString(k);
