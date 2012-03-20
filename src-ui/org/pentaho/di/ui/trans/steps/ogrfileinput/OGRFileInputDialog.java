@@ -1,24 +1,3 @@
- /**********************************************************************
- **                                                                   **
- **               This code belongs to the KETTLE project.            **
- **                                                                   **
- ** Kettle, from version 2.2 on, is released into the public domain   **
- ** under the Lesser GNU Public License (LGPL).                       **
- **                                                                   **
- ** For more details, please read the document LICENSE.txt, included  **
- ** in this project                                                   **
- **                                                                   **
- ** http://www.kettle.be                                              **
- ** info@kettle.be                                                    **
- **                                                                   **
- **********************************************************************/
-
- 
-/*
- * Created on 18-mei-2003
- *
- */
-
 package org.pentaho.di.ui.trans.steps.ogrfileinput;
 
 import org.eclipse.swt.SWT;
@@ -66,7 +45,19 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 	private Button       wbFilename;
 	private TextVar      wFilename;
 	private FormData     fdlFilename, fdbFilename, fdFilename;
-    
+
+	private Label        wlConnectionString;
+	private TextVar      wConnectionString;
+	private FormData     fdlConnectionString, fdConnectionString;
+
+	private Label        wlSpatialFilter;
+	private TextVar      wSpatialFilter;
+	private FormData     fdlSpatialFilter, fdSpatialFilter;
+	
+	private Label        wlAttributeFilter;
+	private TextVar      wAttributeFilter;
+	private FormData     fdlAttributeFilter, fdAttributeFilter;
+	
 	private Label        wlSkipFailure;
 	private Button       wSkipFailure;
 	private FormData     fdlSkipFailure,fdSkipFailure;
@@ -167,14 +158,71 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdFilename.right= new FormAttachment(wbFilename, -margin);
 		fdFilename.top  = new FormAttachment(wStepname, margin);
 		wFilename.setLayoutData(fdFilename);
-        
+		
+		// Connection string line
+		wlConnectionString=new Label(shell, SWT.RIGHT);
+		wlConnectionString.setText(Messages.getString("OGRFileInputDialog.Dialog.ConnectionString.Label")); //$NON-NLS-1$
+ 		props.setLook(wlConnectionString);
+		fdlConnectionString=new FormData();
+		fdlConnectionString.left = new FormAttachment(0, 0);
+		fdlConnectionString.right= new FormAttachment(middle, -margin);
+		fdlConnectionString.top  = new FormAttachment(wbFilename, margin*2);
+		wlConnectionString.setLayoutData(fdlConnectionString);
+		wConnectionString=new TextVar(transMeta, shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+		//wConnectionString.setText(connectionString);
+ 		props.setLook(wConnectionString);
+		wConnectionString.addModifyListener(lsMod);
+		fdConnectionString=new FormData();
+		fdConnectionString.left = new FormAttachment(middle, 0);
+		fdConnectionString.top  = new FormAttachment(wbFilename, margin);
+		fdConnectionString.right= new FormAttachment(100, 0);
+		wConnectionString.setLayoutData(fdConnectionString);		
+
+		// Spatial filter line
+		wlSpatialFilter=new Label(shell, SWT.RIGHT);
+		wlSpatialFilter.setText(Messages.getString("OGRFileInputDialog.Dialog.SpatialFilter.Label")); //$NON-NLS-1$
+ 		props.setLook(wlSpatialFilter);
+		fdlSpatialFilter=new FormData();
+		fdlSpatialFilter.left = new FormAttachment(0, 0);
+		fdlSpatialFilter.right= new FormAttachment(middle, -margin);
+		fdlSpatialFilter.top  = new FormAttachment(wConnectionString, margin*2);
+		wlSpatialFilter.setLayoutData(fdlSpatialFilter);
+		wSpatialFilter=new TextVar(transMeta, shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+		//wSpatialFilter.setText(SpatialFilter);
+ 		props.setLook(wSpatialFilter);
+		wSpatialFilter.addModifyListener(lsMod);
+		fdSpatialFilter=new FormData();
+		fdSpatialFilter.left = new FormAttachment(middle, 0);
+		fdSpatialFilter.top  = new FormAttachment(wConnectionString, margin);
+		fdSpatialFilter.right= new FormAttachment(100, 0);
+		wSpatialFilter.setLayoutData(fdSpatialFilter);		
+
+		// Where clause line
+		wlAttributeFilter=new Label(shell, SWT.RIGHT);
+		wlAttributeFilter.setText(Messages.getString("OGRFileInputDialog.Dialog.WhereClause.Label")); //$NON-NLS-1$
+ 		props.setLook(wlAttributeFilter);
+		fdlAttributeFilter=new FormData();
+		fdlAttributeFilter.left = new FormAttachment(0, 0);
+		fdlAttributeFilter.right= new FormAttachment(middle, -margin);
+		fdlAttributeFilter.top  = new FormAttachment(wSpatialFilter, margin*2);
+		wlAttributeFilter.setLayoutData(fdlAttributeFilter);
+		wAttributeFilter=new TextVar(transMeta, shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+		//wAttributeFilter.setText(AttributeFilter);
+ 		props.setLook(wAttributeFilter);
+		wAttributeFilter.addModifyListener(lsMod);
+		fdAttributeFilter=new FormData();
+		fdAttributeFilter.left = new FormAttachment(middle, 0);
+		fdAttributeFilter.top  = new FormAttachment(wSpatialFilter, margin);
+		fdAttributeFilter.right= new FormAttachment(100, 0);
+		wAttributeFilter.setLayoutData(fdAttributeFilter);		
+		
 		//Skip failures
 		wlSkipFailure=new Label(shell, SWT.RIGHT);
 		wlSkipFailure.setText(Messages.getString("OGRFileInputDialog.Dialog.SkipFailure.Label")); //$NON-NLS-1$
  		props.setLook(wlSkipFailure);
 		fdlSkipFailure=new FormData();
 		fdlSkipFailure.left = new FormAttachment(0, 0);
-		fdlSkipFailure.top  = new FormAttachment(wFilename, margin*2);
+		fdlSkipFailure.top  = new FormAttachment(wAttributeFilter, margin*2);
 		fdlSkipFailure.right= new FormAttachment(middle, -margin);
 		wlSkipFailure.setLayoutData(fdlSkipFailure);
 		wSkipFailure=new Button(shell, SWT.CHECK );
@@ -182,7 +230,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		wSkipFailure.setToolTipText(Messages.getString("OGRFileInputDialog.SkipFailure.Tooltip")); //$NON-NLS-1$
 		fdSkipFailure=new FormData();
 		fdSkipFailure.left = new FormAttachment(middle, 0);
-		fdSkipFailure.top  = new FormAttachment(wFilename, margin);
+		fdSkipFailure.top  = new FormAttachment(wAttributeFilter, margin);
 		wSkipFailure.setLayoutData(fdSkipFailure);
 		wSkipFailure.addSelectionListener(new SelectionAdapter() { public void widgetSelected(SelectionEvent e) { input.setChanged(); setFlags(); } } );
 
@@ -263,14 +311,6 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		wStepname.addSelectionListener( lsDef );
 		wLimit.addSelectionListener( lsDef );
 		wFieldRownr.addSelectionListener( lsDef );
-
-		wFilename.addModifyListener(new ModifyListener()
-		{
-			public void modifyText(ModifyEvent arg0)
-			{
-				wFilename.setToolTipText(transMeta.environmentSubstitute(wFilename.getText()));
-			}
-		});
 		
 		wbFilename.addSelectionListener
 		(
@@ -278,6 +318,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 			{
 				public void widgetSelected(SelectionEvent e) 
 				{
+					wConnectionString.setText("");
 					FileDialog dialog = new FileDialog(shell, SWT.OPEN);
 
 					if (wFilename.getText()!=null)
@@ -330,6 +371,22 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 			wFilename.setText(input.getGisFileName());
 			wFilename.setToolTipText(transMeta.environmentSubstitute(input.getGisFileName()));
 		}
+		
+		if (input.getConnectionString() != null) 
+		{
+			wConnectionString.setText(input.getConnectionString());
+		}
+		
+		if (input.getSpatialFilter() != null) 
+		{
+			wSpatialFilter.setText(input.getSpatialFilter());
+		}
+
+		if (input.getAttributeFilter() != null) 
+		{
+			wAttributeFilter.setText(input.getAttributeFilter());
+		}
+		
 		wSkipFailure.setSelection(input.isSkipFailureAdded());
 		wLimit.setText(Integer.toString(input.getRowLimit())); //$NON-NLS-1$
 		wAddRownr.setSelection(input.isRowNrAdded());
@@ -338,6 +395,24 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
         setFlags();
 		
 		wStepname.selectAll();
+		
+		wFilename.addModifyListener(new ModifyListener()
+		{
+			public void modifyText(ModifyEvent arg0)
+			{
+				wFilename.setToolTipText(transMeta.environmentSubstitute(wFilename.getText()));
+				//wConnectionString.setText("");
+			}
+		});
+		
+		wConnectionString.addModifyListener(new ModifyListener()
+		{
+			public void modifyText(ModifyEvent arg0)
+			{
+				wFilename.setText("");
+			}
+		});
+
 	}
 	
 	private void cancel()
@@ -353,12 +428,15 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 	{
 		// copy info to Meta class (input)
 		meta.setGisFileName( wFilename.getText() );
+		meta.setConnectionString(wConnectionString.getText() );
+		meta.setSpatialFilter(wSpatialFilter.getText() );
+		meta.setAttributeFilter(wAttributeFilter.getText() );
 		meta.setSkipFailureAdded( wSkipFailure.getSelection() );
 		meta.setRowLimit( Const.toInt(wLimit.getText(), 0 ) );
         meta.setRowNrAdded( wAddRownr.getSelection() );
 		meta.setRowNrField( wFieldRownr.getText() );
 
-		if (Const.isEmpty(meta.getGisFileName()))
+		if (Const.isEmpty(meta.getGisFileName()) && Const.isEmpty(meta.getConnectionString()))
 		{
 			throw new KettleStepException(Messages.getString("OGRFileInputDialog.Exception.SpecifyAFileToUse")); //$NON-NLS-1$
 		}

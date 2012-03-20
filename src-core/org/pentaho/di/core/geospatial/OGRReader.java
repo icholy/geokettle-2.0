@@ -37,14 +37,19 @@ public class OGRReader
     private boolean error;
     private boolean skipFailure;
     
+    private String spatialFilter;
+    private String attributeFilter;
+    
     private DataSource ogrDataSource;
     private Layer ogrLayer;
     private FeatureDefn ogrLayerDefinition;
 
-    public OGRReader(String dataSourcePath, boolean skipFailure)
+    public OGRReader(String dataSourcePath, String spatialFilter, String attributeFilter, boolean skipFailure)
     {
         this.log      = LogWriter.getInstance();
         this.ogrDataSourcePath = dataSourcePath; 
+        this.spatialFilter = spatialFilter;
+        this.attributeFilter = attributeFilter;
         this.skipFailure = skipFailure;
         error         = false;
         ogrDataSource = null;
@@ -79,6 +84,16 @@ public class OGRReader
  	        	if (ogrLayer.GetFeatureCount()>0)
  	        		break;
  	        }
+ 	        
+ 	        if ((spatialFilter != null) && !(spatialFilter.trim().equals(""))) {
+ 	        	String[] spatialFilterArray = spatialFilter.split(",");
+ 	        	ogrLayer.SetSpatialFilterRect(Double.parseDouble(spatialFilterArray[0]),Double.parseDouble(spatialFilterArray[1]),Double.parseDouble(spatialFilterArray[2]),Double.parseDouble(spatialFilterArray[3]));
+ 	        }
+ 	        
+ 	        if ((attributeFilter != null) && !(attributeFilter.trim().equals(""))) {
+ 	        	ogrLayer.SetAttributeFilter(attributeFilter);
+ 	        }
+ 	        
 			ogrLayerDefinition = ogrLayer.GetLayerDefn();
 			
 		}
@@ -226,6 +241,10 @@ public class OGRReader
 							debug = "widestring attribute";
 							r[k] = ogrFeature.GetFieldAsString(k);
 							break;
+//						case ogrConstants.OFTDate:
+//							debug = "date attribute";
+//							r[k] = ogrFeature.GetFieldAsDateTime(k, pnYear, pnMonth, pnDay, pnHour, pnMinute, pnSecond, pnTZFlag);
+//							break;
 						// TODO Add the cases of OGR datetime (date, time, datetime) data types and other datatypes (binary, integer|real|string lists, etc.)
 //						case ogrConstants.OFTDate:
 //							System.out.print(ogrFeature.GetFieldAsDateTime(id, pnYear, pnMonth, pnDay, pnHour, pnMinute, pnSecond, pnTZFlag);
