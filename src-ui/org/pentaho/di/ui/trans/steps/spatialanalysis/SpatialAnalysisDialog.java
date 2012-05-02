@@ -107,6 +107,8 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
         	setDualOptions(false);
         else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.REVERSE"))) 
         	setDualOptions(false);
+        else if (wAnalysis.getText().equals(Messages.getString("SpatialAnalysisMeta.AnalysisType.SPLITGC"))) 
+        	setDualOptions(false);
         else{
         	setDualOptions(true);  
         	wDistField.setEnabled(false);
@@ -202,6 +204,7 @@ public class SpatialAnalysisDialog extends BaseStepDialog implements StepDialogI
         wAnalysis.add(Messages.getString("SpatialAnalysisMeta.AnalysisType.DIFFERENCE"));
         wAnalysis.add(Messages.getString("SpatialAnalysisMeta.AnalysisType.CONVEX_HULL"));
         wAnalysis.add(Messages.getString("SpatialAnalysisMeta.AnalysisType.REVERSE"));
+        wAnalysis.add(Messages.getString("SpatialAnalysisMeta.AnalysisType.SPLITGC"));
         wAnalysis.select(0); 
         props.setLook(wAnalysis);
         fdAnalysis = new FormData();

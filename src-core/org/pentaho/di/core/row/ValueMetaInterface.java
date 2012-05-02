@@ -678,6 +678,61 @@ public interface ValueMetaInterface extends Cloneable
 	 */
 	public boolean SpatialIsValid(Object data) throws KettleValueException;
 	
+	/**
+	 * Tests geometry type: returns true if geometry is POINT
+	 * @param data Geometry object
+	 * @return evaluation of geometry type
+	 * @throws KettleValueException
+	 */
+	public boolean SpatialIsPoint(Object data) throws KettleValueException;
+	
+	/**
+	 * Tests geometry type: returns true if geometry is LINESTRING
+	 * @param data Geometry object
+	 * @return evaluation of geometry type
+	 * @throws KettleValueException
+	 */
+	public boolean SpatialIsLineString(Object data) throws KettleValueException;
+	
+	/**
+	 * Tests geometry type: returns true if geometry is POLYGON
+	 * @param data Geometry object
+	 * @return evaluation of geometry type
+	 * @throws KettleValueException
+	 */
+	public boolean SpatialIsPolygon(Object data) throws KettleValueException;
+	
+	/**
+	 * Tests geometry type: returns true if geometry is GEOMETRYCOLLECTION
+	 * @param data Geometry object
+	 * @return evaluation of geometry type
+	 * @throws KettleValueException
+	 */
+	public boolean SpatialIsGeometryCollection(Object data) throws KettleValueException;
+	
+	/**
+	 * Tests geometry type: returns true if geometry is MULTIPOINT
+	 * @param data Geometry object
+	 * @return evaluation of geometry type
+	 * @throws KettleValueException
+	 */
+	public boolean SpatialIsMultiPoint(Object data) throws KettleValueException;
+	
+	/**
+	 * Tests geometry type: returns true if geometry is MULTILINESTRING
+	 * @param data Geometry object
+	 * @return evaluation of geometry type
+	 * @throws KettleValueException
+	 */
+	public boolean SpatialIsMultiLineString(Object data) throws KettleValueException;
+		
+	/**
+	 * Tests geometry type: returns true if geometry is MULTIPOLYGON
+	 * @param data Geometry object
+	 * @return evaluation of geometry type
+	 * @throws KettleValueException
+	 */
+	public boolean SpatialIsMultiPolygon(Object data) throws KettleValueException;
 	// -- End GeoKettle modification --
 	
 }

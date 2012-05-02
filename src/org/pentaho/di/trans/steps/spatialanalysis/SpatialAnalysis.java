@@ -271,7 +271,7 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
 	    	}
     	}	
         
-		putRow(data.outputRowMeta, RowDataUtil.addValueData(outputRow,  data.outputIndex, executeAnalysis(meta.getSpatialAnalysisByDesc())));
+		putRow(data.outputRowMeta, RowDataUtil.addValueData(outputRow,  data.outputIndex, executeAnalysis(meta.getSpatialAnalysisByDesc(), outputRow)));
 		
         data.one = getRowFrom(data.oneRowSet);
 
@@ -284,10 +284,11 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
 		return true;
 	}
 	
-	public Geometry executeAnalysis(int analysis) throws KettleException{	
+	public Geometry executeAnalysis(int analysis, Object[] outputRow) throws KettleException{	
 		Geometry result = null;
-		if(!meta.isAlgoDual() || data.two!=null){
-			Geometry geom = (Geometry) data.one[data.referenceIndex];
+		Object o = data.one[data.referenceIndex];
+		if(o != null && (!meta.isAlgoDual() || data.two!=null)){
+			Geometry geom = (Geometry) o;		
 			switch (analysis){
 		        case 0:        	                   		     	                        
 		    		result = geom.union(checkGeometry(data.two[data.compareIndex]));	        		
@@ -336,12 +337,21 @@ public class SpatialAnalysis extends BaseStep implements StepInterface{
 		        	break;   
 		        case 10:
 		        	result = geom.reverse();
-		        	break;         
+		        	break;  
+		        case 11:
+		        	int length = geom.getNumGeometries();
+		        	if(length > 1){
+			        	for(int i = 0 ; i < geom.getNumGeometries() - 1; i++){
+			        		putRow(data.outputRowMeta, RowDataUtil.addValueData(outputRow,  data.outputIndex, geom.getGeometryN(i)));
+			        	}
+		        	}
+		        	result = geom.getGeometryN(length - 1);
+		        	break; 
 		        default: 
 		        	break;  
 			}  
-		}	
-		return result.isEmpty()?null:result;
+		}
+		return result.isEmpty() ? null : result;
 	}
 	
 	public void getCompareRow() throws KettleStepException, KettleValueException{

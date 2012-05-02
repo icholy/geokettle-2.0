@@ -39,6 +39,13 @@ import org.pentaho.di.core.xml.XMLHandler;
 import org.w3c.dom.Node;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKBWriter;
@@ -4023,6 +4030,60 @@ public class ValueMeta implements ValueMetaInterface
 		if( getType() == TYPE_GEOMETRY )
 			return getGeometry(data).isValid();
 
+		return false;
+	}
+
+	@Override
+	public boolean SpatialIsPoint(Object data) throws KettleValueException {
+		if( getType() == TYPE_GEOMETRY )
+			return getGeometry(data) instanceof Point;
+		return false;
+	}
+
+	@Override
+	public boolean SpatialIsLineString(Object data) throws KettleValueException {
+		if( getType() == TYPE_GEOMETRY )
+			return getGeometry(data) instanceof LineString;
+		return false;
+	}
+
+	@Override
+	public boolean SpatialIsPolygon(Object data) throws KettleValueException {
+		if( getType() == TYPE_GEOMETRY )
+			return getGeometry(data) instanceof Polygon;
+		return false;
+	}
+
+	@Override
+	public boolean SpatialIsGeometryCollection(Object data)
+			throws KettleValueException {
+		if( getType() == TYPE_GEOMETRY ){
+			Geometry g = getGeometry(data);
+			return g instanceof GeometryCollection && !(g instanceof MultiPoint) && !(g instanceof MultiLineString) && !(g instanceof MultiPolygon);
+		}
+		return false;
+	}
+
+	@Override
+	public boolean SpatialIsMultiPoint(Object data) throws KettleValueException {
+		if( getType() == TYPE_GEOMETRY )
+			return getGeometry(data) instanceof MultiPoint;
+		return false;
+	}
+
+	@Override
+	public boolean SpatialIsMultiLineString(Object data)
+			throws KettleValueException {
+		if( getType() == TYPE_GEOMETRY )
+			return getGeometry(data) instanceof MultiLineString;
+		return false;
+	}
+
+	@Override
+	public boolean SpatialIsMultiPolygon(Object data)
+			throws KettleValueException {
+		if( getType() == TYPE_GEOMETRY )
+			return getGeometry(data) instanceof MultiPolygon;
 		return false;
 	}
 

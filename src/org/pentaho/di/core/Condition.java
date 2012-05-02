@@ -70,8 +70,10 @@ public class Condition implements Cloneable, XMLInterface
 		// spatial analysis functions:
 		"GIS_INTERSECTS", "GIS_EQUALS", "GIS_CONTAINS", "GIS_CROSSES",
 		"GIS_DISJOINT", "GIS_WITHIN", "GIS_OVERLAPS", "GIS_TOUCHES",
-		"GIS_ISVALID"
+		"GIS_IS_VALID", "GIS_IS_POINT", "GIS_IS_LINESTRING", "GIS_IS_POLYGON",
+		"GIS_IS_GEOMETRYCOLLECTION", "GIS_IS_MULTIPOINT", "GIS_IS_MULTILINESTRING", "GIS_IS_MULTIPOLYGON"
 	};
+	
 	// -- End GeoKettle modification --
 	
 	public static final int FUNC_EQUAL         = 0;
@@ -98,7 +100,14 @@ public class Condition implements Cloneable, XMLInterface
 	public static final int FUNC_GIS_OVERLAPS   = 19;
 	public static final int FUNC_GIS_TOUCHES    = 20;
 	// unary predicates:
-	public static final int FUNC_GIS_ISVALID    = 21;
+	public static final int FUNC_GIS_IS_VALID    = 21;
+	public static final int FUNC_GIS_IS_POINT    = 22;
+	public static final int FUNC_GIS_IS_LINESTRING    = 23;
+	public static final int FUNC_GIS_IS_POLYGON    = 24;
+	public static final int FUNC_GIS_IS_GEOMETRYCOLLECTION    = 25;
+	public static final int FUNC_GIS_IS_MULTIPOINT    = 26;
+	public static final int FUNC_GIS_IS_MULTILINESTRING    = 27;
+	public static final int FUNC_GIS_IS_MULTIPOLYGON    = 28;	
 	// -- End GeoKettle modification --
 
 	//
@@ -541,8 +550,29 @@ public class Condition implements Cloneable, XMLInterface
 						retval = fieldMeta.SpatialTouches(field, fieldMeta2, field2);
 						break;
 					// unary predicates:
-					case FUNC_GIS_ISVALID :
+					case FUNC_GIS_IS_VALID :
 						retval = fieldMeta.SpatialIsValid(field);
+						break;
+					case FUNC_GIS_IS_POINT :
+						retval = fieldMeta.SpatialIsPoint(field);
+						break;
+					case FUNC_GIS_IS_LINESTRING :
+						retval = fieldMeta.SpatialIsLineString(field);
+						break;
+					case FUNC_GIS_IS_POLYGON :
+						retval = fieldMeta.SpatialIsPolygon(field);
+						break;
+					case FUNC_GIS_IS_GEOMETRYCOLLECTION :
+						retval = fieldMeta.SpatialIsGeometryCollection(field);
+						break;
+					case FUNC_GIS_IS_MULTIPOINT :
+						retval = fieldMeta.SpatialIsMultiPoint(field);
+						break;
+					case FUNC_GIS_IS_MULTILINESTRING :
+						retval = fieldMeta.SpatialIsMultiLineString(field);
+						break;
+					case FUNC_GIS_IS_MULTIPOLYGON :
+						retval = fieldMeta.SpatialIsMultiPolygon(field);
 						break;
                     // -- End GeoKettle modification --
 					default: break;
@@ -714,7 +744,7 @@ public class Condition implements Cloneable, XMLInterface
 			// -- Begin GeoKettle modification --
 			// applies to all unary functions:
 			// if (function != FUNC_NULL && function != FUNC_NOT_NULL)
-			if (function != FUNC_NULL && function != FUNC_NOT_NULL && function != FUNC_GIS_ISVALID)
+			if (function != FUNC_NULL && function != FUNC_NOT_NULL && function != FUNC_GIS_IS_VALID)
 			// -- End GeoKettle modification --
 			{
 				if ( right_valuename != null )

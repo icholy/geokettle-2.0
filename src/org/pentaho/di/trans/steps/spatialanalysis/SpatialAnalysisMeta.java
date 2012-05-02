@@ -59,8 +59,9 @@ public class SpatialAnalysisMeta extends BaseStepMeta implements StepMetaInterfa
     public static final String DIFFERENCE = Messages.getString("SpatialAnalysisMeta.AnalysisType.DIFFERENCE");
     public static final String CONVEX_HULL = Messages.getString("SpatialAnalysisMeta.AnalysisType.CONVEX_HULL");
     public static final String REVERSE = Messages.getString("SpatialAnalysisMeta.AnalysisType.REVERSE");
+    public static final String SPLITGC = Messages.getString("SpatialAnalysisMeta.AnalysisType.SPLITGC");
     
-    public static String spatialAnalysisTypeCodes[] = {UNION, INTERSECTION, BUFFER, SYM_DIFF, INT_POINT, ENVELOPE, CENTROID, BOUNDARY, DIFFERENCE, CONVEX_HULL, REVERSE};
+    public static String spatialAnalysisTypeCodes[] = {UNION, INTERSECTION, BUFFER, SYM_DIFF, INT_POINT, ENVELOPE, CENTROID, BOUNDARY, DIFFERENCE, CONVEX_HULL, REVERSE, SPLITGC};
 
     public static final String[] bufferSides = {Messages.getString("SpatialAnalysisMeta.Side.Left"), Messages.getString("SpatialAnalysisMeta.Side.Right"), Messages.getString("SpatialAnalysisMeta.Side.Both")};
     

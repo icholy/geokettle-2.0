@@ -901,7 +901,8 @@ public class ConditionEditor extends Composite
 		
 		// -- Begin GeoKettle modification
 		// String fn_max   = Condition.functions[Condition.FUNC_NOT_NULL];
-		String fn_max   = Condition.functions[Condition.FUNC_GIS_INTERSECTS];
+		// String fn_max   = Condition.functions[Condition.FUNC_GIS_INTERSECTS];
+		String fn_max   = Condition.functions[Condition.FUNC_GIS_IS_GEOMETRYCOLLECTION];
 		// -- End GeoKettle modification
 		String fn       = condition.getFunctionDesc();
 		Point ext_fn    = gc.textExtent(fn_max);
@@ -973,7 +974,7 @@ public class ConditionEditor extends Composite
 		// TODO: change Condition so we can identify unary functions in a centralized way?
 		if (condition.getFunction()!=Condition.FUNC_NOT_NULL &&
 			condition.getFunction()!=Condition.FUNC_NULL &&
-			condition.getFunction()!=Condition.FUNC_GIS_ISVALID
+			condition.getFunction()!=Condition.FUNC_GIS_IS_VALID
 			)
 		// -- End GeoKettle modification --
 		{
