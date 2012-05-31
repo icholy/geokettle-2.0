@@ -1255,7 +1255,7 @@ public class ValueDataUtil
     	if ((dataA==null || dataB==null) || (!metaB.isNumeric() || !metaA.isNumeric())) 
         	return null;
         try {
-			geom = wktReader.read("POINT(+"+metaA.getNumber(dataA)+" "+metaB.getNumber(dataB)+")");
+			geom = wktReader.read("POINT("+metaA.getNumber(dataA)+" "+metaB.getNumber(dataB)+")");
 			return geom;
 		} catch (ParseException e) {
 			return null;
