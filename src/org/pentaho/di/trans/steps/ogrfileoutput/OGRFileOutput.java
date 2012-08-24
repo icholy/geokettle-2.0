@@ -13,7 +13,7 @@ import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
-import org.pentaho.di.trans.steps.ogrfileinput.Messages;
+import org.pentaho.di.trans.steps.ogrfileoutput.Messages;
 
 /**
  * Write data to an OGR data destination.
@@ -42,6 +42,7 @@ public class OGRFileOutput extends BaseStep implements StepInterface {
 			try 
 			{
 				//data.ogrWriter.write();
+				setOutputDone();
 				return false;
 			} 
 			catch (Exception e) 
@@ -102,11 +103,20 @@ public class OGRFileOutput extends BaseStep implements StepInterface {
 
 			try 
 			{
-				data.file_gis = KettleVFS.getFileObject(this.environmentSubstitute(meta.getGisFileName())); 
+				if (meta.getGisFileName()!=null)
+					data.file_gis = KettleVFS.getFileObject(this.environmentSubstitute(meta.getGisFileName()));
+				else
+					data.file_gis = null;
+
 				data.file_format = meta.getOgrOutputFormat();
 				data.file_options = meta.getOgrOptions();
 				data.file_geomtype = meta.getOgrGeomType();
-				
+				data.connectionString = meta.getConnectionString();
+				data.layerName = meta.getLayerName();
+				data.write_mode = meta.getOgrWriteMode();
+				data.fid_field = meta.getOgrFIDField();
+				data.preserve_fid_field = meta.isPreserveFIDField();
+
 			} 			
 			catch (IOException e) 
 			{
@@ -123,16 +133,25 @@ public class OGRFileOutput extends BaseStep implements StepInterface {
 
 		try 
 		{
-			String ogr_path = data.file_gis.getURL().getPath();
-			if (Const.isWindows()) {
-				data.ogrWriter = new OGRWriter(ogr_path.substring(3).replace('/', '\\'),data.file_format,data.file_options,data.file_geomtype);
-			} else {
-				data.ogrWriter = new OGRWriter(ogr_path,data.file_format,data.file_options,data.file_geomtype);
+
+			if (data.file_gis!=null) {
+
+				String ogr_path = data.file_gis.getURL().getPath();
+				if (Const.isWindows()) {
+					data.ogrWriter = new OGRWriter(ogr_path.substring(3).replace('/', '\\'),true,data.file_format,data.file_options,data.file_geomtype,data.layerName,data.write_mode,data.fid_field,data.preserve_fid_field);
+				} else {
+					data.ogrWriter = new OGRWriter(ogr_path,true,data.file_format,data.file_options,data.file_geomtype,data.layerName,data.write_mode,data.fid_field,data.preserve_fid_field);
+				}
 			}
+
+			if (data.connectionString!=null && !(data.connectionString.trim().equals(""))) {
+				data.ogrWriter = new OGRWriter(data.connectionString,false,data.file_format,data.file_options,data.file_geomtype,data.layerName,data.write_mode,data.fid_field,data.preserve_fid_field);
+			}
+
 			data.ogrWriter.open();
 
 			logBasic(Messages.getString("OGRFileOutput.Log.OpenedGISFile") + " : [" + data.ogrWriter + "]"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$	     		        	
-			
+
 		} 
 		catch (Exception e) 
 		{
