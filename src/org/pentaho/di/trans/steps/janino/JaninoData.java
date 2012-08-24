@@ -22,7 +22,7 @@ import org.pentaho.di.trans.step.BaseStepData;
 import org.pentaho.di.trans.step.StepDataInterface;
 
 /**
- * @author Matt
+ * @author Matt, Thierry Badard
  * @since 8-sep-2005
  *
  */
@@ -36,6 +36,7 @@ public class JaninoData extends BaseStepData implements StepDataInterface
 	public static final int RETURN_TYPE_BIGDECIMAL = 5;
 	public static final int RETURN_TYPE_BYTE_ARRAY = 6;
 	public static final int RETURN_TYPE_BOOLEAN = 7;
+	public static final int RETURN_TYPE_GEOMETRY = 8;
 	
 	
     public RowMetaInterface outputRowMeta;

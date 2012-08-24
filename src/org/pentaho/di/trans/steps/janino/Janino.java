@@ -33,12 +33,14 @@ import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 
 
 /**
  * Calculate new field values using pre-defined functions. 
  * 
- * @author Matt
+ * @author Matt, Thierry Badard
  * @since 8-sep-2005
  */
 public class Janino extends BaseStep implements StepInterface
@@ -120,6 +122,7 @@ public class Janino extends BaseStep implements StepInterface
         			case ValueMetaInterface.TYPE_BIGNUMBER : parameterTypes[i] = BigDecimal.class; break;
         			case ValueMetaInterface.TYPE_BOOLEAN   : parameterTypes[i] = Boolean.class; break;
         			case ValueMetaInterface.TYPE_BINARY    : parameterTypes[i] = byte[].class; break;
+        			case ValueMetaInterface.TYPE_GEOMETRY  : parameterTypes[i] = Geometry.class; break;
         			default: parameterTypes[i] = String.class; break;
         			}
         			parameterNames[i] = data.outputRowMeta.getValueMeta(i).getName();
@@ -195,6 +198,11 @@ public class Janino extends BaseStep implements StepInterface
                     	if (fn.getValueType()!=ValueMetaInterface.TYPE_BOOLEAN) {
                     		throw new KettleValueException("Please specify a Boolean type to parse ["+formulaResult.getClass().getName()+"] for field ["+fn.getFieldName()+"] as a result of formula ["+fn.getFormula()+"]");
                     	}
+                    } else if (formulaResult instanceof Geometry) {
+                    	data.returnType[i] = JaninoData.RETURN_TYPE_GEOMETRY;
+                    	if (fn.getValueType()!=ValueMetaInterface.TYPE_GEOMETRY) {
+                    		throw new KettleValueException("Please specify a Geometry type to parse ["+formulaResult.getClass().getName()+"] for field ["+fn.getFieldName()+"] as a result of formula ["+fn.getFormula()+"]");
+                    	}
                     } else {
                     	data.returnType[i] = JaninoData.RETURN_TYPE_STRING;
                     }
@@ -210,6 +218,7 @@ public class Janino extends BaseStep implements StepInterface
                 case JaninoData.RETURN_TYPE_BIGDECIMAL : value = (BigDecimal)formulaResult; break;
                 case JaninoData.RETURN_TYPE_BYTE_ARRAY : value = (byte[])formulaResult; break;
                 case JaninoData.RETURN_TYPE_BOOLEAN : value = (Boolean)formulaResult; break;
+                case JaninoData.RETURN_TYPE_GEOMETRY : value = (Geometry)formulaResult; break;
                 default: value = null;
                 }
                     

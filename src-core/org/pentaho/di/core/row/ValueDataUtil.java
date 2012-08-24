@@ -1313,7 +1313,7 @@ public class ValueDataUtil
         if (dataA==null || !metaA.isGeometry()) 
         	return null;
         WKBWriter wkbWriter = new WKBWriter();
-        return wkbWriter.bytesToHex(wkbWriter.write(metaA.getGeometry(dataA)));
+        return WKBWriter.toHex(wkbWriter.write(metaA.getGeometry(dataA)));
     }
     public static Geometry fromWkb(ValueMetaInterface metaA, Object dataA) throws KettleValueException{
     	Geometry geom = null;
@@ -1321,7 +1321,7 @@ public class ValueDataUtil
         if (dataA==null || !metaA.isString()) 
         	return null;
         try {
-			geom = wkbReader.read(wkbReader.hexToBytes(metaA.getString(dataA)));
+			geom = wkbReader.read(WKBReader.hexToBytes(metaA.getString(dataA)));
 			return geom;
 		} catch (ParseException e) {
 			return null;
