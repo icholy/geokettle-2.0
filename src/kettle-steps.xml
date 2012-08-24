@@ -1625,6 +1625,28 @@
 		<image-uri>ui/images/cswoutput.png</image-uri>
 	</step>	
 	
+	<step id="WPSClient">
+		<description>
+			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.WPSClient")
+		</description>
+		<class-name>org.pentaho.di.trans.steps.wpsclient.WPSClientMeta</class-name>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@LOOKUP.getName()</category>
+		<tooltip>
+			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.WPSClient")
+		</tooltip>
+		<image-uri>ui/images/wpsclient.png</image-uri>
+	</step>	
 		
-	
+	<step id="WFSInput">
+		<description>
+			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeLongDesc.WFSInput")
+		</description>
+		<class-name>org.pentaho.di.trans.steps.wfsinput.WFSInputMeta</class-name>
+		<category>ognl:@org.pentaho.di.trans.step.StepCategory@INPUT.getName()</category>
+		<tooltip>
+			ognl:@org.pentaho.di.trans.step.Messages@getString("BaseStep.TypeTooltipDesc.WFSInput")
+		</tooltip>
+		<image-uri>ui/images/wfsinput.png</image-uri>
+	</step>	
+		
 </steps>
