@@ -391,7 +391,7 @@
   	        <!-- external libs (jdbc etc) -->
 	  		<mkdir dir="${distrib}/libext"/>
 	  		<copy todir="${distrib}/libext">
-	  			<fileset dir="${libext}" includes="**/*.jar **/*.zip **/*.so* **/*.dll **/*.csv **/*.txt **/*.wkt **/*.svg  **/*.dxf  **/*.dgn **/*.png **/*.dylib **/GEOS **/iODBCinst" 
+	  			<fileset dir="${libext}" includes="**/*.jar **/*.zip **/*.so* **/*.dll **/*.csv **/*.txt **/*.wkt **/*.svg  **/*.dxf  **/*.dgn **/*.png **/*.dylib **/GEOS **/iODBCinst **/SQLite3 **/PROJ" 
 	  				     excludes="**/.vpn"/>
 	  			</copy>
 
@@ -915,13 +915,13 @@
 	 </target>
 	
 	<!--
-		BEFORE USING : Please download JarBundler version 1.9 and unzip it in tools/libant/
+		BEFORE USING : Please download JarBundler version 2.2.0, unzip it and copy the jar file in tools/libant/jarbundler-2.2.0
 		http://informagen.com/JarBundler/	
 	-->
 	
 	<target name="macapplication" depends="distrib" description="Build OS X executable">
 		
-	  	        <delete dir="${macdistrib}/${ant.project.name}.app"/>
+	  	        <delete dir="${macdistrib}/GeoKettle.app"/>
 			  	<delete>
 			        <fileset dir="${macdistrib}">
 					  <include name="*.dmg"/>
@@ -932,24 +932,26 @@
 	  	                 classpath="${jarbundler.jar}"
 	  	                 classname="net.sourceforge.jarbundler.JarBundler"/>
 	  	        <jarbundler dir="${macdistrib}"
-	  	                    name="${ant.project.name}"
+	  	                    name="GeoKettle"
 	  	                    mainclass="org.pentaho.di.ui.spoon.Spoon"
-	  	                    icon="${ui}/images/spoon32.icns"
+	  	                    icon="${ui}/images/spoon.icns"
 	  	                    version="${version}"
 	  	        			verbose="true"
 	  	        	VMOptions="${macappmaxmem} ${macappextravmoptions}"
-				    shortname="Spoon"
+				    shortname="GeoKettle"
 	  	        	arguments=""
+                                startOnMainThread="true"
                     workingdirectory="$APP_PACKAGE/Contents/Resources/Java"
-	  	            jvmversion="1.5+">
-                    <javaproperty name="java.library.path" value="$APP_PACKAGE/Contents/Resources/Java"/>
+	  	            jvmversion="1.5+" jvmarchs="i386">
+                    <javaproperty name="java.library.path" value="$APP_PACKAGE/Contents/Resources/Java/libswt/osx"/>
 	  	        	<jarfileset dir="${distrib}">
 	  	        		<include name="${lib}/*.jar"/>
 	  	        		<include name="${libext}/*.jar"/>
+	  	        		<include name="${libext}/geometry/gdal_data/*"/>
+	  	        		<include name="${libext}/geometry/libgdal/osx/*"/>
 	  	        		<include name="${libext}/**/*.jar"/>
 	  	        		<include name="${libswt}/*.jar"/>
-	  	        		<include name="${libswt}/osx/*.jar"/>
-	  	        		<include name="${libswt}/osx/java_swt"/>
+	  	        		<include name="${libswt}/osx/*"/>
 	  	        		<include name="${samples}/**/*"/>
 	  	        		<include name="${docs}/**/*"/>
 	  	        		<include name="README_FIRST.txt"/>
@@ -962,19 +964,18 @@
 	  	        		<include name="${ui}/**/*"/>
 	  	        	</jarfileset>
 	  	        </jarbundler>
-	  			<!-- patch Info.plist with StartOnMainThread property need to make sure that the token is in the right place-->
-	  			<replace file="${macdistrib}/${ant.project.name}.app/Contents/Info.plist" token="&lt;key&gt;ClassPath" value="&lt;key&gt;StartOnMainThread&lt;/key&gt;&lt;true/&gt; &lt;key&gt;ClassPath" />
+	  			<!-- patch Info.plist with LSEnvironment section for inserting the DYLD_LIBRARY_PATH info-->
+	  			<replace file="${macdistrib}/GeoKettle.app/Contents/Info.plist" token="&lt;key&gt;Java&lt;/key&gt;" value="&lt;key&gt;LSEnvironment&lt;/key&gt;&lt;dict&gt;&lt;key&gt;DYLD_LIBRARY_PATH&lt;/key&gt;&lt;string&gt;/Applications/GeoKettle.app/Contents/Resources/Java/libext/geometry/libgdal/osx&lt;/string&gt;&lt;/dict&gt;&lt;key&gt;Java&lt;/key&gt;" />
 	  			<!-- Create a .dmg file containing the app and docs -->
 	  		    <exec executable="/usr/bin/hdiutil" os="Mac OS X">
 	  		      <arg value="create"/>
 	  		      <arg value="-srcfolder"/>
 	  		      <arg value="${macdistrib}"/>
 	  		      <arg value="-volname"/>
-	  		      <arg value="${ant.project.name} ${version}"/>
+	  		      <arg value="GeoKettle ${version}"/>
 	  		      <arg value="-ov"/>
 	  		      <arg value="${macdistrib}/${impl.productID}-${version}.dmg"/>
 	  		    </exec>
 	  	    </target>
-	
 
 </project>
