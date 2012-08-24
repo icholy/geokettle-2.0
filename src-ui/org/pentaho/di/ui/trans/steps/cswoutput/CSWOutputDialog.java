@@ -52,7 +52,7 @@ import org.pentaho.di.ui.core.widget.TextVar;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
 /**
- * @author LiberT
+ * @author mouattara
  *
  */
 public class CSWOutputDialog extends BaseStepDialog implements
@@ -81,6 +81,10 @@ public class CSWOutputDialog extends BaseStepDialog implements
 	private FormData fdwlPassword;
 	private TextVar wPassword;
 	private FormData fdwPassword;
+	private Label wlRequest;
+	private FormData fdwlRequest;
+	private ComboVar wRequest;
+	private FormData fdwRequest;
 	private Label wlSchemaLabel;
 	private FormData fdwlSchemaLabel;
 	private ComboVar wSchemaLabel;
@@ -263,15 +267,35 @@ public class CSWOutputDialog extends BaseStepDialog implements
 		fdwPassword.top  = new FormAttachment(wLoginUrl, margin);
 		fdwPassword.right= new FormAttachment(100, -4*margin);
 		wPassword.setLayoutData(fdwPassword); 
-		
-		
+			
+		wlRequest=new Label(wGeneral, SWT.LEFT);
+		wlRequest.setText(Messages.getString("CSWOutputDialog.Request.Label"));
+		props.setLook(wlRequest);
+		fdwlRequest=new FormData();
+		fdwlRequest.left = new FormAttachment(0, margin);
+		fdwlRequest.top  = new FormAttachment(wLoginGroup, 3*margin);		
+		wlRequest.setLayoutData(fdwlRequest);
+ 		
+		wRequest= new ComboVar(transMeta, wGeneral, SWT.BORDER ); 			 
+		props.setLook(wRequest);
+		wRequest.setEditable(false);
+		wRequest.addModifyListener(lsMod);
+ 		fdwRequest=new FormData();
+ 		fdwRequest.left = new FormAttachment(wlRequest, margin);
+ 		fdwRequest.top  = new FormAttachment(wLoginGroup, 2*margin);
+ 		fdwRequest.right= new FormAttachment(75, -1*margin);
+ 		wRequest.setLayoutData(fdwRequest);
+ 		wRequest.add(Messages.getString("CSWOutputDialog.Request.Insert"));
+ 		wRequest.add(Messages.getString("CSWOutputDialog.Request.Update"));
+ 		wRequest.add(Messages.getString("CSWOutputDialog.Request.Delete"));
+ 		
 		///
 		wlSchemaLabel=new Label(wGeneral, SWT.LEFT);
 		wlSchemaLabel.setText(Messages.getString("CSWOutputDialog.Schema.Label"));
 		props.setLook(wlSchemaLabel);
 		fdwlSchemaLabel=new FormData();
 		fdwlSchemaLabel.left = new FormAttachment(0, margin);
-		fdwlSchemaLabel.top  = new FormAttachment(wLoginGroup, 2*margin);		
+		fdwlSchemaLabel.top  = new FormAttachment(wRequest, 3*margin);		
 		wlSchemaLabel.setLayoutData(fdwlSchemaLabel);
  		
 		wSchemaLabel= new ComboVar(transMeta, wGeneral, SWT.BORDER ); 			 
@@ -279,7 +303,7 @@ public class CSWOutputDialog extends BaseStepDialog implements
 		wSchemaLabel.setEditable(false);
  		fdwSchemaLabel=new FormData();
  		fdwSchemaLabel.left = new FormAttachment(wlSchemaLabel, margin);
- 		fdwSchemaLabel.top  = new FormAttachment(wLoginGroup, 2*margin);
+ 		fdwSchemaLabel.top  = new FormAttachment(wRequest, 2*margin);
  		fdwSchemaLabel.right= new FormAttachment(75, -1*margin);
  		wSchemaLabel.setLayoutData(fdwSchemaLabel);
  		wSchemaLabel.add(Messages.getString("CSWOutputDialog.Schema.CSWRECORD"));
@@ -613,6 +637,9 @@ public class CSWOutputDialog extends BaseStepDialog implements
 		if (!Const.isEmpty(cswwriter.getPassword())){
 			wPassword.setText(cswwriter.getPassword());
 		}
+		if (!Const.isEmpty(cswwriter.getRequest())){
+			wRequest.setText(cswwriter.getRequest());
+		}
 		if (!Const.isEmpty(cswwriter.getSchema())){
 			wSchemaLabel.setText(cswwriter.getSchema());
 		}
@@ -658,6 +685,7 @@ public class CSWOutputDialog extends BaseStepDialog implements
 			cswwriter.setUsername(this.wUser.getText());
 			cswwriter.setPassword(this.wPassword.getText());
 			cswwriter.setSchema(this.wSchemaLabel.getText());
+			cswwriter.setRequest(this.wRequest.getText());
 			
 			wQueryElement.removeEmptyRows();
 			ArrayList<String[]> mappingColList=new ArrayList<String[]>();		

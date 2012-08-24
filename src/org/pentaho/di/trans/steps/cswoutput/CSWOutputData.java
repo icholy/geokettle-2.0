@@ -8,7 +8,7 @@ import org.pentaho.di.trans.step.BaseStepData;
 import org.pentaho.di.trans.step.StepDataInterface;
 
 /**
- * @author O.Mamadou
+ * @author mouattara,jmathieu
  *
  */
 public class CSWOutputData extends BaseStepData implements StepDataInterface {

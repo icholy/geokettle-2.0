@@ -29,7 +29,7 @@ import org.pentaho.di.trans.step.StepMetaInterface;
 import org.w3c.dom.Node;
 
 /**
- * @author LiberT
+ * @author mouattara,jmathieu
  *
  */
 public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
@@ -98,6 +98,7 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 			CSWwriter.setLoginUrl(XMLHandler.getTagValue(stepnode, "loginurl"));
 			CSWwriter.setUsername(XMLHandler.getTagValue(stepnode, "username"));
 			CSWwriter.setPassword(XMLHandler.getTagValue(stepnode, "password"));
+			CSWwriter.setRequest(XMLHandler.getTagValue(stepnode, "request"));
 			CSWwriter.setSchema(XMLHandler.getTagValue(stepnode, "schema"));
 			
 			
@@ -148,6 +149,7 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 		retval.append("    " + XMLHandler.addTagValue("username",   CSWwriter.getUsername()));
 		retval.append("    " + XMLHandler.addTagValue("password",   CSWwriter.getPassword()));
 		retval.append("    " + XMLHandler.addTagValue("schema",   CSWwriter.getSchema()));
+		retval.append("    " + XMLHandler.addTagValue("request",   CSWwriter.getRequest()));
 		
 		retval.append("    <mappingcolumns>").append(Const.CR);
         if (CSWwriter.getMappingColumns()!=null){
@@ -200,6 +202,7 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 			CSWwriter.setLoginUrl(rep.getStepAttributeString(idStep, "loginurl")) ;
 			CSWwriter.setUsername(rep.getStepAttributeString(idStep, "username")) ;
 			CSWwriter.setPassword(rep.getStepAttributeString(idStep, "password")) ;
+			CSWwriter.setRequest(rep.getStepAttributeString(idStep, "request")) ;
 			CSWwriter.setSchema(rep.getStepAttributeString(idStep, "schema")) ;
 			
 			int nrMapCol = rep.countNrStepAttributes(idStep, "mapcolumn");			
@@ -235,6 +238,7 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 		rep.saveStepAttribute(idTransformation, idStep,"loginurl",   CSWwriter.getLoginUrl().toString());
 		rep.saveStepAttribute(idTransformation, idStep,"username",   CSWwriter.getUsername());
 		rep.saveStepAttribute(idTransformation, idStep,"password",   CSWwriter.getPassword());
+		rep.saveStepAttribute(idTransformation, idStep,"request",   CSWwriter.getRequest());
 		rep.saveStepAttribute(idTransformation, idStep,"schema",   CSWwriter.getSchema());
 		
         if (CSWwriter.getMappingColumns()!=null){
@@ -275,6 +279,7 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 			CSWwriter.setLoginUrl("http://login-server.loc");
 			CSWwriter.setUsername(null);
 			CSWwriter.setPassword(null);
+			CSWwriter.setRequest(Messages.getString("CSWOutputDialog.Request.Insert"));
 			CSWwriter.setSchema(Messages.getString("CSWOutputDialog.Schema.CSWRECORD"));
 			CSWwriter.setMappingColumns(null);
 			CSWwriter.setPrevColumnList(null);
