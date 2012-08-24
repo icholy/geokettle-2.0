@@ -35,6 +35,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 {
 	private String 	gisFileName;
 	private String 	connectionString;
+	private String layerName;
 	private String 	spatialFilter;
 	private String 	attributeFilter;
 	private int 	rowLimit;
@@ -59,6 +60,20 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	 */
 	public void setConnectionString(String connectionString) {
 		this.connectionString = connectionString;
+	}
+	
+	/**
+	 * @return Returns the layerName.
+	 */
+	public String getLayerName() {
+		return layerName;
+	}
+
+	/**
+	 * @param layerName The layerName to set.
+	 */
+	public void setLayerName(String layerName) {
+		this.layerName = layerName;
 	}
 
 	/**
@@ -184,6 +199,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		{
 			gisFileName        = XMLHandler.getTagValue(stepnode, "file_gis"); //$NON-NLS-1$
 			connectionString   = XMLHandler.getTagValue(stepnode, "connection_string"); //$NON-NLS-1$
+			layerName          = XMLHandler.getTagValue(stepnode, "layer_name"); //$NON-NLS-1$
 			spatialFilter      = XMLHandler.getTagValue(stepnode, "spatial_filter"); //$NON-NLS-1$
 			attributeFilter    = XMLHandler.getTagValue(stepnode, "attribute_filter"); //$NON-NLS-1$
 			skipFailureAdded   = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "skip_failure")); //$NON-NLS-1$ //$NON-NLS-2$
@@ -202,6 +218,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 	{
 		gisFileName      = null;
 		connectionString = null;
+		layerName        = null;
 		spatialFilter    = null;
 		attributeFilter  = null;
 		skipFailureAdded = false;
@@ -231,15 +248,15 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 
 				if (Const.isWindows()) {
 					ogr_path = ogr_path.substring(3).replace('/', '\\');
-					ogrReader = new OGRReader(ogr_path, spatialFilter, attributeFilter, skipFailureAdded);
+					ogrReader = new OGRReader(ogr_path, layerName, spatialFilter, attributeFilter, skipFailureAdded);
 				} else {
 					ogr_path = ogr_path.substring(2);
-					ogrReader = new OGRReader(ogr_path, spatialFilter, attributeFilter, skipFailureAdded);
+					ogrReader = new OGRReader(ogr_path, layerName, spatialFilter, attributeFilter, skipFailureAdded);
 				}
 			}
 
 			if (cnxString!=null && !(cnxString.trim().equals("")))
-				ogrReader = new OGRReader(cnxString, spatialFilter, attributeFilter, skipFailureAdded);
+				ogrReader = new OGRReader(cnxString, layerName, spatialFilter, attributeFilter, skipFailureAdded);
 
 			ogrReader.open();
 			RowMetaInterface add = ogrReader.getFields();
@@ -288,6 +305,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 
 		retval.append("    " + XMLHandler.addTagValue("file_gis",    gisFileName)); //$NON-NLS-1$ //$NON-NLS-2$
 		retval.append("    " + XMLHandler.addTagValue("connection_string",    connectionString)); //$NON-NLS-1$ //$NON-NLS-2$
+		retval.append("    " + XMLHandler.addTagValue("layer_name",    layerName));
 		retval.append("    " + XMLHandler.addTagValue("spatial_filter",    spatialFilter)); //$NON-NLS-1$ //$NON-NLS-2$
 		retval.append("    " + XMLHandler.addTagValue("attribute_filter",    attributeFilter)); //$NON-NLS-1$ //$NON-NLS-2$
 		retval.append("    " + XMLHandler.addTagValue("skip_failure",skipFailureAdded)); //$NON-NLS-1$ //$NON-NLS-2$
@@ -305,6 +323,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		{
 			gisFileName      = rep.getStepAttributeString (id_step, "file_gis"); //$NON-NLS-1$
 			connectionString = rep.getStepAttributeString (id_step, "connection_string"); //$NON-NLS-1$
+			layerName        = rep.getStepAttributeString (id_step, "layer_name");
 			spatialFilter    = rep.getStepAttributeString (id_step, "spatial_filter"); //$NON-NLS-1$
 			attributeFilter  = rep.getStepAttributeString (id_step, "attribute_filter"); //$NON-NLS-1$
 			skipFailureAdded = rep.getStepAttributeBoolean(id_step, "skip_failure"); //$NON-NLS-1$
@@ -326,6 +345,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 		{
 			rep.saveStepAttribute(id_transformation, id_step, "file_gis",          gisFileName); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "connection_string", connectionString); //$NON-NLS-1$
+			rep.saveStepAttribute(id_transformation, id_step, "layer_name",        layerName);
 			rep.saveStepAttribute(id_transformation, id_step, "spatial_filter",    spatialFilter); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "attribute_filter",  attributeFilter); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "skip_failure",      skipFailureAdded); //$NON-NLS-1$
@@ -362,15 +382,15 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface
 					String ogr_path = getURLfromFileName(transMeta.environmentSubstitute(gisFileName)).getPath();
 					if (Const.isWindows()) {
 						ogr_path = ogr_path.substring(3).replace('/', '\\');
-						ogrReader = new OGRReader(ogr_path, spatialFilter, attributeFilter, skipFailureAdded);
+						ogrReader = new OGRReader(ogr_path, layerName, spatialFilter, attributeFilter, skipFailureAdded);
 					} else {
 						ogr_path = ogr_path.substring(2);
-						ogrReader = new OGRReader(ogr_path, spatialFilter, attributeFilter, skipFailureAdded);
+						ogrReader = new OGRReader(ogr_path, layerName, spatialFilter, attributeFilter, skipFailureAdded);
 					}
 				}
 				
 				if (connectionString!=null && !(connectionString.trim().equals(""))) {
-					ogrReader = new OGRReader(connectionString, spatialFilter, attributeFilter, skipFailureAdded);
+					ogrReader = new OGRReader(connectionString, layerName, spatialFilter, attributeFilter, skipFailureAdded);
 				}
 
 				ogrReader.open();

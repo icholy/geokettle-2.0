@@ -22,6 +22,7 @@ public class OGRFileInputData extends BaseStepData implements StepDataInterface
     public FileInputList files;
     
     public String connectionString;
+    public String layerName;
     
     public RowMetaInterface outputRowMeta;
 

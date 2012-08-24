@@ -49,6 +49,10 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 	private Label        wlConnectionString;
 	private TextVar      wConnectionString;
 	private FormData     fdlConnectionString, fdConnectionString;
+	
+	private Label        wlLayerName;
+	private TextVar      wLayerName;
+	private FormData     fdlLayerName, fdLayerName;
 
 	private Label        wlSpatialFilter;
 	private TextVar      wSpatialFilter;
@@ -176,8 +180,28 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdConnectionString.left = new FormAttachment(middle, 0);
 		fdConnectionString.top  = new FormAttachment(wbFilename, margin);
 		fdConnectionString.right= new FormAttachment(100, 0);
-		wConnectionString.setLayoutData(fdConnectionString);		
+		wConnectionString.setLayoutData(fdConnectionString);
+		
+		// Optional layer name
+		wlLayerName=new Label(shell, SWT.RIGHT);
+		wlLayerName.setText(Messages.getString("OGRFileInputDialog.Dialog.LayerName.Label")); //$NON-NLS-1$
+		props.setLook(wlLayerName);
+		fdlLayerName=new FormData();
+		fdlLayerName.left = new FormAttachment(0, 0);
+		fdlLayerName.right= new FormAttachment(middle, -margin);
+		fdlLayerName.top  = new FormAttachment(wConnectionString, margin*2);
+		wlLayerName.setLayoutData(fdlLayerName);
+		wLayerName=new TextVar(transMeta, shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+		//wLayerName.setText(LayerName);
+		props.setLook(wLayerName);
+		wLayerName.addModifyListener(lsMod);
+		fdLayerName=new FormData();
+		fdLayerName.left = new FormAttachment(middle, 0);
+		fdLayerName.top  = new FormAttachment(wConnectionString, margin);
+		fdLayerName.right= new FormAttachment(100, 0);
+		wLayerName.setLayoutData(fdLayerName);		
 
+		
 		// Spatial filter line
 		wlSpatialFilter=new Label(shell, SWT.RIGHT);
 		wlSpatialFilter.setText(Messages.getString("OGRFileInputDialog.Dialog.SpatialFilter.Label")); //$NON-NLS-1$
@@ -185,7 +209,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdlSpatialFilter=new FormData();
 		fdlSpatialFilter.left = new FormAttachment(0, 0);
 		fdlSpatialFilter.right= new FormAttachment(middle, -margin);
-		fdlSpatialFilter.top  = new FormAttachment(wConnectionString, margin*2);
+		fdlSpatialFilter.top  = new FormAttachment(wLayerName, margin*2);
 		wlSpatialFilter.setLayoutData(fdlSpatialFilter);
 		wSpatialFilter=new TextVar(transMeta, shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		//wSpatialFilter.setText(SpatialFilter);
@@ -193,7 +217,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		wSpatialFilter.addModifyListener(lsMod);
 		fdSpatialFilter=new FormData();
 		fdSpatialFilter.left = new FormAttachment(middle, 0);
-		fdSpatialFilter.top  = new FormAttachment(wConnectionString, margin);
+		fdSpatialFilter.top  = new FormAttachment(wLayerName, margin);
 		fdSpatialFilter.right= new FormAttachment(100, 0);
 		wSpatialFilter.setLayoutData(fdSpatialFilter);		
 
@@ -377,6 +401,11 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 			wConnectionString.setText(input.getConnectionString());
 		}
 		
+		if (input.getLayerName() != null) 
+		{
+			wLayerName.setText(input.getLayerName());
+		}
+		
 		if (input.getSpatialFilter() != null) 
 		{
 			wSpatialFilter.setText(input.getSpatialFilter());
@@ -429,6 +458,7 @@ public class OGRFileInputDialog extends BaseStepDialog implements StepDialogInte
 		// copy info to Meta class (input)
 		meta.setGisFileName( wFilename.getText() );
 		meta.setConnectionString(wConnectionString.getText() );
+		meta.setLayerName(wLayerName.getText() );
 		meta.setSpatialFilter(wSpatialFilter.getText() );
 		meta.setAttributeFilter(wAttributeFilter.getText() );
 		meta.setSkipFailureAdded( wSkipFailure.getSelection() );

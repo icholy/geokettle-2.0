@@ -91,6 +91,7 @@ public class OGRFileInput extends BaseStep implements StepInterface
 			data.files  = meta.getTextFileList(this);
 			data.fileNr = 0;
 			data.connectionString = meta.getConnectionString();
+			data.layerName = meta.getLayerName();
 
 			if (data.files.nrOfFiles()==0 && (data.connectionString == null || data.connectionString.trim().equals("")) /* && !meta.isAcceptingFilenames() */)
 			{
@@ -119,15 +120,15 @@ public class OGRFileInput extends BaseStep implements StepInterface
 
 				if (Const.isWindows()) {
 					ogr_path = ogr_path.substring(3).replace('/', '\\');
-					data.ogrReader = new OGRReader(ogr_path, meta.getSpatialFilter(), meta.getAttributeFilter(), meta.isSkipFailureAdded());
+					data.ogrReader = new OGRReader(ogr_path, data.layerName, meta.getSpatialFilter(), meta.getAttributeFilter(), meta.isSkipFailureAdded());
 				} else {
 					ogr_path = ogr_path.substring(2);
-					data.ogrReader = new OGRReader(ogr_path, meta.getSpatialFilter(), meta.getAttributeFilter(), meta.isSkipFailureAdded());
+					data.ogrReader = new OGRReader(ogr_path, data.layerName, meta.getSpatialFilter(), meta.getAttributeFilter(), meta.isSkipFailureAdded());
 				}
 			}
 			
 			if (data.connectionString!=null && !(data.connectionString.trim().equals(""))) {
-				data.ogrReader = new OGRReader(data.connectionString, meta.getSpatialFilter(), meta.getAttributeFilter(), meta.isSkipFailureAdded());
+				data.ogrReader = new OGRReader(data.connectionString, data.layerName, meta.getSpatialFilter(), meta.getAttributeFilter(), meta.isSkipFailureAdded());
 			}
 			
 			data.ogrReader.open();
