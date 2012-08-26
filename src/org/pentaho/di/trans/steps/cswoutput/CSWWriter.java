@@ -33,7 +33,7 @@ import org.pentaho.di.core.exception.KettleException;
 import org.xml.sax.InputSource;
 
 /**
- * @author mouattara,jmathieu
+ * @author mouattara,jmathieu,tbadard
  *
  */
 public class CSWWriter {
@@ -440,7 +440,7 @@ public class CSWWriter {
 			sb.append(getFilter(query));
 			sb.append(FOOTPAGE_TRANSACTION_UPDATE);
 			sb = new StringBuilder (new String(sb.toString().getBytes(),"UTF-8"));
-			System.out.println(sb.toString());
+			//System.out.println(sb.toString());
 			return CSWPOST(sb.toString());
 		} catch (KettleException e) {			
 			throw new KettleException(e);
@@ -450,10 +450,11 @@ public class CSWWriter {
 	private String cswDELETETransaction(String query) throws KettleException, UnsupportedEncodingException{
 		try {
 			StringBuilder sb = new StringBuilder(ENTETE_TRANSACTION_DELETE);
-			sb.append(query);
+			//sb.append(query);
 			sb.append(getFilter(query));
 			sb.append(FOOTPAGE_TRANSACTION_DELETE);
 			sb = new StringBuilder (new String(sb.toString().getBytes(),"UTF-8"));
+			//System.out.println(sb.toString());
 			return CSWPOST(sb.toString());
 		} catch (KettleException e) {			
 			throw new KettleException(e);
@@ -681,10 +682,13 @@ public class CSWWriter {
 	
 	/**
 	 * @param cswUrl the cswUrl to set
-	 * @throws MalformedURLException 
 	 */
-	public void setCswUrl(String cswUrl) throws MalformedURLException {		
-		this.cswUrl = new URL(cswUrl);
+	public void setCswUrl(String cswUrl) {		
+		try {
+			this.cswUrl = new URL(cswUrl);
+		} catch (MalformedURLException e) {
+			this.cswUrl = null;
+		}
 	}
 	/**
 	 * @return the cswUrl
@@ -694,10 +698,13 @@ public class CSWWriter {
 	}
 	/**
 	 * @param string the loginUrl to set
-	 * @throws MalformedURLException 
 	 */
-	public void setLoginUrl(String loginurl) throws MalformedURLException {
-		this.loginUrl = new URL(loginurl);
+	public void setLoginUrl(String loginurl) {
+		try {
+			this.loginUrl = new URL(loginurl);
+		} catch (MalformedURLException e) {
+			this.loginUrl = null;
+		}
 	}
 	/**
 	 * @return the loginUrl

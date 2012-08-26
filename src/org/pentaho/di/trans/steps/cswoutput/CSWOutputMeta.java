@@ -29,7 +29,7 @@ import org.pentaho.di.trans.step.StepMetaInterface;
 import org.w3c.dom.Node;
 
 /**
- * @author mouattara,jmathieu
+ * @author mouattara,jmathieu,tbadard
  *
  */
 public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
@@ -39,7 +39,7 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 	 * 
 	 */
 	public CSWOutputMeta() {
-		
+
 		super();
 		CSWwriter= new CSWWriter();
 	}
@@ -74,7 +74,7 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 		// TODO Auto-generated method stub
 		return new CSWOutputData();
 	}
-	
+
 	public Object clone(){
 		CSWOutputMeta retval = (CSWOutputMeta)super.clone();
 
@@ -90,69 +90,67 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 		readData(stepnode);
 
 	}
-	
+
 	private void readData(Node stepnode)throws KettleXMLException{
-		
-		try {
-			CSWwriter.setCswUrl(XMLHandler.getTagValue(stepnode, "catalogurl")) ;
-			CSWwriter.setLoginUrl(XMLHandler.getTagValue(stepnode, "loginurl"));
-			CSWwriter.setUsername(XMLHandler.getTagValue(stepnode, "username"));
-			CSWwriter.setPassword(XMLHandler.getTagValue(stepnode, "password"));
-			CSWwriter.setRequest(XMLHandler.getTagValue(stepnode, "request"));
-			CSWwriter.setSchema(XMLHandler.getTagValue(stepnode, "schema"));
-			
-			
-			Node mappingColumnsNode = XMLHandler.getSubNode(stepnode, "mappingcolumns");
-			int nrMapCol = XMLHandler.countNodes(mappingColumnsNode, "mapcolumn");
 
-			//
-			ArrayList<String[]> mappingColumnList= new ArrayList<String[]>();
-			
+		CSWwriter.setCswUrl(XMLHandler.getTagValue(stepnode, "catalogurl")) ;
+		CSWwriter.setLoginUrl(XMLHandler.getTagValue(stepnode, "loginurl"));
+		CSWwriter.setUsername(XMLHandler.getTagValue(stepnode, "username"));
+		CSWwriter.setPassword(XMLHandler.getTagValue(stepnode, "password"));
+		CSWwriter.setRequest(XMLHandler.getTagValue(stepnode, "request"));
+		CSWwriter.setSchema(XMLHandler.getTagValue(stepnode, "schema"));
 
-			for (int i = 0; i < nrMapCol; i++) {
-				String[] s=new String[3];
-				Node onode = XMLHandler.getSubNodeByNr(mappingColumnsNode, "mapcolumn", i);
-				s[0]=XMLHandler.getTagValue(onode, "schemacolumn");
-				s[1]=XMLHandler.getTagValue(onode, "previousstepcolumn");
-				s[2]=XMLHandler.getTagValue(onode, "defaultvalue");
-				mappingColumnList.add(s);
-				
-			}
-			
-			CSWwriter.setMappingColumns(mappingColumnList);
-			
-			
-			//previous columns list
-			Node prevcollistNode = XMLHandler.getSubNode(stepnode, "previouscolumnlist");
-			int nrPrevCol = XMLHandler.countNodes(prevcollistNode, "previouscolumn");
 
-			//
-			String[] prevColumnList= new String[nrPrevCol];
-			for (int i = 0; i < nrPrevCol; i++) {				
-				Node onode = XMLHandler.getSubNodeByNr(prevcollistNode, "previouscolumn", i);
-				String s=XMLHandler.getTagValue(onode, "id");				
-				prevColumnList[i]=s;				
-			}
-			CSWwriter.setPrevColumnList(prevColumnList);
-			
-		} catch (MalformedURLException e) {
-			// 
-			throw new KettleXMLException(e);
-		} //$NON-NLS-1$ 
-		
+		Node mappingColumnsNode = XMLHandler.getSubNode(stepnode, "mappingcolumns");
+		int nrMapCol = XMLHandler.countNodes(mappingColumnsNode, "mapcolumn");
+
+		//
+		ArrayList<String[]> mappingColumnList= new ArrayList<String[]>();
+
+
+		for (int i = 0; i < nrMapCol; i++) {
+			String[] s=new String[3];
+			Node onode = XMLHandler.getSubNodeByNr(mappingColumnsNode, "mapcolumn", i);
+			s[0]=XMLHandler.getTagValue(onode, "schemacolumn");
+			s[1]=XMLHandler.getTagValue(onode, "previousstepcolumn");
+			s[2]=XMLHandler.getTagValue(onode, "defaultvalue");
+			mappingColumnList.add(s);
+
+		}
+
+		CSWwriter.setMappingColumns(mappingColumnList);
+
+
+		//previous columns list
+		Node prevcollistNode = XMLHandler.getSubNode(stepnode, "previouscolumnlist");
+		int nrPrevCol = XMLHandler.countNodes(prevcollistNode, "previouscolumn");
+
+		//
+		String[] prevColumnList= new String[nrPrevCol];
+		for (int i = 0; i < nrPrevCol; i++) {				
+			Node onode = XMLHandler.getSubNodeByNr(prevcollistNode, "previouscolumn", i);
+			String s=XMLHandler.getTagValue(onode, "id");				
+			prevColumnList[i]=s;				
+		}
+		CSWwriter.setPrevColumnList(prevColumnList);
+
 	}
-	
+
 	public String getXML(){
 		StringBuffer retval = new StringBuffer();
-		retval.append("    " + XMLHandler.addTagValue("catalogurl",   CSWwriter.getCswUrl().toString()));
-		retval.append("    " + XMLHandler.addTagValue("loginurl",   CSWwriter.getLoginUrl().toString()));
+		if (CSWwriter.getCswUrl()!=null)
+			retval.append("    " + XMLHandler.addTagValue("catalogurl",   CSWwriter.getCswUrl().toString()));
+		else retval.append("    " + XMLHandler.addTagValue("catalogurl",   ""));
+		if (CSWwriter.getLoginUrl()!=null)
+			retval.append("    " + XMLHandler.addTagValue("loginurl",   CSWwriter.getLoginUrl().toString()));
+		else retval.append("    " + XMLHandler.addTagValue("loginurl",   ""));
 		retval.append("    " + XMLHandler.addTagValue("username",   CSWwriter.getUsername()));
 		retval.append("    " + XMLHandler.addTagValue("password",   CSWwriter.getPassword()));
 		retval.append("    " + XMLHandler.addTagValue("schema",   CSWwriter.getSchema()));
 		retval.append("    " + XMLHandler.addTagValue("request",   CSWwriter.getRequest()));
-		
+
 		retval.append("    <mappingcolumns>").append(Const.CR);
-        if (CSWwriter.getMappingColumns()!=null){
+		if (CSWwriter.getMappingColumns()!=null){
 			for (String[] s:CSWwriter.getMappingColumns()) {
 				retval.append("      <mapcolumn>").append(Const.CR);
 				int j=0;
@@ -161,23 +159,23 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 					if (j==0){
 						tagName="schemacolumn";
 					}else
-					if (j==1){
-						tagName="previousstepcolumn";
-					}else
-					if (j==2){
-						tagName="defaultvalue";
-					}
+						if (j==1){
+							tagName="previousstepcolumn";
+						}else
+							if (j==2){
+								tagName="defaultvalue";
+							}
 					retval.append("        ").append(XMLHandler.addTagValue(tagName, c));
 					j++;
 				}
-				
+
 				retval.append("      </mapcolumn>").append(Const.CR);
 			}
-        }
+		}
 		retval.append("    </mappingcolumns>").append(Const.CR);
-		
+
 		retval.append("    <previouscolumnlist>").append(Const.CR);
-		
+
 		if (CSWwriter.getPrevColumnList()!=null){
 			for(String s:CSWwriter.getPrevColumnList()){
 				retval.append("      <previouscolumn>").append(Const.CR);
@@ -186,7 +184,7 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 			}
 		}
 		retval.append("    </previouscolumnlist>").append(Const.CR);
-				
+
 		return retval.toString();
 	}
 
@@ -196,35 +194,30 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 	@Override
 	public void readRep(Repository rep, long idStep,
 			List<DatabaseMeta> databases, Map<String, Counter> counters)
-			throws KettleException {
-		try {
-			CSWwriter.setCswUrl(rep.getStepAttributeString(idStep, "catalogurl")) ;
-			CSWwriter.setLoginUrl(rep.getStepAttributeString(idStep, "loginurl")) ;
-			CSWwriter.setUsername(rep.getStepAttributeString(idStep, "username")) ;
-			CSWwriter.setPassword(rep.getStepAttributeString(idStep, "password")) ;
-			CSWwriter.setRequest(rep.getStepAttributeString(idStep, "request")) ;
-			CSWwriter.setSchema(rep.getStepAttributeString(idStep, "schema")) ;
-			
-			int nrMapCol = rep.countNrStepAttributes(idStep, "mapcolumn");			
-			ArrayList<String[]> mapColList= new ArrayList<String[]>();
-			for (int i = 0; i < nrMapCol; i++) {
-				String ch=rep.getStepAttributeString(idStep,i, "mapcolumn");
-				String[] s=ch.split("@");
-				mapColList.add(s);				
-			}			
-			CSWwriter.setMappingColumns(mapColList);
-			
-			int nrPrevColList=rep.countNrStepAttributes(idStep, "previouscolumn_item");
-			String[] prevcol_list=new String[nrPrevColList];
-			for (int i = 0; i < nrPrevColList; i++) {
-				prevcol_list[i]=rep.getStepAttributeString(idStep,i, "previouscolumn_item");			
-			}
-			CSWwriter.setPrevColumnList(prevcol_list);//end prevcol_list
-			
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
+	throws KettleException {
+
+		CSWwriter.setCswUrl(rep.getStepAttributeString(idStep, "catalogurl")) ;
+		CSWwriter.setLoginUrl(rep.getStepAttributeString(idStep, "loginurl")) ;
+		CSWwriter.setUsername(rep.getStepAttributeString(idStep, "username")) ;
+		CSWwriter.setPassword(rep.getStepAttributeString(idStep, "password")) ;
+		CSWwriter.setRequest(rep.getStepAttributeString(idStep, "request")) ;
+		CSWwriter.setSchema(rep.getStepAttributeString(idStep, "schema")) ;
+
+		int nrMapCol = rep.countNrStepAttributes(idStep, "mapcolumn");			
+		ArrayList<String[]> mapColList= new ArrayList<String[]>();
+		for (int i = 0; i < nrMapCol; i++) {
+			String ch=rep.getStepAttributeString(idStep,i, "mapcolumn");
+			String[] s=ch.split("@");
+			mapColList.add(s);				
+		}			
+		CSWwriter.setMappingColumns(mapColList);
+
+		int nrPrevColList=rep.countNrStepAttributes(idStep, "previouscolumn_item");
+		String[] prevcol_list=new String[nrPrevColList];
+		for (int i = 0; i < nrPrevColList; i++) {
+			prevcol_list[i]=rep.getStepAttributeString(idStep,i, "previouscolumn_item");			
 		}
+		CSWwriter.setPrevColumnList(prevcol_list);//end prevcol_list
 
 	}
 
@@ -233,16 +226,20 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 	 */
 	@Override
 	public void saveRep(Repository rep, long idTransformation, long idStep)
-			throws KettleException {
-		rep.saveStepAttribute(idTransformation, idStep,"catalogurl",   CSWwriter.getCswUrl().toString());
-		rep.saveStepAttribute(idTransformation, idStep,"loginurl",   CSWwriter.getLoginUrl().toString());
+	throws KettleException {
+		if (CSWwriter.getCswUrl()!=null)
+			rep.saveStepAttribute(idTransformation, idStep,"catalogurl",   CSWwriter.getCswUrl().toString());
+		else rep.saveStepAttribute(idTransformation, idStep,"catalogurl",   "");
+		if (CSWwriter.getLoginUrl()!=null)
+			rep.saveStepAttribute(idTransformation, idStep,"loginurl",   CSWwriter.getLoginUrl().toString());
+		else rep.saveStepAttribute(idTransformation, idStep,"loginurl",   "");
 		rep.saveStepAttribute(idTransformation, idStep,"username",   CSWwriter.getUsername());
 		rep.saveStepAttribute(idTransformation, idStep,"password",   CSWwriter.getPassword());
 		rep.saveStepAttribute(idTransformation, idStep,"request",   CSWwriter.getRequest());
 		rep.saveStepAttribute(idTransformation, idStep,"schema",   CSWwriter.getSchema());
-		
-        if (CSWwriter.getMappingColumns()!=null){
-        	int cpt=0;
+
+		if (CSWwriter.getMappingColumns()!=null){
+			int cpt=0;
 			for (String[] s:CSWwriter.getMappingColumns()) {
 				String temps="";
 				int i=0;
@@ -256,16 +253,16 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 				rep.saveStepAttribute(idTransformation, idStep,cpt,"mapcolumn", temps);
 				cpt++;
 			}
-        }//end
-        
-      //previous columns list
-        if (CSWwriter.getPrevColumnList()!=null){
-        	int cpt=0;
-        	for(String s:CSWwriter.getPrevColumnList()){
-        		rep.saveStepAttribute(idTransformation, idStep,cpt,"previouscolumn_item", s);
-        		cpt++;
-        	}
-        }//previous columns list
+		}//end
+
+		//previous columns list
+		if (CSWwriter.getPrevColumnList()!=null){
+			int cpt=0;
+			for(String s:CSWwriter.getPrevColumnList()){
+				rep.saveStepAttribute(idTransformation, idStep,cpt,"previouscolumn_item", s);
+				cpt++;
+			}
+		}//previous columns list
 	}
 
 	/* (non-Javadoc)
@@ -274,18 +271,15 @@ public class CSWOutputMeta extends BaseStepMeta implements StepMetaInterface {
 	@Override
 	public void setDefault() {
 		// 
-		try {
-			CSWwriter.setCswUrl("http://sample-catalog-server.local");
-			CSWwriter.setLoginUrl("http://login-server.loc");
-			CSWwriter.setUsername(null);
-			CSWwriter.setPassword(null);
-			CSWwriter.setRequest(Messages.getString("CSWOutputDialog.Request.Insert"));
-			CSWwriter.setSchema(Messages.getString("CSWOutputDialog.Schema.CSWRECORD"));
-			CSWwriter.setMappingColumns(null);
-			CSWwriter.setPrevColumnList(null);
-		} catch (MalformedURLException e) {
-			
-		}
+
+		CSWwriter.setCswUrl("http://sample-catalog-server.local");
+		CSWwriter.setLoginUrl("http://login-server.loc");
+		CSWwriter.setUsername(null);
+		CSWwriter.setPassword(null);
+		CSWwriter.setRequest(Messages.getString("CSWOutputDialog.Request.Insert"));
+		CSWwriter.setSchema(Messages.getString("CSWOutputDialog.Schema.CSWRECORD"));
+		CSWwriter.setMappingColumns(null);
+		CSWwriter.setPrevColumnList(null);
 
 	}
 

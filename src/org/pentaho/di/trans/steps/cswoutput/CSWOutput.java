@@ -28,7 +28,7 @@ import org.pentaho.di.trans.step.StepMetaInterface;
 import com.vividsolutions.jts.geom.Point;
 
 /**
- * @author mouattara,jmathieu
+ * @author mouattara,jmathieu,tbadard
  *
  */
 public class CSWOutput extends BaseStep implements StepInterface {
@@ -69,7 +69,7 @@ public class CSWOutput extends BaseStep implements StepInterface {
 			try {
 				//response = meta.getCSWwriter().cswINSERTTransaction(allQuery);
 				response = meta.getCSWwriter().execute(allQuery);	
-				logBasic(response);
+				//logBasic(response);
 			} catch (UnsupportedEncodingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
