@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerException;
 
+import org.apache.xpath.XPathAPI;
 import org.jdom.JDOMException;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
@@ -22,8 +23,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.InputSource;
-
-import com.sun.org.apache.xpath.internal.XPathAPI;
 
 public class ParameterBuilder {
 	private static final String INPUT_EXPR = "//*[local-name() = 'Input']";

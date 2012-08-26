@@ -6,14 +6,13 @@ import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.apache.xpath.XPathAPI;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.InputSource;
-
-import com.sun.org.apache.xpath.internal.XPathAPI;
 
 public class ProcessBuilder {
 	private static final String PROCESSES_EXPR = "//*[local-name() = 'Process']";
