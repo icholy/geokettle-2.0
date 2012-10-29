@@ -48,6 +48,8 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 public class CSWReader {
 	
 	private static final String EXCEPTION_CODE = "ows:Exception";
+	private static final String CONST_QUALIFIED_SEARCH = "QUALIFIED SEARCH";
+	private static final String CONST_LOCAL_SEARCH = "LOCAL SEARCH";
 	private URL catalogUrl;
 	private String version;
 	private String method;
@@ -358,7 +360,7 @@ public class CSWReader {
 		ArrayList<String> queryableElement=new ArrayList<String>();
 		ArrayList<Element> SectionComparisonOp;
 		try {
-			SectionComparisonOp = findElement(doc.getRootElement(), "ogc:ComparisonOperator");
+			SectionComparisonOp = findElement(doc.getRootElement(), "ogc:ComparisonOperator",CONST_QUALIFIED_SEARCH);
 			for(Element e:SectionComparisonOp){
 				queryableElement.add(e.getText());
 				//
@@ -381,11 +383,11 @@ public class CSWReader {
 	public String[] getQueryableElement(Document doc){
 		ArrayList<String> queryableElement=new ArrayList<String>();
 		try {
-			ArrayList<Element> SectionOperation=findElement(doc.getRootElement(), "ows:Operation");
+			ArrayList<Element> SectionOperation=findElement(doc.getRootElement(), "ows:Operation",CONST_QUALIFIED_SEARCH);
 			for(Element el:SectionOperation){
 				if (el.getAttribute("name").getValue().equalsIgnoreCase("GetRecords")){
 					//
-					ArrayList<Element> sectionConstraint=findElement(el, "ows:Constraint");
+					ArrayList<Element> sectionConstraint=findElement(el, "ows:Constraint",CONST_QUALIFIED_SEARCH);
 					for(Element s:sectionConstraint){
 						if (s.getAttribute("name").getValue().equalsIgnoreCase("SupportedISOQueryables")){
 							Iterator<?> it=s.getChildren().iterator();
@@ -427,7 +429,7 @@ public class CSWReader {
 		}
 		
 		//output schema information is under tag <operation>
-		ArrayList<Element> listGetRecords=findElement(rootElement, "ows:Operation");
+		ArrayList<Element> listGetRecords=findElement(rootElement, "ows:Operation",CONST_QUALIFIED_SEARCH);
 		Iterator<?> it=listGetRecords.iterator();
 		ArrayList<String> content=new ArrayList<String>();
 		while (it.hasNext()){
@@ -499,7 +501,7 @@ public class CSWReader {
 		try{
 			 rootElement=this.XMLRequestResult.getRootElement();
 			 
-			 ArrayList<Element> el=this.findElement(rootElement,profile);
+			 ArrayList<Element> el=this.findElement(rootElement,profile,CONST_QUALIFIED_SEARCH);
 			 if (this.ColsName==null)
 				 return null;
 		
@@ -556,7 +558,7 @@ public class CSWReader {
 		Element rootElement=null;
 		try{
 			rootElement=this.XMLRequestResult.getRootElement();
-			ArrayList<Element> el=this.findElement(rootElement,profile);
+			ArrayList<Element> el=this.findElement(rootElement,profile,CONST_LOCAL_SEARCH);
 			 if (this.ColsName==null)
 				 return null;
 			String[] colName=this.ColsName.toArray(new String[ColsName.size()]);			
@@ -690,6 +692,25 @@ public Element findSubElement(Element element, String elementName)throws Servlet
 		return el;
 }
 
+public Element findSubElementLocaleName(Element element, String elementName)throws ServletException, IOException{		
+	boolean trouve=false;
+	List<?> list=element.getChildren();	
+	Iterator<?> it=list.iterator();
+	
+	while (it.hasNext()&& (trouve==false)){
+		Element courant=(Element)it.next();
+		if (courant.getName().equalsIgnoreCase(elementName)){
+			trouve=true;
+			el=courant;				
+		}
+		if ((trouve==false)&&(courant!=null)) 
+			
+			findSubElementLocaleName(courant, elementName);
+	}		
+	
+	return el;
+}
+
 public ArrayList<Element> getColumns(Element element)throws ServletException, IOException{		
 	
 	parseResult = new ArrayList<Element>();
@@ -717,26 +738,32 @@ public ArrayList<Element> getColumns(Element element)throws ServletException, IO
 	}
 	
 	
-public ArrayList<Element> findElement(Element element, String elementName)throws ServletException, IOException{		
+public ArrayList<Element> findElement(Element element, String elementName, String typeSearch)throws ServletException, IOException{		
 		
 		parseResult = new ArrayList<Element>();
 		
 		// Traverse the tree
-		recurse_findElement(element.getChildren(), elementName); 
+		recurse_findElement(element.getChildren(), elementName,typeSearch); 
 		
 		return parseResult;
 	}
 		
-	private void recurse_findElement(List<?> elements, String elementName)throws IOException{			
+	private void recurse_findElement(List<?> elements, String elementName, String typeSearch)throws IOException{			
 		// Cycle through all the child nodes of the root
 		Iterator<?> iter = elements.iterator();
 		while (iter.hasNext()){			
 	        Element el = (Element) iter.next();
 	        
-	        if (el.getQualifiedName().equals(elementName)) parseResult.add((Element) el);
+	        if (typeSearch.equalsIgnoreCase(CONST_QUALIFIED_SEARCH)){
+	        	if (el.getQualifiedName().equals(elementName)) parseResult.add((Element) el);
+	        }
+	        if (typeSearch.equalsIgnoreCase(CONST_LOCAL_SEARCH)){
+	        	if (el.getName().equals(elementName)) parseResult.add((Element) el);
+	        }
+	        
 	       	       
 	        // If the node has children, call this method with the node
-	        if (el.getChildren()!=null) recurse_findElement(el.getChildren(), elementName);	        
+	        if (el.getChildren()!=null) recurse_findElement(el.getChildren(), elementName,typeSearch);	        
 		}
 	}
 	

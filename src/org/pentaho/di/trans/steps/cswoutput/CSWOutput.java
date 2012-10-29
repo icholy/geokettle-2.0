@@ -9,10 +9,15 @@ package org.pentaho.di.trans.steps.cswoutput;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 
 import javax.servlet.ServletException;
 
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.Namespace;
 import org.pentaho.di.trans.steps.cswoutput.Messages;
 import org.pentaho.di.core.Const;
 
@@ -32,24 +37,23 @@ import com.vividsolutions.jts.geom.Point;
  *
  */
 public class CSWOutput extends BaseStep implements StepInterface {
+	public static final String CSWEXCEPTIONREPORT="Exception";
+	private static final String REQ_INSERT = "INSERT";
+	private static final String REQ_DELETE = "DELETE";
+	private static final String REQ_UPDATE = "UPDATE";
+	private static final String CSW_NAMESPACE = "http://www.opengis.net/cat/csw/2.0.2";
+	private static final String TOTAL_INSERTED_TAG = "totalInserted";
+
+	
 	private CSWOutputMeta meta;
 	private CSWOutputData data;
 	private boolean isReceivingInputFields=false;
 	private String allQuery="";
 	private ArrayList<String[]> mappingColumns;
-	
-	/**
-	 * @param stepMeta
-	 * @param stepDataInterface
-	 * @param copyNr
-	 * @param transMeta
-	 * @param trans
-	 */
+
 	public CSWOutput(StepMeta stepMeta, StepDataInterface stepDataInterface,
 			int copyNr, TransMeta transMeta, Trans trans) {
 		super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
-		
-		// 
 	}
 	
 	public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException{
@@ -67,28 +71,22 @@ public class CSWOutput extends BaseStep implements StepInterface {
 			String response;
 			
 			try {
-				//response = meta.getCSWwriter().cswINSERTTransaction(allQuery);
-				response = meta.getCSWwriter().execute(allQuery);	
-				//logBasic(response);
+				response = meta.getCSWwriter().execute(allQuery);
+				boolean trouve=parseCSWServerResponse(response, CSWEXCEPTIONREPORT) ;
+				if (trouve==true){
+					throw new KettleException(response);
+				}
+				logBasic(response);
 			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logError("Error closing file.", e);
 			}
 			
 			return false;			
 		}
 		
 		if (first){ 
-        	// we just got started
-            first = false;          
-                       		                          
+            first = false;                     		                          
         }
-		//
-		if (r!=null){
-			
-		}
-		
-		
 		int i=0;
 		String query=null;
 		
@@ -101,45 +99,73 @@ public class CSWOutput extends BaseStep implements StepInterface {
 			}
 		}
 		
-		if (r==null){
-			
+		if (r==null){			
 			isReceivingInputFields=true;
-			//return false;
-			
 		}else{
 			data.outputRowMeta=getInputRowMeta().clone();
 			
 			fieldName=data.outputRowMeta.getFieldNames();
 			while (i<mappingColumns.size()){
-			//while(i<r.length){		
-							
-				try {
-					
-		
+			try {
 					String valueToSet=findValueToSet(fieldName,r, mappingColumns.get(i));
 					query=meta.getCSWwriter().setElementTextUsingQueryString(query,mappingColumns.get(i)[0],valueToSet);
-					i++;
+					i++;					
 				} catch (ServletException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}		
 				
 			}
-			allQuery +=query;
-		}
-		
-		
-		
-
-		/*if(!isReceivingInputFields){
-        	setOutputDone();
-			return false;	
-        }   */        
+			allQuery +=query;			
+			incrementLinesOutput();
+		}     
 		return true;
 	}
+	
+	/**
+	 * This method parse CSW server response to check out if transactions have been successfully completed
+	 * */
+	public boolean parseCSWServerResponse(String resp, String SearchElementName) throws KettleException{
+		Document doc= meta.getCSWwriter().fromStringToJDOMDocument(resp);
+		Element rootElement=doc.getRootElement();
+		boolean trouve=false;
+		String request=meta.getCSWwriter().getRequest();
+
+		List<?> list=rootElement.getChildren();
+		Iterator<?> it=list.iterator();
+		while (it.hasNext()){
+			Element courant=(Element)it.next();
+			String cName=courant.getName();
+
+			if (request.equalsIgnoreCase(REQ_INSERT)) {
+				if (cName.equalsIgnoreCase(SearchElementName)){
+					trouve=true;
+					super.setLinesWritten(0);
+				}else{
+					Element summary=courant.getChild(TOTAL_INSERTED_TAG,Namespace.getNamespace(CSW_NAMESPACE));
+					if (summary !=null)
+						super.setLinesWritten(Long.parseLong(summary.getText()));	
+				}
+			}else
+			if (request.equalsIgnoreCase(REQ_DELETE)){
+				if (cName.equalsIgnoreCase(SearchElementName)){
+				}else{
+					super.incrementLinesRejected();
+				}
+				
+			}
+			else
+			if (request.equalsIgnoreCase(REQ_UPDATE)){
+				if (cName.equalsIgnoreCase(SearchElementName)){
+				}else	
+				super.incrementLinesUpdated();
+			}
+		}	
+		
+		return trouve;
+	}
+	
 	
 	private String findValueToSet(String[] columList,Object[] o, String[] mapcols){
 		boolean trouve=false;
@@ -156,7 +182,8 @@ public class CSWOutput extends BaseStep implements StepInterface {
 					}
 					
 				}else
-				obj=(String)o[i];
+					obj= (o[i]!=null) ?o[i].toString():null;
+				//obj=(String)o[i];
 			}else
 			i++;
 		}
@@ -177,11 +204,11 @@ public class CSWOutput extends BaseStep implements StepInterface {
 	
 	public void run(){
 		try{
-			logBasic(Messages.getString("CSWOutput.Log.StartingToRun"));		 //$NON-NLS-1$
+			logBasic(Messages.getString("CSWOutput.Log.StartingToRun"));
 			while (!isStopped() && processRow(meta, data) );
 		}
 		catch(Exception e){
-			logError(Messages.getString("CSWOutput.Log.Error.UnexpectedError")+" : "+e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
+			logError(Messages.getString("CSWOutput.Log.Error.UnexpectedError")+" : "+e.toString());
             logError(Const.getStackTracker(e));
             setErrors(1);
 			stopAll();

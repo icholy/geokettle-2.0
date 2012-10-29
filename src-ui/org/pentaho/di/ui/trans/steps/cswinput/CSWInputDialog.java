@@ -1154,9 +1154,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 			mb.setText(Messages.getString("CSWInputDialog.ErrorRequiredWellFormedCSWURL.DialogMessage")); //$NON-NLS-1$
 			mb.open();
 			
-			return;
-			
-			
+			return;			
 		}
 		
 		try {					

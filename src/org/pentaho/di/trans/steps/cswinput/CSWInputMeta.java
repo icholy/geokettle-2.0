@@ -50,7 +50,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 	private static final String CSWSUMMARYRECORD = "csw:SummaryRecord";
 	private static final String CSWFULLRECORD = "csw:Record";
 	public static final String ISOTC211_2005_PROFILE = "http://www.isotc211.org/2005/gmd";
-	private static final String GMD_MD_Metadata = "gmd:MD_Metadata";
+	private static final String GMD_MD_Metadata = "MD_Metadata";
 	
 	private CSWReader cswParam;
 	private RowMetaInterface fieds;
@@ -393,12 +393,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 			while (it.hasNext()){
 				String courant=it.next();
 				double chaine=rep.getStepAttributeInteger(idStep, "BBOX_"+courant);
-				//
-				//if (chaine!=null){
-					bbox.put(courant, chaine);
-				//}
-				
-				
+				bbox.put(courant, chaine);
 			}
 			cswParam.setBBOX(bbox);			
 			
@@ -513,7 +508,7 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 	public void setDefault() {
 		// 
 		cswParam.setKeyword(null);
-		cswParam.setVersion("2.0.0");
+		cswParam.setVersion("2.0.2");
 		cswParam.setMethod("GET");
 		cswParam.setStartDate(null);
 		cswParam.setEndDate(null);
@@ -528,9 +523,10 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 		cswParam.setQueryableElement(null);
 		cswParam.setComparisonOperator(null);
 		cswParam.setEnableSpatialSearch(false);
+		cswParam.setLoginServiceUrl("http://localhost:8080/geonetwork/srv/en/xml.user.login");
 		
 		try {
-			cswParam.setCatalogUrl("http://catalog-server/CSW");
+			cswParam.setCatalogUrl("http://localhost:8080/geonetwork/srv/en/csw");
 		} catch (MalformedURLException e) {
 			
 		}
@@ -664,7 +660,8 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 		int nbrRecords=cswParam.getNumberOfRecord(cswParam.getXMLRequestResult(), "csw:SearchResults");
 		if (nbrRecords>0){
 			colName=new ArrayList<String>();
-			Element el=this.cswParam.findSubElement(cswParam.getXMLRequestResult().getRootElement(),profile);
+			//Element el=this.cswParam.findSubElement(cswParam.getXMLRequestResult().getRootElement(),profile);
+			Element el=this.cswParam.findSubElementLocaleName(cswParam.getXMLRequestResult().getRootElement(),profile);
 			Iterator<Element> it=cswParam.getColumns(el).iterator();
 			while (it.hasNext()){
 				Element c=it.next();					

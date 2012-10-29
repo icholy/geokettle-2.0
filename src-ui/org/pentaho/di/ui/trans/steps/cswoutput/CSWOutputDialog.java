@@ -4,7 +4,7 @@
 package org.pentaho.di.ui.trans.steps.cswoutput;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
+//import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 import org.eclipse.jface.resource.FontRegistry;
@@ -100,6 +100,8 @@ StepDialogInterface {
 	private Label wlNoteLabel;
 	private FormData fdwlNoteLabel;
 	private String[] prevColName;
+	private Button wChkLoginService;
+	private FormData fdwChkLoginService;
 
 
 	/**
@@ -193,7 +195,42 @@ StepDialogInterface {
 		fdUrl.right= new FormAttachment(100, -1*margin);
 		wUrl.setLayoutData(fdUrl);
 
-
+		
+		
+		/**
+		 * 
+		 * activate
+		 * */
+		
+		//checkbox enable login service
+ 		wChkLoginService= new Button(wGeneral, SWT.CHECK);
+ 		props.setLook(wChkLoginService);
+ 		wChkLoginService.setText(Messages.getString("CSWOutputDialog.Login.Authentification"));
+ 		//wChkLoginService.setText(Messages.getString("CSWOutputDialog.Login.Activate"));
+ 		fdwChkLoginService=new FormData();
+ 		fdwChkLoginService.left = new FormAttachment(0, margin);
+ 		fdwChkLoginService.top  = new FormAttachment(wUrl, 3*margin);
+ 		fdwChkLoginService.right= new FormAttachment(100, -1*margin);
+ 		wChkLoginService.setLayoutData(fdwChkLoginService);
+ 		//listener
+ 		wChkLoginService.addSelectionListener(new SelectionAdapter() 
+        {
+            public void widgetSelected(SelectionEvent e) 
+            {
+            	input.setChanged();
+            	if (wChkLoginService.getSelection()==true){
+            		//wLoginGroup.setEnabled(true);
+            		EnableDisableLoginGroup(true);
+            	}else
+            	if (wChkLoginService.getSelection()==false){
+            		//wLoginGroup.setEnabled(false);
+            		EnableDisableLoginGroup(false);
+            	}           	
+            		
+            }
+        }
+ 		);
+        
 
 		/**
 		 * Login parameters
@@ -210,7 +247,7 @@ StepDialogInterface {
 
 		fdLoginGroup=new FormData();
 		fdLoginGroup.left = new FormAttachment(0, margin);
-		fdLoginGroup.top  = new FormAttachment(wUrl, 3*margin);
+		fdLoginGroup.top  = new FormAttachment(wChkLoginService, 3*margin);
 		fdLoginGroup.right= new FormAttachment(100, -1*margin);
 		wLoginGroup.setLayoutData(fdLoginGroup); 
 
@@ -317,7 +354,7 @@ StepDialogInterface {
 		wGeneral.setLayoutData(fdGeneral);
 
 		FontRegistry fontRegistry= new FontRegistry(Display.getCurrent());		    
-		fontRegistry.put("font", new FontData[]{new FontData("Arial", 8, SWT.BOLD|SWT.ITALIC)} );
+		fontRegistry.put("font", new FontData[]{new FontData("Sans Serif", 9, SWT.ITALIC)} );
 
 		wlNoteLabel=new Label(shell, SWT.LEFT);
 		wlNoteLabel.setText(Messages.getString("CSWOutputDialog.Schema.Note.Label"));
@@ -327,6 +364,7 @@ StepDialogInterface {
 		fdwlNoteLabel.top  = new FormAttachment(wGeneral, 2*margin);		
 		wlNoteLabel.setLayoutData(fdwlNoteLabel);
 		wlNoteLabel.setFont(fontRegistry.get("font"));
+		wlNoteLabel.setForeground(display.getSystemColor(SWT.COLOR_RED));
 
 		/**mapping columns*/
 
@@ -366,7 +404,6 @@ StepDialogInterface {
 		fdwQueryElement.left  = new FormAttachment(0, 0);
 		fdwQueryElement.top   = new FormAttachment(0, 2*margin);
 		fdwQueryElement.right = new FormAttachment(100, -margin);
-		//fdwQueryElement.bottom = new FormAttachment(100, -margin);
 
 		wQueryElement.setLayoutData(fdwQueryElement);
 
@@ -404,11 +441,7 @@ StepDialogInterface {
 		fdGGetQueryElements = new FormData();
 		fdGGetQueryElements.left = new FormAttachment(middle, 5*margin);
 		fdGGetQueryElements.top = new FormAttachment(wQueryElement, 2*margin);
-		//fdGGetQueryElements.right = new FormAttachment(100, -margin);
-		//fdGGetQueryElements.bottom = new FormAttachment(100, -margin);
 
-
-		//
 		wGetQueryElements.setLayoutData(fdGGetQueryElements);
 
 		/**
@@ -492,7 +525,6 @@ StepDialogInterface {
 
 			}
 		} catch (KettleException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		catch (ServletException e1) {
@@ -545,10 +577,10 @@ StepDialogInterface {
 
 	private void setElementBackgroundColor(TableView wQueryElement,	String text) {
 		FontRegistry fontRegistry= new FontRegistry(Display.getCurrent());		    
-		fontRegistry.put("font", new FontData[]{new FontData("Arial", 9, SWT.BOLD|SWT.ITALIC)} );
+		fontRegistry.put("font", new FontData[]{new FontData("Sans Serif", 9, SWT.BOLD|SWT.ITALIC)} );
 
 		FontRegistry defaultFontRegistry= new FontRegistry(Display.getCurrent());		    
-		defaultFontRegistry.put("font", new FontData[]{new FontData("Arial", 9, SWT.NORMAL)} );
+		defaultFontRegistry.put("font", new FontData[]{new FontData("Times", 9, SWT.NORMAL)} );
 		wQueryElement.table.setFont(defaultFontRegistry.get("font"));
 		if (text.equalsIgnoreCase("CSW_RECORD")&& wQueryElement.table.getItemCount()>=15){			
 			wQueryElement.table.getItem(0).setFont(fontRegistry.get("font"));		    
@@ -559,6 +591,18 @@ StepDialogInterface {
 			wQueryElement.table.getItem(13).setFont(fontRegistry.get("font"));
 			wQueryElement.table.getItem(14).setFont(fontRegistry.get("font"));
 			//wQueryElement.table.getItem(17).setFont(fontRegistry.get("font"));
+			
+			//set foreground color
+			
+			wQueryElement.table.getItem(0).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));	    
+			wQueryElement.table.getItem(1).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+			wQueryElement.table.getItem(6).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+			wQueryElement.table.getItem(7).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+			wQueryElement.table.getItem(10).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+			wQueryElement.table.getItem(13).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+			wQueryElement.table.getItem(14).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+			
+			
 		}else{
 			if (text.equalsIgnoreCase("MD_METADATA")&& wQueryElement.table.getItemCount()>=51){
 				wQueryElement.table.getItem(0).setFont(fontRegistry.get("font"));
@@ -576,15 +620,27 @@ StepDialogInterface {
 				wQueryElement.table.getItem(49).setFont(fontRegistry.get("font"));
 				wQueryElement.table.getItem(50).setFont(fontRegistry.get("font"));
 				wQueryElement.table.getItem(51).setFont(fontRegistry.get("font"));
+				
+				//set foreground color
+				
+				wQueryElement.table.getItem(0).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				wQueryElement.table.getItem(1).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				wQueryElement.table.getItem(4).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				wQueryElement.table.getItem(5).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				wQueryElement.table.getItem(12).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				wQueryElement.table.getItem(17).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				wQueryElement.table.getItem(18).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				wQueryElement.table.getItem(25).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				wQueryElement.table.getItem(43).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				wQueryElement.table.getItem(46).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				wQueryElement.table.getItem(47).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				wQueryElement.table.getItem(48).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				wQueryElement.table.getItem(49).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				wQueryElement.table.getItem(50).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				wQueryElement.table.getItem(51).setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_RED));
+				
 			}
 		}
-
-		/*wQueryElement.table.getItem(0).setBackground(color);
-			wQueryElement.table.getItem(1).setBackground(color);
-			wQueryElement.table.getItem(7).setBackground(color);
-			wQueryElement.table.getItem(13).setBackground(color);
-			wQueryElement.table.getItem(14).setBackground(color);
-			wQueryElement.table.getItem(14).setBackground(color);*/
 
 	}
 
@@ -629,7 +685,8 @@ StepDialogInterface {
 			if (!Const.isEmpty(cswwriter.getCswUrl().toString())){
 				wUrl.setText(cswwriter.getCswUrl().toString());
 			}
-		}
+		}		
+		
 		if (cswwriter.getLoginUrl()!=null) {
 			if (!Const.isEmpty(cswwriter.getLoginUrl().toString())){
 				wLoginUrl.setText(cswwriter.getLoginUrl().toString());
@@ -651,6 +708,10 @@ StepDialogInterface {
 		if (!Const.isEmpty(cswwriter.getPrevColumnList())){
 			prevColName=cswwriter.getPrevColumnList();
 		}
+		
+		
+		wChkLoginService.setSelection(cswwriter.isUseLoginService());
+		EnableDisableLoginGroup(wChkLoginService.getSelection());
 
 		ArrayList<String[]> mapColList=cswwriter.getMappingColumns();
 		if (mapColList!=null){
@@ -680,6 +741,12 @@ StepDialogInterface {
 
 		dispose();
 	}
+	private void EnableDisableLoginGroup(boolean ok){
+		wLoginUrl.setEnabled(ok);
+		wPassword.setEnabled(ok);
+		wUser.setEnabled(ok);
+		
+	}
 	private void ok() 
 	{
 		cswwriter=new CSWWriter();
@@ -690,6 +757,8 @@ StepDialogInterface {
 		cswwriter.setPassword(this.wPassword.getText());
 		cswwriter.setSchema(this.wSchemaLabel.getText());
 		cswwriter.setRequest(this.wRequest.getText());
+		
+		cswwriter.setUseLoginService(wChkLoginService.getSelection());
 
 		wQueryElement.removeEmptyRows();
 		ArrayList<String[]> mappingColList=new ArrayList<String[]>();		

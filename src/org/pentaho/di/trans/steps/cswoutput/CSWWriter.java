@@ -38,18 +38,19 @@ import org.xml.sax.InputSource;
  */
 public class CSWWriter {
 
-	private static SimpleDateFormat dfm = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static SimpleDateFormat dfm = new SimpleDateFormat("yyyy-MM-dd");
 	private static String TODAY = dfm.format(new Date()) ;
+	
 	
 	public static final String ENTETE_TRANSACTION_INSERT="<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+
 				"<csw:Transaction service=\"CSW\" version=\"2.0.2\" xmlns:ogc=\"http://http://www.opengis.net/ogc\" xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\" xmlns:dct=\"http://purl.org/dc/terms/\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">"+
 				"<csw:Insert>";
 	public static final String FOOTPAGE_TRANSACTION_INSERT="</csw:Insert></csw:Transaction>";
 	
-	public static final String ENTETE_TRANSACTION_UPDATE="<?xml version=\"1.0\" encoding=\"UTF-8\"?><csw:Transaction service=\"CSW\" version=\"2.0.2\" xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:ogc=\"http://http://www.opengis.net/ogc\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\" xmlns:dct=\"http://purl.org/dc/terms/\"><csw:Update>";
+	public static final String ENTETE_TRANSACTION_UPDATE="<?xml version=\"1.0\" encoding=\"UTF-8\"?><csw:Transaction service=\"CSW\" version=\"2.0.2\" xmlns:apiso=\"http://www.opengis.net/cat/csw/apiso/1.0\" xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:ogc=\"http://http://www.opengis.net/ogc\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\" xmlns:dct=\"http://purl.org/dc/terms/\"><csw:Update>";
 	public static final String FOOTPAGE_TRANSACTION_UPDATE="</csw:Update></csw:Transaction>";
 	
-	public static final String ENTETE_TRANSACTION_DELETE="<?xml version=\"1.0\" encoding=\"UTF-8\"?><csw:Transaction service=\"CSW\" version=\"2.0.2\" xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:ogc=\"http://http://www.opengis.net/ogc\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\" xmlns:dct=\"http://purl.org/dc/terms/\"><csw:Delete>";
+	public static final String ENTETE_TRANSACTION_DELETE="<?xml version=\"1.0\" encoding=\"UTF-8\"?><csw:Transaction service=\"CSW\" version=\"2.0.2\" xmlns:apiso=\"http://www.opengis.net/cat/csw/apiso/1.0\" xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:ogc=\"http://http://www.opengis.net/ogc\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\" xmlns:dct=\"http://purl.org/dc/terms/\"><csw:Delete>";
 	public static final String FOOTPAGE_TRANSACTION_DELETE="</csw:Delete></csw:Transaction>";
 	
 	public static final String CSWBRIEF_XML="<csw:Record xmlns:dct=\"http://purl.org/dc/terms/\" xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\" xmlns:geonet=\"http://www.fao.org/geonetwork\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:ows=\"http://www.opengis.net/ows\">"+
@@ -316,8 +317,8 @@ public class CSWWriter {
                                 "<EX_TemporalExtent>"+
                                     "<extent>"+                                    
                                         "<gml:TimePeriod>"+
-                                            "<gml:beginPosition>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Date")+"</gml:beginPosition>"+
-                                            "<gml:endPosition>"+Messages.getString("CSWOutput.Transaction.DEFAULT_VALUE.Date")+"</gml:endPosition>"+
+                                            "<gml:beginPosition>"+TODAY+"</gml:beginPosition>"+
+                                            "<gml:endPosition>"+TODAY+"</gml:endPosition>"+
                                         "</gml:TimePeriod>"+
                                     "</extent>"+
                                 "</EX_TemporalExtent>"+
@@ -390,26 +391,26 @@ public class CSWWriter {
 	private ArrayList<String[]> mappingColumns;
 	private String[] mapColList;
 	private String[] prevColumnList;
+	private boolean useLoginService;
 	
-	private String getIdentifier(String query) {
+	private String getIdentifier(Element root) {
 		String result;
-		try {
-			Element root = fromStringToJDOMDocument(query).getRootElement();
-			result = schema.equals(Messages.getString("CSWOutputDialog.Schema.MD_METADATA")) ? root.getChild("fileIdentifier", Namespace.getNamespace("http://www.isotc211.org/2005/gmd")).getChildTextNormalize("CharacterString", Namespace.getNamespace("http://www.isotc211.org/2005/gco")) : root.getChildTextNormalize("identifier", Namespace.getNamespace("http://purl.org/dc/elements/1.1/"));
-		} catch (KettleException e) {
-			result = null;
-		}
+		result = schema.equals(Messages.getString("CSWOutputDialog.Schema.MD_METADATA")) ? root.getChild("fileIdentifier", Namespace.getNamespace("http://www.isotc211.org/2005/gmd")).getChildTextNormalize("CharacterString", Namespace.getNamespace("http://www.isotc211.org/2005/gco")) : root.getChildTextNormalize("identifier", Namespace.getNamespace("http://purl.org/dc/elements/1.1/"));
 		return result;
 	}
 	
-	private String getFilter(String query) {
-		String name = schema.equals(Messages.getString("CSWOutputDialog.Schema.MD_METADATA")) ? "identifier" : "/csw:Record/dc:identifier";
+	private String getFilter(Element query) {
+		String name = "apiso:identifier";
 		StringBuilder sb = new StringBuilder("<csw:Constraint version=\"1.0.0\"><Filter xmlns=\"http://www.opengis.net/ogc\" xmlns:gml=\"http://www.opengis.net/gml\"><PropertyIsEqualTo><PropertyName>");
 		sb.append(name);
 		sb.append("</PropertyName><Literal>");
 		sb.append(getIdentifier(query));
 		sb.append("</Literal></PropertyIsEqualTo></Filter></csw:Constraint>");
 		return sb.toString();
+	}
+	
+	public boolean isUseLoginService() {
+		return useLoginService;
 	}
 	
 	/**
@@ -435,27 +436,64 @@ public class CSWWriter {
 	
 	private String cswUPDATETransaction(String query) throws KettleException, UnsupportedEncodingException{
 		try {
-			StringBuilder sb = new StringBuilder(ENTETE_TRANSACTION_UPDATE);
-			sb.append(query);
-			sb.append(getFilter(query));
-			sb.append(FOOTPAGE_TRANSACTION_UPDATE);
-			sb = new StringBuilder (new String(sb.toString().getBytes(),"UTF-8"));
-			//System.out.println(sb.toString());
-			return CSWPOST(sb.toString());
+			
+			StringBuilder st = new StringBuilder("<response>");
+			Element rootElement=fromStringToJDOMDocument("<root>"+query+"</root>").getRootElement();
+			List<?> list=rootElement.getChildren();
+			final Iterator<?> it=list.iterator();
+			while (it.hasNext()){
+				Element courant1=(Element)it.next();
+				Element courant=(Element) courant1.clone();
+				StringBuilder sb = new StringBuilder(ENTETE_TRANSACTION_UPDATE);
+				courant.detach();
+				Format fmt = Format.getPrettyFormat();
+				fmt.setOmitDeclaration(true);
+				
+			    XMLOutputter outputter = new XMLOutputter(fmt);
+		        String xmlString = outputter.outputString(new Document(courant));
+				sb.append(xmlString);
+				sb.append(getFilter(courant));
+				sb.append(FOOTPAGE_TRANSACTION_UPDATE);
+				sb = new StringBuilder (new String(sb.toString().getBytes(),"UTF-8"));
+				st.append(CSWPOST(sb.toString()));
+				st.delete(st.indexOf("<?"),st.indexOf("?>")+2);
+			}
+			st.append("</response>");
+			return st.toString();
+			
 		} catch (KettleException e) {			
 			throw new KettleException(e);
 		}
 	}
 	
 	private String cswDELETETransaction(String query) throws KettleException, UnsupportedEncodingException{
+
 		try {
-			StringBuilder sb = new StringBuilder(ENTETE_TRANSACTION_DELETE);
-			//sb.append(query);
-			sb.append(getFilter(query));
-			sb.append(FOOTPAGE_TRANSACTION_DELETE);
-			sb = new StringBuilder (new String(sb.toString().getBytes(),"UTF-8"));
-			//System.out.println(sb.toString());
-			return CSWPOST(sb.toString());
+			
+			StringBuilder st = new StringBuilder("<response>");
+			Element rootElement=fromStringToJDOMDocument("<root>"+query+"</root>").getRootElement();
+			List<?> list=rootElement.getChildren();
+			final Iterator<?> it=list.iterator();
+			while (it.hasNext()){
+				Element courant1=(Element)it.next();
+				Element courant=(Element) courant1.clone();
+				StringBuilder sb = new StringBuilder(ENTETE_TRANSACTION_DELETE);
+				/*	courant.detach();
+				Format fmt = Format.getPrettyFormat();
+				fmt.setOmitDeclaration(true);
+				
+			    XMLOutputter outputter = new XMLOutputter(fmt);
+		        String xmlString = outputter.outputString(new Document(courant));
+				sb.append(xmlString);*/
+				sb.append(getFilter(courant));
+				sb.append(FOOTPAGE_TRANSACTION_DELETE);
+				sb = new StringBuilder (new String(sb.toString().getBytes(),"UTF-8"));
+				st.append(CSWPOST(sb.toString()));
+				st.delete(st.indexOf("<?"),st.indexOf("?>")+2);
+			}
+			st.append("</response>");
+			return st.toString();
+			
 		} catch (KettleException e) {			
 			throw new KettleException(e);
 		}
@@ -557,6 +595,7 @@ public class CSWWriter {
 		return element;
 	}
 	
+	
 	/**
 	 * parse string to JDOM document
 	 * */
@@ -575,9 +614,13 @@ public class CSWWriter {
     	try { 			
 			// Send request			
 			HttpURLConnection conn = (HttpURLConnection) cswUrl.openConnection(); 
-			conn.setRequestMethod(HTTP_METHOD);			
+			conn.setRequestMethod(HTTP_METHOD);
 			conn.setRequestProperty("Content-Type", "text/xml; charset=\"utf-8\"");	
-			conn.setRequestProperty("Cookie", CatalogAuthentication());
+			
+			if (this.useLoginService==true){
+				conn.setRequestProperty("Cookie", CatalogAuthentication());
+			}
+			
 			conn.setDoOutput(true);
 
 			OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream()); 
@@ -622,6 +665,7 @@ public class CSWWriter {
 			// Get the response 
 			InputStreamReader valTemp=new InputStreamReader(conn.getInputStream());
 			BufferedReader rd = new BufferedReader(valTemp); 
+			@SuppressWarnings("unused")
 			String response = "";
 			String line; 	
 			while ((line = rd.readLine()) != null) 
@@ -731,6 +775,11 @@ public class CSWWriter {
 	public void setRequest(String request) {
 		this.request = request;
 	}
+	
+	public void setUseLoginService(boolean useLoginService) {
+		this.useLoginService = useLoginService;
+	}
+
 	/**
 	 * @return the request
 	 */
@@ -770,12 +819,6 @@ public class CSWWriter {
 	 */
 	public void setMappingColumns(ArrayList<String[]> mappingColumns) {
 		this.mappingColumns = mappingColumns;
-		/*ArrayList<String> mappingCol= new ArrayList<String>();		
-		for(String[] s:mappingColumns){
-			if (s[1]!=null)
-				mappingCol.add(s[1]);
-		}
-		this.mapColList=mappingCol.toArray(new String[mappingCol.size()]);*/
 	}
 
 	/**
