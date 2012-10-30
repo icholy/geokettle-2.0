@@ -178,21 +178,22 @@ StepDialogInterface {
 		GeneralgroupLayout.marginHeight = 10;
 		wGeneral.setLayout(GeneralgroupLayout);
 
-		wlUrl=new Label(wGeneral, SWT.LEFT);
+		wlUrl=new Label(wGeneral, SWT.RIGHT);
 		wlUrl.setText(Messages.getString("CSWOutputDialog.URL.Label")); //$NON-NLS-1$
 		props.setLook(wlUrl);
 		fdlUrl=new FormData();
 		fdlUrl.left = new FormAttachment(0, 0);
-		fdlUrl.top  = new FormAttachment(wStepname,margin);			
+		fdlUrl.top  = new FormAttachment(wStepname,margin);	
+		fdlUrl.right= new FormAttachment(middle, -margin);
 		wlUrl.setLayoutData(fdlUrl);
 
 		wUrl=new TextVar(transMeta, wGeneral, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		props.setLook(wUrl);
 		wUrl.addModifyListener(lsMod);
 		fdUrl=new FormData();
-		fdUrl.left = new FormAttachment(wlUrl, margin);
+		fdUrl.left = new FormAttachment(middle, margin);
 		fdUrl.top  = new FormAttachment(wStepname, margin);
-		fdUrl.right= new FormAttachment(100, -1*margin);
+		fdUrl.right= new FormAttachment(100, -margin);
 		wUrl.setLayoutData(fdUrl);
 
 		
@@ -251,66 +252,70 @@ StepDialogInterface {
 		fdLoginGroup.right= new FormAttachment(100, -1*margin);
 		wLoginGroup.setLayoutData(fdLoginGroup); 
 
-		wlLoginURL=new Label(wLoginGroup, SWT.LEFT);
+		wlLoginURL=new Label(wLoginGroup, SWT.RIGHT);
 		wlLoginURL.setText(Messages.getString("CSWOutputDialog.LoginURL.Label"));
 		props.setLook(wlLoginURL);
 		fdlwlLoginURL=new FormData();
 		fdlwlLoginURL.left = new FormAttachment(0, margin);
-		fdlwlLoginURL.top  = new FormAttachment(0, margin);        
+		fdlwlLoginURL.top  = new FormAttachment(0, margin);    
+		fdlwlLoginURL.right= new FormAttachment(middle, -margin);
 		wlLoginURL.setLayoutData(fdlwlLoginURL);
 
 		wLoginUrl=new TextVar(transMeta, wLoginGroup, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		props.setLook(wLoginUrl);
 
 		fdLoginUrl=new FormData();
-		fdLoginUrl.left = new FormAttachment(wlLoginURL, margin);
+		fdLoginUrl.left = new FormAttachment(middle, margin);
 		fdLoginUrl.top  = new FormAttachment(0, margin);
-		fdLoginUrl.right= new FormAttachment(100, -20*margin);
+		fdLoginUrl.right= new FormAttachment(100, -margin);
 		wLoginUrl.setLayoutData(fdLoginUrl); 
 
 
-		wlUser= new Label(wLoginGroup, SWT.LEFT);
+		wlUser= new Label(wLoginGroup, SWT.RIGHT);
 		wlUser.setText(Messages.getString("CSWOutputDialog.Username.Label"));
 		props.setLook(wlUser);
 
 		fdwlUser=new FormData();
 		fdwlUser.left = new FormAttachment(0, margin);
-		fdwlUser.top  = new FormAttachment(wLoginUrl, margin);		
+		fdwlUser.top  = new FormAttachment(wLoginUrl, margin);
+		fdwlUser.right= new FormAttachment(middle, -margin);
 		wlUser.setLayoutData(fdwlUser); 
 
 		wUser=new TextVar(transMeta, wLoginGroup, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
 		props.setLook(wUser);
 		wUser.addModifyListener(lsMod);
 		fdwUser=new FormData();
-		fdwUser.left = new FormAttachment(wlUser, margin);
+		fdwUser.left = new FormAttachment(middle, margin);
 		fdwUser.top  = new FormAttachment(wLoginUrl, margin);
-		fdwUser.right= new FormAttachment(100, -70*margin);
+		fdwUser.right= new FormAttachment(100, -margin);
 		wUser.setLayoutData(fdwUser); 
 
-		wlPassword= new Label(wLoginGroup, SWT.LEFT);
+		wlPassword= new Label(wLoginGroup, SWT.RIGHT);
 		wlPassword.setText(Messages.getString("CSWOutputDialog.Password.Label"));
 		props.setLook(wlPassword);
 
 		fdwlPassword=new FormData();
-		fdwlPassword.left = new FormAttachment(wUser, 4*margin);
-		fdwlPassword.top  = new FormAttachment(wLoginUrl, margin);		
+		fdwlPassword.left = new FormAttachment(0, margin);
+		fdwlPassword.top  = new FormAttachment(wUser, margin);	
+		fdwlPassword.right= new FormAttachment(middle, -margin);
 		wlPassword.setLayoutData(fdwlPassword); 
 
 		wPassword=new TextVar(transMeta, wLoginGroup, SWT.SINGLE | SWT.PASSWORD |SWT.LEFT | SWT.BORDER);
 		props.setLook(wPassword);
 		wPassword.addModifyListener(lsMod);
 		fdwPassword=new FormData();
-		fdwPassword.left = new FormAttachment(wlPassword, margin);
-		fdwPassword.top  = new FormAttachment(wLoginUrl, margin);
-		fdwPassword.right= new FormAttachment(100, -4*margin);
+		fdwPassword.left = new FormAttachment(middle, margin);
+		fdwPassword.top  = new FormAttachment(wUser, margin);
+		fdwPassword.right= new FormAttachment(100, -margin);
 		wPassword.setLayoutData(fdwPassword); 
 
-		wlRequest=new Label(wGeneral, SWT.LEFT);
+		wlRequest=new Label(wGeneral, SWT.RIGHT);
 		wlRequest.setText(Messages.getString("CSWOutputDialog.Request.Label"));
 		props.setLook(wlRequest);
 		fdwlRequest=new FormData();
 		fdwlRequest.left = new FormAttachment(0, margin);
-		fdwlRequest.top  = new FormAttachment(wLoginGroup, 3*margin);		
+		fdwlRequest.top  = new FormAttachment(wLoginGroup, 3*margin);
+		fdwlRequest.right= new FormAttachment(middle, -margin);
 		wlRequest.setLayoutData(fdwlRequest);
 
 		wRequest= new ComboVar(transMeta, wGeneral, SWT.BORDER ); 			 
@@ -318,30 +323,31 @@ StepDialogInterface {
 		wRequest.setEditable(false);
 		wRequest.addModifyListener(lsMod);
 		fdwRequest=new FormData();
-		fdwRequest.left = new FormAttachment(wlRequest, margin);
+		fdwRequest.left = new FormAttachment(middle, margin);
 		fdwRequest.top  = new FormAttachment(wLoginGroup, 2*margin);
-		fdwRequest.right= new FormAttachment(75, -1*margin);
+		fdwRequest.right= new FormAttachment(100, -1*margin);
 		wRequest.setLayoutData(fdwRequest);
 		wRequest.add(Messages.getString("CSWOutputDialog.Request.Insert"));
 		wRequest.add(Messages.getString("CSWOutputDialog.Request.Update"));
 		wRequest.add(Messages.getString("CSWOutputDialog.Request.Delete"));
 
 		///
-		wlSchemaLabel=new Label(wGeneral, SWT.LEFT);
+		wlSchemaLabel=new Label(wGeneral, SWT.RIGHT);
 		wlSchemaLabel.setText(Messages.getString("CSWOutputDialog.Schema.Label"));
 		props.setLook(wlSchemaLabel);
 		fdwlSchemaLabel=new FormData();
 		fdwlSchemaLabel.left = new FormAttachment(0, margin);
-		fdwlSchemaLabel.top  = new FormAttachment(wRequest, 3*margin);		
+		fdwlSchemaLabel.top  = new FormAttachment(wRequest, 3*margin);	
+		fdwlSchemaLabel.right= new FormAttachment(middle, -margin);
 		wlSchemaLabel.setLayoutData(fdwlSchemaLabel);
 
 		wSchemaLabel= new ComboVar(transMeta, wGeneral, SWT.BORDER ); 			 
 		props.setLook(wSchemaLabel);
 		wSchemaLabel.setEditable(false);
 		fdwSchemaLabel=new FormData();
-		fdwSchemaLabel.left = new FormAttachment(wlSchemaLabel, margin);
+		fdwSchemaLabel.left = new FormAttachment(middle, margin);
 		fdwSchemaLabel.top  = new FormAttachment(wRequest, 2*margin);
-		fdwSchemaLabel.right= new FormAttachment(75, -1*margin);
+		fdwSchemaLabel.right= new FormAttachment(100, -1*margin);
 		wSchemaLabel.setLayoutData(fdwSchemaLabel);
 		wSchemaLabel.add(Messages.getString("CSWOutputDialog.Schema.CSWRECORD"));
 		wSchemaLabel.add(Messages.getString("CSWOutputDialog.Schema.MD_METADATA"));
@@ -580,7 +586,7 @@ StepDialogInterface {
 		fontRegistry.put("font", new FontData[]{new FontData("Sans Serif", 9, SWT.BOLD|SWT.ITALIC)} );
 
 		FontRegistry defaultFontRegistry= new FontRegistry(Display.getCurrent());		    
-		defaultFontRegistry.put("font", new FontData[]{new FontData("Times", 9, SWT.NORMAL)} );
+		defaultFontRegistry.put("font", new FontData[]{new FontData("Sans Serif", 9, SWT.NORMAL)} );
 		wQueryElement.table.setFont(defaultFontRegistry.get("font"));
 		if (text.equalsIgnoreCase("CSW_RECORD")&& wQueryElement.table.getItemCount()>=15){			
 			wQueryElement.table.getItem(0).setFont(fontRegistry.get("font"));		    

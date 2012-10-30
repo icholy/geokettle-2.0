@@ -252,14 +252,14 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		props.setLook(wlUrl);
  		fdlUrl=new FormData();
 		fdlUrl.left = new FormAttachment(0, 0);
-		fdlUrl.top  = new FormAttachment(wStepname,margin);			
+		fdlUrl.top  = new FormAttachment(wStepname,margin);	
 		wlUrl.setLayoutData(fdlUrl);
 		
  		wUrl=new TextVar(transMeta, wGeneral, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
  		props.setLook(wUrl);
 		wUrl.addModifyListener(lsMod);
 		fdUrl=new FormData();
-		fdUrl.left = new FormAttachment(wlUrl, margin);
+		fdUrl.left = new FormAttachment(8, margin);
 		fdUrl.top  = new FormAttachment(wStepname, margin);
 		fdUrl.right= new FormAttachment(100, -1*margin);
 		wUrl.setLayoutData(fdUrl);
@@ -281,13 +281,13 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
         props.setLook(wlMethod);
         fdlMethod=new FormData();
         fdlMethod.left = new FormAttachment(0, margin);
-        fdlMethod.top  = new FormAttachment(wUrl, margin*3);        
+        fdlMethod.top  = new FormAttachment(wUrl, margin*3);   
         wlMethod.setLayoutData(fdlMethod);
         
         fdwMethod=new FormData();
-        fdwMethod.left = new FormAttachment(wlMethod, 2*margin);
+        fdwMethod.left = new FormAttachment(8, margin);
         fdwMethod.top  = new FormAttachment(wUrl, margin*3);
-        //fdwMethod.right= new FormAttachment(100, -85*margin);
+      
         wMethodCSW.setLayoutData(fdwMethod);
         wMethodCSW.add("POST");
         wMethodCSW.add("GET");
@@ -302,6 +302,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
         fdlVersion=new FormData();
         fdlVersion.left = new FormAttachment(wMethodCSW, 3*margin);
         fdlVersion.top  = new FormAttachment(wUrl, margin*3);
+        
         //
         wlVersion.setLayoutData(fdlVersion);
         wVersion=new ComboVar(transMeta, wGeneral, SWT.BORDER | SWT.READ_ONLY);
@@ -310,7 +311,6 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
         fdVersion=new FormData();
         fdVersion.left = new FormAttachment(wlVersion, 3*margin);
         fdVersion.top  = new FormAttachment(wUrl, margin*3);
-        //fdVersion.right= new FormAttachment(100, -75*margin);
         wVersion.setLayoutData(fdVersion);
         wVersion.add("1.0.0");
         wVersion.add("2.0.0");
@@ -321,8 +321,6 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
         
         
         //constraint languague
-        
-      //
         wlConstrainteLanguage=new Label(wGeneral, SWT.LEFT);
         wlConstrainteLanguage.setText(Messages.getString("CSWInputDialog.ConstraintLanguage.Label"));
         props.setLook(wlConstrainteLanguage);
@@ -393,21 +391,21 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		wLoginGroup.setLayoutData(fdLoginGroup); 
 		
 		//login url
-		
-		 ///
+
 		wlLoginURL=new Label(wLoginGroup, SWT.LEFT);
 		wlLoginURL.setText(Messages.getString("CSWInputDialog.LoginURL.Label"));
         props.setLook(wlLoginURL);
         fdlwlLoginURL=new FormData();
         fdlwlLoginURL.left = new FormAttachment(0, margin);
-        fdlwlLoginURL.top  = new FormAttachment(0, margin);        
+        fdlwlLoginURL.top  = new FormAttachment(0, margin);  
+        
         wlLoginURL.setLayoutData(fdlwlLoginURL);
         
 		wLoginUrl=new TextVar(transMeta, wLoginGroup, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
  		props.setLook(wLoginUrl);
  		
 		fdLoginUrl=new FormData();
-		fdLoginUrl.left = new FormAttachment(wlLoginURL, margin);
+		fdLoginUrl.left = new FormAttachment(10, margin);
 		fdLoginUrl.top  = new FormAttachment(0, margin);
 		fdLoginUrl.right= new FormAttachment(100, -1*margin);
 		wLoginUrl.setLayoutData(fdLoginUrl); 
@@ -426,9 +424,9 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		props.setLook(wUser);
  		wUser.addModifyListener(lsMod);
 		fdwUser=new FormData();
-		fdwUser.left = new FormAttachment(wlUser, margin);
+		fdwUser.left = new FormAttachment(10, margin);
 		fdwUser.top  = new FormAttachment(wLoginUrl, margin);
-		fdwUser.right= new FormAttachment(middle, -1*margin);
+		fdwUser.right= new FormAttachment(50, -1*margin);
 		wUser.setLayoutData(fdwUser); 
 		
 		wlPassword= new Label(wLoginGroup, SWT.LEFT);
@@ -446,7 +444,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		fdwPassword=new FormData();
 		fdwPassword.left = new FormAttachment(wlPassword, margin);
 		fdwPassword.top  = new FormAttachment(wLoginUrl, margin);
-		fdwPassword.right= new FormAttachment(100, -30*margin);
+		fdwPassword.right= new FormAttachment(100, -margin);
 		wPassword.setLayoutData(fdwPassword); 
 		
 		
@@ -475,11 +473,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		fdRequestGroup.top   = new FormAttachment(wGeneral, 1*margin);
 		fdRequestGroup.right = new FormAttachment(100, -margin);
 		wRequestGroup.setLayoutData(fdRequestGroup);
-		
-		
-		
- 		
- 		
+
 		
 		/***Request Text and Label
 		 * */
@@ -499,9 +493,6 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
  		fdReqText.top  = new FormAttachment(margin, margin);
  		fdReqText.right= new FormAttachment(100, -60*margin);
  		wReqText.setLayoutData(fdReqText);
- 		
- 	
-        //
         
         /**
          * Start Position and maxRecord
@@ -513,14 +504,12 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		RecordGroupLayout.marginWidth = 10;
 		RecordGroupLayout.marginHeight = 10;
 		wRecordsGroup.setLayout(LoginGroupLayout);
-		//mmml
 		
 		fdRecordGroup=new FormData();
 		fdRecordGroup.left = new FormAttachment(wReqText, margin);
 		fdRecordGroup.top  = new FormAttachment(0, 0);
 		fdRecordGroup.right= new FormAttachment(100, -1*margin);
 		wRecordsGroup.setLayoutData(fdRecordGroup); 
-		
 		
 		wlStartPosition= new Label(wRecordsGroup, SWT.LEFT);
 		wlStartPosition.setText(Messages.getString("CSWInputDialog.StartPosition.Label"));
@@ -529,7 +518,6 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		fdwlStartPosition=new FormData();
 		fdwlStartPosition.left = new FormAttachment(0, margin);
 		fdwlStartPosition.top  = new FormAttachment(0, margin);	
-		//fdwlStartPosition.right= new FormAttachment(middle, -margin);
 		wlStartPosition.setLayoutData(fdwlStartPosition); 
 		
 		wStartPosition=new TextVar(transMeta, wRecordsGroup, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
@@ -538,7 +526,6 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		fdwStartPosition=new FormData();
 		fdwStartPosition.left = new FormAttachment(wlStartPosition, margin);
 		fdwStartPosition.top  = new FormAttachment(0, margin);
-		//fdwStartPosition.right= new FormAttachment(60, -50*margin);
 		wStartPosition.setLayoutData(fdwStartPosition); 
 		
 		wlMaxRecord= new Label(wRecordsGroup, SWT.LEFT);
@@ -556,12 +543,11 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		fdwMaxRecord=new FormData();
 		fdwMaxRecord.left = new FormAttachment(wlMaxRecord, 2*margin);
 		fdwMaxRecord.top  = new FormAttachment(wStartPosition, margin);
-		//fdwMaxRecord.right= new FormAttachment(80, -50*margin);
 		wMaxRecord.setLayoutData(fdwMaxRecord); 
+		
 		/**
 		 * 
-		 * */
-        
+		 * */        
  		
  		//checkbox advanced query
  		wChkAdvanced= new Button(wRequestGroup, SWT.CHECK);
@@ -583,7 +569,6 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
             		EnableDisableAdvancedQueryGroup(true);
             	}else
             	if (wChkAdvanced.getSelection()==false){
-            		//wAdvancedGroup.setEnabled(false);
             		EnableDisableAdvancedQueryGroup(false);
             	}           	
             		
