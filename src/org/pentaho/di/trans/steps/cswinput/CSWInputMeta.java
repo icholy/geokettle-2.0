@@ -4,7 +4,6 @@
 package org.pentaho.di.trans.steps.cswinput;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -524,12 +523,8 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
 		cswParam.setComparisonOperator(null);
 		cswParam.setEnableSpatialSearch(false);
 		cswParam.setLoginServiceUrl("http://localhost:8080/geonetwork/srv/en/xml.user.login");
+		cswParam.setCatalogUrl("http://localhost:8080/geonetwork/srv/en/csw");
 		
-		try {
-			cswParam.setCatalogUrl("http://localhost:8080/geonetwork/srv/en/csw");
-		} catch (MalformedURLException e) {
-			
-		}
 		
 		HashMap<String,Double> bbox=new HashMap<String, Double>();
 		bbox.put("NORTH", new Double(90));
@@ -588,29 +583,33 @@ public class CSWInputMeta extends BaseStepMeta implements StepMetaInterface {
     		
 		RowMetaInterface columnField=null;
 		String err;
+		CSWReader csw=null;
+		try {
+			csw = cswParam.getParametersValues(space);
+		} catch (CloneNotSupportedException e1) {
+			e1.printStackTrace();
+		}		
 		
 		setProfileBasedOnOutputSchemaValue();
-		String pattern=cswParam.getProfile();
+		String pattern=csw.getProfile();
 		
 		
-			try {
-				if (this.getCswParam().getXMLRequestResult()==null){								
-				cswParam.setXMLRequestResult(cswParam.fromStringToJDOMDocument(cswParam.GetRecords()));
-				}
+			try {							
+				cswParam.setXMLRequestResult(csw.fromStringToJDOMDocument(csw.GetRecords()));
 				err=cswParam.checkIfReponseReturnException(cswParam.getXMLRequestResult().getRootElement());
-				//System.out.println(err);
 				if (err!=null){
 					throw new KettleException(err);
 					
 				}
-				if (cswParam.getOutputSchema().equalsIgnoreCase(DEFAULT_PROFILE)){
+				if (csw.getOutputSchema().equalsIgnoreCase(DEFAULT_PROFILE)){
 					columnField=getFieldsFromDefaultProfileDocument(row,pattern);
 				}else
-				if(cswParam.getOutputSchema().equalsIgnoreCase(ISOTC211_2005_PROFILE)){
+				if(csw.getOutputSchema().equalsIgnoreCase(ISOTC211_2005_PROFILE)){
 					columnField=getFieldsFromISOTC2112005ProfileDocument(row,pattern);
 				}else{
 					columnField=getFieldsFromISOTC2112005ProfileDocument(row,pattern);
 				}				
+				csw.setColumnField(columnField);
 				cswParam.setColumnField(columnField);
 				
 				

@@ -42,11 +42,16 @@ public class CSWInput extends BaseStep implements StepInterface {
 			setOutputDone();
 			return false;			
 		}
-		
+		CSWReader cswParam = new CSWReader();
+		try {
+			cswParam = meta.getCswParam().getParametersValues(this);
+		} catch (CloneNotSupportedException e1) {
+			throw new KettleException(e1);
+		}
 		if (first){ 
         	// we just got started
             first = false;
-            data.outputRowMeta=meta.getCswParam().getColumnField();
+            data.outputRowMeta=cswParam.getColumnField();
                      
             if (data.outputRowMeta==null){
             	data.outputRowMeta = new RowMeta();
@@ -56,7 +61,7 @@ public class CSWInput extends BaseStep implements StepInterface {
         }
 		
 		try {
-			ArrayList<ArrayList<Object>> rows = meta.getCswParam().getCatalogRecords();
+			ArrayList<ArrayList<Object>> rows = cswParam.getCatalogRecords();
 			if (rows!=null){
 	    		
 	    		for(ArrayList<Object> objectList:rows){
@@ -92,11 +97,11 @@ public class CSWInput extends BaseStep implements StepInterface {
 	
 	public void run(){
 		try{
-			logBasic(Messages.getString("CSWInput.Log.StartingToRun"));		 //$NON-NLS-1$
+			logBasic(Messages.getString("CSWInput.Log.StartingToRun"));
 			while (!isStopped() && processRow(meta, data) );
 		}
 		catch(Exception e){
-			logError(Messages.getString("CSWInput.Log.Error.UnexpectedError")+" : "+e.toString()); //$NON-NLS-1$ //$NON-NLS-2$
+			logError(Messages.getString("CSWInput.Log.Error.UnexpectedError")+" : "+e.toString());
             logError(Const.getStackTracker(e));
             setErrors(1);
 			stopAll();

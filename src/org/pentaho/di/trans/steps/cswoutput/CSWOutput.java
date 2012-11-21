@@ -61,7 +61,13 @@ public class CSWOutput extends BaseStep implements StepInterface {
 		meta=(CSWOutputMeta)smi;
 		data=(CSWOutputData)sdi;
 		
-		mappingColumns=meta.getCSWwriter().getMappingColumns();
+		CSWWriter csWwriter=new CSWWriter();
+		try {
+			csWwriter = meta.getCSWwriter().getParametersValues(this);
+		} catch (CloneNotSupportedException e1) {
+			throw new KettleException(e1);
+		}
+		mappingColumns=csWwriter.getMappingColumns();
 		
 		Object [] r = getRow();
 		
@@ -71,7 +77,7 @@ public class CSWOutput extends BaseStep implements StepInterface {
 			String response;
 			
 			try {
-				response = meta.getCSWwriter().execute(allQuery);
+				response = csWwriter.execute(allQuery);
 				boolean trouve=parseCSWServerResponse(response, CSWEXCEPTIONREPORT) ;
 				if (trouve==true){
 					throw new KettleException(response);
@@ -90,8 +96,8 @@ public class CSWOutput extends BaseStep implements StepInterface {
 		int i=0;
 		String query=null;
 		
-		if (meta.getCSWwriter()!=null){
-			CSWWriter writer=meta.getCSWwriter();			
+		if (csWwriter!=null){
+			CSWWriter writer=csWwriter;			
 			if (writer.getSchema().equalsIgnoreCase(Messages.getString("CSWOutputDialog.Schema.CSWRECORD"))){
 				query=CSWWriter.CSWBRIEF_XML;
 			}else{
@@ -108,7 +114,7 @@ public class CSWOutput extends BaseStep implements StepInterface {
 			while (i<mappingColumns.size()){
 			try {
 					String valueToSet=findValueToSet(fieldName,r, mappingColumns.get(i));
-					query=meta.getCSWwriter().setElementTextUsingQueryString(query,mappingColumns.get(i)[0],valueToSet);
+					query=csWwriter.setElementTextUsingQueryString(query,mappingColumns.get(i)[0],valueToSet);
 					i++;					
 				} catch (ServletException e) {
 					e.printStackTrace();

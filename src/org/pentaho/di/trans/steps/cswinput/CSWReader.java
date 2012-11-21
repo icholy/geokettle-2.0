@@ -14,7 +14,6 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -35,6 +34,7 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.row.RowMetaInterface;
+import org.pentaho.di.core.variables.VariableSpace;
 import org.xml.sax.InputSource;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -45,12 +45,12 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  * @author Ouattara Mamadou
  *
  */
-public class CSWReader {
+public class CSWReader implements Cloneable {
 	
 	private static final String EXCEPTION_CODE = "ows:Exception";
 	private static final String CONST_QUALIFIED_SEARCH = "QUALIFIED SEARCH";
 	private static final String CONST_LOCAL_SEARCH = "LOCAL SEARCH";
-	private URL catalogUrl;
+	private String catalogUrl;
 	private String version;
 	private String method;
 	private String loginServiceUrl;
@@ -93,7 +93,7 @@ public class CSWReader {
 	 * @param version
 	 * @param method
 	 */
-	public CSWReader(URL catalogUrl, String version, String method) {
+	public CSWReader(String catalogUrl, String version, String method) {
 		super();
 		this.catalogUrl = catalogUrl;
 		this.version = version;
@@ -138,27 +138,7 @@ public class CSWReader {
 			
 		return query;
 	}
-	
-	/**
-	 * build a GetCapabilities query based on SOAP method
-	 * */
-	/*private String buildGetCapabilitiesSOAPQuery(){
-		String query="<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
-		query +="<env:Envelope xmlns:env=\"http://www.w3.org/2003/05/soap-envelope\">";
-		query +="<env:Body>";
-		query +="<csw:GetCapabilities xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\" service=\"CSW\">";
-		query +="<ows:AcceptVersions xmlns:ows=\"http://www.opengis.net/ows\">";
-		query +="<ows:Version>"+ this.version +"</ows:Version>";
-		query +="</ows:AcceptVersions>";
-		query +="<ows:AcceptFormats xmlns:ows=\"http://www.opengis.net/ows\">";
-		query +="<ows:OutputFormat>application/xml</ows:OutputFormat>";
-		query +="</ows:AcceptFormats>";
-		query +="</csw:GetCapabilities>";
-		query +="</env:Body>";
-		query +="</env:Envelope>";
-		return query;
-	}*/
-	
+
 	/**
 	 * build a GetRecords query using POST method
 	 * */
@@ -173,7 +153,6 @@ public class CSWReader {
         query +="</csw:Constraint>";
 		query +=" </csw:Query>";
 		query +="</csw:GetRecords>";
-		//System.out.println(query);
 		return query;
 	}
 	
@@ -199,9 +178,6 @@ public class CSWReader {
 		query +="&startPosition="+this.startPosition;
 		query +="&maxRecords="+this.maxRecords;
 		query=buildConstrainteRequest(query);
-		//
-		//System.out.println(query);		
-		
 		return query;
 	}
 	
@@ -224,15 +200,11 @@ public class CSWReader {
 				
 			
 		} catch (ServletException e) {
-			// TODO Auto-generated catch block
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
 		} catch (DataConversionException e) {			
 			throw new KettleException(e);			
-		}
-		
+		}		
 		return nb;
 		
 	}
@@ -366,10 +338,8 @@ public class CSWReader {
 				//
 			}
 		} catch (ServletException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
@@ -434,8 +404,7 @@ public class CSWReader {
 		ArrayList<String> content=new ArrayList<String>();
 		while (it.hasNext()){
 			Element c=(Element)it.next();			
-			if (c.getAttribute("name").getValue().equalsIgnoreCase("GetRecords")){
-				
+			if (c.getAttribute("name").getValue().equalsIgnoreCase("GetRecords")){				
 				Iterator<?> itRecord=c.getChildren().iterator();
 				while (itRecord.hasNext()){
 					Element subRecord=(Element)itRecord.next();
@@ -652,8 +621,7 @@ public class CSWReader {
 			capabilitiesDoc=CSWPOST(this.buildGetCapabilitiesPOSTQuery(), this.catalogUrl);
 		}else
 		if (this.method.equalsIgnoreCase("SOAP")){
-			//TODO
-			//capabilitiesDoc=CSWSOAP(this.buildGetCapabilitiesSOAPQuery(), this.catalogUrl);
+			//todo
 		}
 		return capabilitiesDoc;
 	}
@@ -759,9 +727,7 @@ public ArrayList<Element> findElement(Element element, String elementName, Strin
 	        }
 	        if (typeSearch.equalsIgnoreCase(CONST_LOCAL_SEARCH)){
 	        	if (el.getName().equals(elementName)) parseResult.add((Element) el);
-	        }
-	        
-	       	       
+	        }     
 	        // If the node has children, call this method with the node
 	        if (el.getChildren()!=null) recurse_findElement(el.getChildren(), elementName,typeSearch);	        
 		}
@@ -771,13 +737,9 @@ public ArrayList<Element> findElement(Element element, String elementName, Strin
 		HttpMethod httpMethod = new GetMethod(query);
 		if (useLoginService==true)
 			httpMethod.setRequestHeader("Cookie", this.CatalogAuthentication());
-			//
-				
 		try { 			
 			 //Prepare HTTP Get		
     		 HttpClient httpclient = new HttpClient();
-    		  		
-    		 
     		 httpclient.executeMethod(httpMethod);
     		 
              // the response
@@ -821,6 +783,7 @@ public ArrayList<Element> findElement(Element element, String elementName, Strin
 			// Get the response 
 			InputStreamReader valTemp=new InputStreamReader(conn.getInputStream());
 			BufferedReader rd = new BufferedReader(valTemp); 
+			@SuppressWarnings("unused")
 			String response = "";
 			String line; 	
 			while ((line = rd.readLine()) != null) 
@@ -855,11 +818,9 @@ public ArrayList<Element> findElement(Element element, String elementName, Strin
 	/**
 	 * */
 	
-	private String CSWPOST(String query, URL url) throws KettleException{    	   	
-    	try { 			
-			// Send request		 
-    			
-    		HttpURLConnection conn=(HttpURLConnection) url.openConnection();			
+	private String CSWPOST(String query, String catalogUrl2) throws KettleException{    	   	
+    	try { 	
+    		HttpURLConnection conn=(HttpURLConnection) new URL(catalogUrl2).openConnection();			
 			conn.setRequestMethod(method);
 			if (useLoginService==true){
 				conn.setRequestProperty("Cookie", CatalogAuthentication());
@@ -885,37 +846,10 @@ public ArrayList<Element> findElement(Element element, String elementName, Strin
 		}
 	}
 	
-	
-	/*private String CSWSOAP(String query, URL url) throws KettleException{    	   	
-    	try { 			
-			// Send request			
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection(); 
-			conn.setRequestMethod("POST");
-			conn.setRequestProperty("Content-Type", "soap+xml; charset=\"utf-8\"");
-			conn.setDoOutput(true);
-
-			OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream()); 
-			wr.write(query); 
-			wr.flush(); 
-				      
-			// Get the response 
-			BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream())); 
-			String response = "";
-			String line; 	
-			while ((line = rd.readLine()) != null) response += line;			 			
-			wr.close(); 
-			rd.close();
-			return response;
-		}catch (Exception e) { 
-			throw new KettleException("Error connecting to CSW catalog using SOAP method...", e);
-		}
-	}*/
-	
 	/**
 	 * build spatial query
 	 * */
 	private String buildSpatialQuery(){
-		//WITHIN(ows:BoundingBox,ENVELOPE(3.19,7.26,53.59,50.67))
 		String q=null;
 		double xmin=BBOX.get("WEST");
 		double ymin=BBOX.get("NORTH");
@@ -931,31 +865,20 @@ public ArrayList<Element> findElement(Element element, String elementName, Strin
 		
 		return q;
 	}
-	
-	
-	/**
-	 * @throws IOException 
-	 * @throws JDOMException 
-	 * 
-	 * */
-	/*public Document CSWGET(String query) throws JDOMException, IOException{
-		SAXBuilder builder = new SAXBuilder();
-		Document capabilitieXMLDocument= builder.build(buildGetCapabilitiesGETQuery());		
-		return capabilitieXMLDocument;
-	}*/
+
 	/**
 	 * @param catalogUrl the catalogUrl to set
 	 */
-	public void setCatalogUrl(URL catalogUrl) {
+	public void setCatalogUrl(String catalogUrl) {
 		this.catalogUrl = catalogUrl;
 	}
-	public void setCatalogUrl(String catalogUrl) throws MalformedURLException {
+	/*public void setCatalogUrl(String catalogUrl) throws MalformedURLException {
 		this.catalogUrl = new URL(catalogUrl);
-	}
+	}*/
 	/**
 	 * @return the catalogUrl
 	 */
-	public URL getCatalogUrl() {
+	public String getCatalogUrl() {
 		return catalogUrl;
 	}
 	/**
@@ -1324,6 +1247,33 @@ public ArrayList<Element> findElement(Element element, String elementName, Strin
 	 */
 	public boolean isEnableSpatialSearch() {
 		return enableSpatialSearch;
+	}
+
+	
+	protected CSWReader getParametersValues(VariableSpace space) throws CloneNotSupportedException {
+		CSWReader csw=(CSWReader) super.clone();
+		csw.setCatalogUrl(space.environmentSubstitute(csw.getCatalogUrl()));
+		csw.setMethod(space.environmentSubstitute(csw.getMethod()));
+		csw.setVersion(space.environmentSubstitute(csw.getVersion()));
+		
+		csw.setLoginServiceUrl(space.environmentSubstitute(csw.getLoginServiceUrl()));
+		csw.setUsername(space.environmentSubstitute(csw.getUsername()));
+		csw.setPassword(space.environmentSubstitute(csw.getPassword()));
+		
+		csw.setKeyword(space.environmentSubstitute(csw.getKeyword()));
+		csw.setMaxRecords(Integer.parseInt(space.environmentSubstitute(csw.getMaxRecords().toString())));
+		csw.setStartPosition(Integer.parseInt(space.environmentSubstitute(csw.getStartPosition().toString())));
+		csw.setVersion(space.environmentSubstitute(csw.getVersion()));
+		csw.setOutputSchema(space.environmentSubstitute(csw.getOutputSchema()));
+		csw.setConstraintLanguage(space.environmentSubstitute(csw.getConstraintLanguage()));
+		
+		HashMap<String,Double> bbox=new HashMap<String, Double>();
+		bbox.put("NORTH", Double.parseDouble(space.environmentSubstitute(csw.getBBOX().get("NORTH").toString())));
+		bbox.put("SOUTH", Double.parseDouble(space.environmentSubstitute(csw.getBBOX().get("SOUTH").toString())));
+		bbox.put("EAST",  Double.parseDouble(space.environmentSubstitute(csw.getBBOX().get("EAST").toString())));
+		bbox.put("WEST",  Double.parseDouble(space.environmentSubstitute(csw.getBBOX().get("WEST").toString())));
+		csw.setBBOX(bbox);
+		return csw;
 	}
 	
 

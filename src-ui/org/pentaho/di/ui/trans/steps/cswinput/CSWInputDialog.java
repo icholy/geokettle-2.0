@@ -4,7 +4,6 @@
 package org.pentaho.di.ui.trans.steps.cswinput;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1129,9 +1128,9 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		cswParam.setMethod(wMethodCSW.getText());
 		cswParam.setOutputSchema(wOutputSchemaLabel.getText());
 		cswParam.setOutputSchemaList(wOutputSchemaLabel.getItems());
-		
-		try {
-			cswParam.setCatalogUrl(wUrl.getText());
+		cswParam.setCatalogUrl(wUrl.getText());
+		/*try {
+			
 		} catch (MalformedURLException e) {
 			
 			MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_WARNING);
@@ -1140,7 +1139,7 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 			mb.open();
 			
 			return;			
-		}
+		}*/
 		
 		try {					
 			
@@ -1266,21 +1265,17 @@ public class CSWInputDialog extends BaseStepDialog implements StepDialogInterfac
 		/**
 		 * */
 		
-		try {
+		//try {
 			cswParam.setCatalogUrl(wUrl.getText());
-		} catch (MalformedURLException e) {
+		//} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			
-			e.printStackTrace();
-		}
+			//e.printStackTrace();
+		//}
 		input.setCswParam(cswParam);
 		
 		if (Const.isEmpty(wStepname.getText())) return;
 		stepname = wStepname.getText(); // return value
-		
-		
-		
-		//input.setKeyword(wReqText.getText());
 		
 		dispose();
 	}

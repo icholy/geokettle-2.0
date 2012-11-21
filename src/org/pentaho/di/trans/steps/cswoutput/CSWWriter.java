@@ -10,19 +10,15 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import javax.servlet.ServletException;
-
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
@@ -30,13 +26,14 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.variables.VariableSpace;
 import org.xml.sax.InputSource;
 
 /**
  * @author mouattara,jmathieu,tbadard
  *
  */
-public class CSWWriter {
+public class CSWWriter implements Cloneable {
 
 	private static SimpleDateFormat dfm = new SimpleDateFormat("yyyy-MM-dd");
 	private static String TODAY = dfm.format(new Date()) ;
@@ -381,8 +378,8 @@ public class CSWWriter {
         "</MD_Metadata>";
 	private static final String HTTP_METHOD = "POST";
 		
-	private URL cswUrl;
-	private URL loginUrl;
+	private String cswUrl;
+	private String loginUrl;
 	private String username;
 	private String password;
 	private String request;
@@ -613,7 +610,7 @@ public class CSWWriter {
 	private String CSWPOST(String query) throws KettleException{    	   	
     	try { 			
 			// Send request			
-			HttpURLConnection conn = (HttpURLConnection) cswUrl.openConnection(); 
+			HttpURLConnection conn = (HttpURLConnection) new URL(cswUrl).openConnection(); 
 			conn.setRequestMethod(HTTP_METHOD);
 			conn.setRequestProperty("Content-Type", "text/xml; charset=\"utf-8\"");	
 			
@@ -647,7 +644,7 @@ public class CSWWriter {
 		String cookieInformation=null;
 		
 		try {
-			URL url=this.loginUrl;
+			URL url=new URL(this.loginUrl);
 			// Send request
     		String userPassword=URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(username, "UTF-8");
     		userPassword+="&"+URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(password, "UTF-8");
@@ -728,32 +725,25 @@ public class CSWWriter {
 	 * @param cswUrl the cswUrl to set
 	 */
 	public void setCswUrl(String cswUrl) {		
-		try {
-			this.cswUrl = new URL(cswUrl);
-		} catch (MalformedURLException e) {
-			this.cswUrl = null;
-		}
+	
+			this.cswUrl = cswUrl;
 	}
 	/**
 	 * @return the cswUrl
 	 */
-	public URL getCswUrl() {
+	public String getCswUrl() {
 		return cswUrl;
 	}
 	/**
 	 * @param string the loginUrl to set
 	 */
 	public void setLoginUrl(String loginurl) {
-		try {
-			this.loginUrl = new URL(loginurl);
-		} catch (MalformedURLException e) {
-			this.loginUrl = null;
-		}
+		this.loginUrl = loginurl;
 	}
 	/**
 	 * @return the loginUrl
 	 */
-	public URL getLoginUrl() {
+	public String getLoginUrl() {
 		return loginUrl;
 	}
 	/**
@@ -855,5 +845,18 @@ public class CSWWriter {
 	public String[] getPrevColumnList() {
 		return prevColumnList;
 	}
+	
+	protected CSWWriter getParametersValues(VariableSpace space) throws CloneNotSupportedException {
+		CSWWriter csw=(CSWWriter) super.clone();
+		
+		csw.setCswUrl(space.environmentSubstitute(csw.getCswUrl()));
+		csw.setLoginUrl(space.environmentSubstitute(csw.getLoginUrl()));
+		csw.setUsername(space.environmentSubstitute(csw.getUsername()));
+		csw.setPassword(space.environmentSubstitute(csw.getPassword()));		
+		csw.setRequest(space.environmentSubstitute(csw.getRequest()));
+		csw.setSchema(space.environmentSubstitute(csw.getSchema()));		
+		return csw;
+	}
+	
 	
 }
