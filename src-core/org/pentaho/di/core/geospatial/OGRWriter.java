@@ -23,16 +23,14 @@ import org.pentaho.di.core.row.ValueMetaInterface;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-
 /**
  * Handles writing to an OGR data source 
  * 
- *  @author tbadard
+ *  @author tbadard, jmathieu
  *  @since 11-06-2010
  *
  */
-public class OGRWriter
-{
+public class OGRWriter{
 	private static final int OGR_CREATION_MODE=0;
 	private static final int OGR_OVERRIDE_MODE=1;
 	private static final int OGR_UPDATE_MODE=2;
@@ -51,14 +49,15 @@ public class OGRWriter
 	private int ogrGeomType;
 	private int ogrWriteMode;
 	private String ogrFIDField;
+	//private String encoding;
 	private boolean preserveFIDField;
 	private Driver ogrDriver;
 	private Vector<String> ogrDataDestinationOptions;
 	private org.gdal.ogr.Geometry ogrGeometry;
 	private SpatialReference ogrSpatialReference;
 
-	public OGRWriter(String dataDestinationPath, boolean isFileDataSource, String format, String options, int geomType, String layerName, int writeMode, String fidField, boolean isFIDFieldPreserved)
-	{
+	//public OGRWriter(String dataDestinationPath, boolean isFileDataSource, String format, String options, int geomType, String layerName, int writeMode, String fidField, boolean isFIDFieldPreserved, String encoding){
+	public OGRWriter(String dataDestinationPath, boolean isFileDataSource, String format, String options, int geomType, String layerName, int writeMode, String fidField, boolean isFIDFieldPreserved){
 		this.log = LogWriter.getInstance();
 		ogrDataDestinationPath = dataDestinationPath;
 		this.isFileDataSource = isFileDataSource;
@@ -72,7 +71,7 @@ public class OGRWriter
 		ogrFIDField = fidField;
 		preserveFIDField = isFIDFieldPreserved;
 		ogrDriver = null;
-
+		//this.encoding = encoding;
 		ogrGeometry = null;
 		ogrSpatialReference = new SpatialReference();
 		ogrDataDestinationOptions = new Vector<String>();
@@ -323,6 +322,14 @@ public class OGRWriter
 		}       
 	}
 
+	/*private String encode(String s){
+		try {
+			return new String(s.getBytes(encoding));
+		} catch (UnsupportedEncodingException e) {
+			return s;
+		}		
+	}*/
+	
 	public void putRow(Object[] r, RowMetaInterface fields) throws KettleException
 	{       
 		String debug = "access to layer definition";
@@ -332,7 +339,6 @@ public class OGRWriter
 			ValueMetaInterface value = null;
 			Feature ogrFeature = new Feature(ogrLayer.GetLayerDefn());
 			int j=0;
-
 			for(int i = 0; i < fields.size(); i++)
 			{
 				value = fields.getValueMeta(i);
@@ -344,6 +350,7 @@ public class OGRWriter
 					break;
 				case ValueMeta.TYPE_STRING:
 					debug = "string attribute "+i;
+					//ogrFeature.SetField(j, encode((String)r[i]));
 					ogrFeature.SetField(j, (String)r[i]);
 					j++;
 					break;
@@ -395,6 +402,7 @@ public class OGRWriter
 				case ValueMeta.TYPE_BINARY:
 				default:
 					debug = "default data type attribute "+i;
+					//ogrFeature.SetField(j, encode((String)r[i]));
 					ogrFeature.SetField(j, (String)r[i]);
 					j++;
 					break;

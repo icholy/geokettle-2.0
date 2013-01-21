@@ -120,13 +120,11 @@ public class OGRReader
 		}
 	}
 
-	public RowMetaInterface getFields() throws KettleException
-	{
+	public RowMetaInterface getFields() throws KettleException{
 		String debug="get attributes from an OGR data source";
 		RowMetaInterface row = new RowMeta();
 
-		try
-		{
+		try{
 			// Fetch all field information
 			//
 			debug="allocate data types";
@@ -206,29 +204,24 @@ public class OGRReader
 			else value = new ValueMeta("the_geom", ValueMetaInterface.TYPE_GEOMETRY);
 			value.setGeometrySRS(getSRS());
 			row.addValueMeta(value);
-		}
-		catch(Exception e)
-		{
+		}catch(Exception e){
 			throw new KettleException("Error reading OGR data source metadata (in part "+debug+")", e);
 		}
 
 		return row;
 	}
 
-	public Object[] getRow(RowMetaInterface fields) throws KettleException
-	{
+	public Object[] getRow(RowMetaInterface fields) throws KettleException{
 		return getRow( RowDataUtil.allocateRowData(fields.size()) );
 	}
-
-	public Object[] getRow(Object[] r) throws KettleException
-	{
+	
+	public Object[] getRow(Object[] r) throws KettleException{
 
 		String debug = "";
 		int ogrFieldsCount = 0;
 		int k = 0;
 
-		try
-		{
+		try{
 			// Read the next record
 
 			debug = "set the values in the row";
@@ -305,22 +298,18 @@ public class OGRReader
 						r[k] = ogrFeature.GetFieldAsString(k);
 						break;
 					}
-				} else {
+				}else
 					r[k] = null;
-				}
-
 			}
 
 			if (ogrGeometry != null) {
 				debug = "geometry attribute";
 				Geometry jts_geom = new WKTReader().read(ogrGeometry.ExportToWkt());
 				r[k] = jts_geom;
-			}
-			else r[k] = null;
+			}else 
+				r[k] = null;
 
-		}
-		catch(Exception e)
-		{
+		}catch(Exception e){
 			log.logError(toString(), "Unexpected error in part ["+debug+"] : "+e.toString());
 			if (skipFailure) {
 				log.logError(toString(), "But \"Skip failures\" option activated ... Continue processing with next row!");
