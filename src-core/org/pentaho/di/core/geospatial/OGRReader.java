@@ -199,11 +199,15 @@ public class OGRReader
 				}
 			}
 			// Add the geometry column
-			if (ogrLayer.GetGeometryColumn().length()>0)
+			value = null;
+			if (ogrLayer.GetGeometryColumn().length()>0) 
 				value = new ValueMeta(ogrLayer.GetGeometryColumn(), ValueMetaInterface.TYPE_GEOMETRY);
-			else value = new ValueMeta("the_geom", ValueMetaInterface.TYPE_GEOMETRY);
-			value.setGeometrySRS(getSRS());
-			row.addValueMeta(value);
+			else if (ogrLayer.GetGeomType() != ogrConstants.wkbNone)
+				value = new ValueMeta("the_geom", ValueMetaInterface.TYPE_GEOMETRY);
+			if (value!=null) {
+				value.setGeometrySRS(getSRS());
+				row.addValueMeta(value);
+			}
 		}catch(Exception e){
 			throw new KettleException("Error reading OGR data source metadata (in part "+debug+")", e);
 		}
@@ -306,7 +310,7 @@ public class OGRReader
 				debug = "geometry attribute";
 				Geometry jts_geom = new WKTReader().read(ogrGeometry.ExportToWkt());
 				r[k] = jts_geom;
-			}else 
+			} else if (k <= r.length-1) 
 				r[k] = null;
 
 		}catch(Exception e){
