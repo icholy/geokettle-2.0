@@ -281,7 +281,7 @@ public class GISFileInputDialog extends BaseStepDialog implements StepDialogInte
 		fdlEncoding.right= new FormAttachment(middle, -margin);
 		wlEncoding.setLayoutData(fdlEncoding);
 		wEncoding=new CCombo(shell, SWT.BORDER | SWT.READ_ONLY);
-		wEncoding.setEditable(true);
+		wEncoding.setEditable(false);
 		props.setLook(wEncoding);
 		setEncodings();
 		wEncoding.addModifyListener(lsMod);
