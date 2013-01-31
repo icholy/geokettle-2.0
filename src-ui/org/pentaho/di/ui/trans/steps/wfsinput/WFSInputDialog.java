@@ -229,7 +229,7 @@ public class WFSInputDialog extends BaseStepDialog implements
 		fdlPassword.right = new FormAttachment(middle, -margin);
 		wlPassword.setLayoutData(fdlPassword);
 
-		wPassword = new TextVar(transMeta, wgGeneral, SWT.SINGLE | SWT.LEFT
+		wPassword = new TextVar(transMeta, wgGeneral, SWT.SINGLE | SWT.LEFT | SWT.PASSWORD
 				| SWT.BORDER);
 		props.setLook(wPassword);
 		wPassword.addModifyListener(lsMod);
