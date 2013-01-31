@@ -64,13 +64,13 @@ IF %IS64BITJAVA% == 1 GOTO :JVM64
 :JVM32
 set LIBSPATH=libswt\win32\
 set CLASSPATH=%CLASSPATH%;libswt\win32\gdal.jar
-set PATH=%PATH%;libswt\win32;libext\geometry\libgdal\win32
+set PATH=libswt\win32;libext\geometry\libgdal\win32;%PATH%
 GOTO :CONTINUE
 
 :JVM64
 set LIBSPATH=libswt\win64\
 set CLASSPATH=%CLASSPATH%;libswt\win64\gdal.jar
-set PATH=%PATH%;libswt\win64;libext\geometry\libgdal\win64
+set PATH=libswt\win64;libext\geometry\libgdal\win64;%PATH%
 
 :CONTINUE
 REM **********************
