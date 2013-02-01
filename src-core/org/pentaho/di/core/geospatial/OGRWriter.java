@@ -104,8 +104,8 @@ public class OGRWriter{
 			if (isFileDataSource) {
 				if (Const.isWindows()) {
 					ogrDataDestinationPath = ogrDataDestinationPath.replace('/', '\\');
-				} else {
-					ogrDataDestinationPath = ogrDataDestinationPath.substring(2);
+				//} else {
+					//ogrDataDestinationPath = ogrDataDestinationPath.substring(2);
 				}
 
 				//				if ((new File(ogrDataDestinationPath)).exists())
