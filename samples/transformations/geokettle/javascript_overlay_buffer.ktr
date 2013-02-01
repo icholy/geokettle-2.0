@@ -44,8 +44,34 @@
     <partitionschemas>
     </partitionschemas>
     <slaveservers>
+         <slaveserver><name>demo</name><hostname>demo.spatialytics.com</hostname><port>54321</port><username>cluster</username><password>Encrypted 2be98afc86aa7f2e4cb1aa265cd86aac8</password><proxy_hostname/><proxy_port/><non_proxy_hosts/><master>Y</master></slaveserver>
+         <slaveserver><name>dev</name><hostname>dev.spatialytics.com</hostname><port>54322</port><username>cluster</username><password>Encrypted 2be98afc86aa7f2e4cb1aa265cd86aac8</password><proxy_hostname/><proxy_port/><non_proxy_hosts/><master>N</master></slaveserver>
+         <slaveserver><name>master</name><hostname>localhost</hostname><port>8080</port><username>cluster</username><password>Encrypted 2be98afc86aa7f2e4cb1aa265cd86aac8</password><proxy_hostname/><proxy_port/><non_proxy_hosts/><master>Y</master></slaveserver>
+         <slaveserver><name>localhost</name><hostname>localhost</hostname><port>54321</port><username>cluster</username><password>Encrypted 2be98afc86aa7f2e4cb1aa265cd86aac8</password><proxy_hostname/><proxy_port/><non_proxy_hosts/><master>N</master></slaveserver>
     </slaveservers>
     <clusterschemas>
+        <clusterschema>
+          <name>local</name>
+          <base_port>40000</base_port>
+          <sockets_buffer_size>2000</sockets_buffer_size>
+          <sockets_flush_interval>5000</sockets_flush_interval>
+          <sockets_compressed>Y</sockets_compressed>
+          <dynamic>Y</dynamic>
+          <slaveservers>
+            <name>master</name>
+          </slaveservers>
+        </clusterschema>
+        <clusterschema>
+          <name>Spatialytics cloud</name>
+          <base_port>54321</base_port>
+          <sockets_buffer_size>2000</sockets_buffer_size>
+          <sockets_flush_interval>5000</sockets_flush_interval>
+          <sockets_compressed>Y</sockets_compressed>
+          <dynamic>Y</dynamic>
+          <slaveservers>
+            <name>demo</name>
+          </slaveservers>
+        </clusterschema>
     </clusterschemas>
   <modified_user>-</modified_user>
   <modified_date>2007&#47;10&#47;24 15:58:35.457</modified_date>
@@ -68,7 +94,7 @@ Script Value step to see the resulting rows.
 </note>
       <xloc>29</xloc>
       <yloc>6</yloc>
-      <width>434</width>
+      <width>477</width>
       <heigth>192</heigth>
     </notepad>
   </notepads>
@@ -233,10 +259,15 @@ Script Value step to see the resulting rows.
            <method>none</method>
            <schema_name/>
            </partitioning>
-    <file_gis>${Internal.Transformation.Filename.Directory}&#47;files&#47;intersec1.shp</file_gis>
+    <filename>${Internal.Transformation.Filename.Directory}&#47;files&#47;intersec1.shp</filename>
+    <isfilenameinfield>N</isfilenameinfield>
+    <filenamefield/>
     <limit>0</limit>
     <add_rownr>N</add_rownr>
     <field_rownr/>
+    <gis_file_charset>UTF-8</gis_file_charset>
+    <passing_through_fields>N</passing_through_fields>
+    <accept_stepname/>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>60</xloc>
@@ -255,10 +286,15 @@ Script Value step to see the resulting rows.
            <method>none</method>
            <schema_name/>
            </partitioning>
-    <file_gis>${Internal.Transformation.Filename.Directory}&#47;files&#47;intersec2.shp</file_gis>
+    <filename>${Internal.Transformation.Filename.Directory}&#47;files&#47;intersec2.shp</filename>
+    <isfilenameinfield>N</isfilenameinfield>
+    <filenamefield/>
     <limit>0</limit>
     <add_rownr>N</add_rownr>
     <field_rownr/>
+    <gis_file_charset>UTF-8</gis_file_charset>
+    <passing_through_fields>N</passing_through_fields>
+    <accept_stepname/>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>60</xloc>

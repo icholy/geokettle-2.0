@@ -6,6 +6,8 @@
     <extended_description/>
     <trans_version/>
     <directory>&#47;</directory>
+    <parameters>
+    </parameters>
     <log>
       <read/>
       <write/>
@@ -18,6 +20,7 @@
       <step_performance_table/>
       <use_batchid>Y</use_batchid>
       <use_logfield>N</use_logfield>
+      <size_limit_lines/>
     </log>
     <maxdate>
       <connection/>
@@ -41,8 +44,34 @@
     <partitionschemas>
     </partitionschemas>
     <slaveservers>
+         <slaveserver><name>demo</name><hostname>demo.spatialytics.com</hostname><port>54321</port><username>cluster</username><password>Encrypted 2be98afc86aa7f2e4cb1aa265cd86aac8</password><proxy_hostname/><proxy_port/><non_proxy_hosts/><master>Y</master></slaveserver>
+         <slaveserver><name>dev</name><hostname>dev.spatialytics.com</hostname><port>54322</port><username>cluster</username><password>Encrypted 2be98afc86aa7f2e4cb1aa265cd86aac8</password><proxy_hostname/><proxy_port/><non_proxy_hosts/><master>N</master></slaveserver>
+         <slaveserver><name>master</name><hostname>localhost</hostname><port>8080</port><username>cluster</username><password>Encrypted 2be98afc86aa7f2e4cb1aa265cd86aac8</password><proxy_hostname/><proxy_port/><non_proxy_hosts/><master>Y</master></slaveserver>
+         <slaveserver><name>localhost</name><hostname>localhost</hostname><port>54321</port><username>cluster</username><password>Encrypted 2be98afc86aa7f2e4cb1aa265cd86aac8</password><proxy_hostname/><proxy_port/><non_proxy_hosts/><master>N</master></slaveserver>
     </slaveservers>
     <clusterschemas>
+        <clusterschema>
+          <name>local</name>
+          <base_port>40000</base_port>
+          <sockets_buffer_size>2000</sockets_buffer_size>
+          <sockets_flush_interval>5000</sockets_flush_interval>
+          <sockets_compressed>Y</sockets_compressed>
+          <dynamic>Y</dynamic>
+          <slaveservers>
+            <name>master</name>
+          </slaveservers>
+        </clusterschema>
+        <clusterschema>
+          <name>Spatialytics cloud</name>
+          <base_port>54321</base_port>
+          <sockets_buffer_size>2000</sockets_buffer_size>
+          <sockets_flush_interval>5000</sockets_flush_interval>
+          <sockets_compressed>Y</sockets_compressed>
+          <dynamic>Y</dynamic>
+          <slaveservers>
+            <name>demo</name>
+          </slaveservers>
+        </clusterschema>
     </clusterschemas>
   <modified_user>-</modified_user>
   <modified_date>2009&#47;02&#47;03 15:09:02.657</modified_date>
@@ -68,8 +97,8 @@ a Shapefile. The .PRJ file describing the new SRS is also written by the
 GIS File Output step.</note>
       <xloc>21</xloc>
       <yloc>13</yloc>
-      <width>416</width>
-      <heigth>222</heigth>
+      <width>455</width>
+      <heigth>231</heigth>
     </notepad>
     <notepad>
       <note>Note: the Shapefile written by GIS File Output is located in the
@@ -77,181 +106,10 @@ system temp directory (defined by system property java.io.tmpdir).
 Modify the file path in the step if you wish to put it somewhere else.</note>
       <xloc>404</xloc>
       <yloc>338</yloc>
-      <width>337</width>
-      <heigth>47</heigth>
+      <width>378</width>
+      <heigth>49</heigth>
     </notepad>
   </notepads>
-  <connection>
-    <name>PostgreSQL test minicube_staging@localhost</name>
-    <server>localhost</server>
-    <type>POSTGRESQL</type>
-    <access>Native</access>
-    <database>minicube_staging</database>
-    <port>5432</port>
-    <username>test</username>
-    <password>Encrypted 2be98afc86aa7f2e4cb79ba75d382a08b</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>pgsql etdub@localhost</name>
-    <server>localhost</server>
-    <type>POSTGRESQL</type>
-    <access>Native</access>
-    <database>minicube_staging</database>
-    <port>5432</port>
-    <username>etdub</username>
-    <password>Encrypted 2be98afc86aa7f2e4bf16bb60dfc4f98c</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>oracle geosoa-crg3</name>
-    <server>geosoa-crg3.scg.ulaval.ca</server>
-    <type>ORACLE</type>
-    <access>Native</access>
-    <database>orcl</database>
-    <port>1521</port>
-    <username>geosoa</username>
-    <password>Encrypted 2be98afc86aa7f2e4cb1eab7fcd9dae8b</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>1521</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>PostgreSQL (w&#47; PostGIS) on localhost</name>
-    <server>localhost</server>
-    <type>POSTGRESQL</type>
-    <access>Native</access>
-    <database>geokettle_test</database>
-    <port>5432</port>
-    <username>test</username>
-    <password>Encrypted 2be98afc86aa7f2e4cb79ce64db9fbfd5</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>EXTRA_OPTION_POSTGRESQL.stringtype</code><attribute>unspecified</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>ibm db2 test</name>
-    <server>geosoa-crg3.scg.ulaval.ca</server>
-    <type>DB2</type>
-    <access>Native</access>
-    <database>geosoa</database>
-    <port>50000</port>
-    <username>db2geosoa</username>
-    <password>Encrypted 2be98afc86aa79686f91eab7fcd9dae8b</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>50000</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>MS SQL test</name>
-    <server>geosoa-crg3</server>
-    <type>MSSQL</type>
-    <access>Native</access>
-    <database>geosoadb</database>
-    <port>1433</port>
-    <username>geosoa</username>
-    <password>Encrypted 2be98afc86aa7f2e4cb1eab7fcd9dae8b</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MSSQL_DOUBLE_DECIMAL_SEPARATOR</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>1433</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>MS SQL</name>
-    <server>geosoa-crg3</server>
-    <type>MSSQL</type>
-    <access>Native</access>
-    <database>geosoadb</database>
-    <port>1433</port>
-    <username>geosoa</username>
-    <password>Encrypted 2be98afc86aa7f2e4cb1eab7fcd9dae8b</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>MSSQL_DOUBLE_DECIMAL_SEPARATOR</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>1433</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
-  <connection>
-    <name>Postgres test@localhost</name>
-    <server>localhost</server>
-    <type>POSTGRESQL</type>
-    <access>Native</access>
-    <database>geokettle_test</database>
-    <port>5432</port>
-    <username>test</username>
-    <password>Encrypted 2be98afc86aa7f2e4cb79ba75d382a08b</password>
-    <servername/>
-    <data_tablespace/>
-    <index_tablespace/>
-    <attributes>
-      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
-      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
-      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
-      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
-      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
-    </attributes>
-  </connection>
   <connection>
     <name>geosoadb sur geosoa-crg1</name>
     <server>geosoa-crg1.scg.ulaval.ca</server>
@@ -294,6 +152,177 @@ Modify the file path in the step if you wish to put it somewhere else.</note>
       <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
     </attributes>
   </connection>
+  <connection>
+    <name>ibm db2 test</name>
+    <server>geosoa-crg3.scg.ulaval.ca</server>
+    <type>DB2</type>
+    <access>Native</access>
+    <database>geosoa</database>
+    <port>50000</port>
+    <username>db2geosoa</username>
+    <password>Encrypted 2be98afc86aa79686f91eab7fcd9dae8b</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>50000</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>MS SQL</name>
+    <server>geosoa-crg3</server>
+    <type>MSSQL</type>
+    <access>Native</access>
+    <database>geosoadb</database>
+    <port>1433</port>
+    <username>geosoa</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb1eab7fcd9dae8b</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MSSQL_DOUBLE_DECIMAL_SEPARATOR</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>1433</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>MS SQL test</name>
+    <server>geosoa-crg3</server>
+    <type>MSSQL</type>
+    <access>Native</access>
+    <database>geosoadb</database>
+    <port>1433</port>
+    <username>geosoa</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb1eab7fcd9dae8b</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>MSSQL_DOUBLE_DECIMAL_SEPARATOR</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>1433</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>oracle geosoa-crg3</name>
+    <server>geosoa-crg3.scg.ulaval.ca</server>
+    <type>ORACLE</type>
+    <access>Native</access>
+    <database>orcl</database>
+    <port>1521</port>
+    <username>geosoa</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb1eab7fcd9dae8b</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>1521</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>pgsql etdub@localhost</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>minicube_staging</database>
+    <port>5432</port>
+    <username>etdub</username>
+    <password>Encrypted 2be98afc86aa7f2e4bf16bb60dfc4f98c</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>Postgres test@localhost</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>geokettle_test</database>
+    <port>5432</port>
+    <username>test</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb79ba75d382a08b</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>PostgreSQL (w&#47; PostGIS) on localhost</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>geokettle_test</database>
+    <port>5432</port>
+    <username>test</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb79ce64db9fbfd5</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>EXTRA_OPTION_POSTGRESQL.stringtype</code><attribute>unspecified</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>PostgreSQL test minicube_staging@localhost</name>
+    <server>localhost</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>minicube_staging</database>
+    <port>5432</port>
+    <username>test</username>
+    <password>Encrypted 2be98afc86aa7f2e4cb79ba75d382a08b</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>5432</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
   <order>
   <hop> <from>GIS File Input (nrn_quebec_city.shp)</from><to>SRS Transformation (project to UTM zone 19N)</to><enabled>Y</enabled> </hop>  <hop> <from>SRS Transformation (project to UTM zone 19N)</from><to>GIS File Output (geokettle_sample_1_utm19n.shp)</to><enabled>Y</enabled> </hop>  </order>
   <step>
@@ -306,10 +335,15 @@ Modify the file path in the step if you wish to put it somewhere else.</note>
            <method>none</method>
            <schema_name/>
            </partitioning>
-    <file_gis>${Internal.Transformation.Filename.Directory}&#47;files&#47;nrn_quebec_city.shp</file_gis>
+    <filename>${Internal.Transformation.Filename.Directory}&#47;files&#47;nrn_quebec_city.shp</filename>
+    <isfilenameinfield>N</isfilenameinfield>
+    <filenamefield/>
     <limit>0</limit>
     <add_rownr>N</add_rownr>
     <field_rownr/>
+    <gis_file_charset>windows-1252</gis_file_charset>
+    <passing_through_fields>N</passing_through_fields>
+    <accept_stepname/>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>96</xloc>
@@ -328,10 +362,14 @@ Modify the file path in the step if you wish to put it somewhere else.</note>
            <method>none</method>
            <schema_name/>
            </partitioning>
-    <file_gis>${java.io.tmpdir}geokettle_sample_1_utm19n.shp</file_gis>
+    <filename>${Internal.Transformation.Filename.Directory}&#47;files&#47;geokettle_sample_1_utm19n.shp</filename>
+    <isfilenameinfield>N</isfilenameinfield>
+    <filenamefield/>
+    <gis_file_charset>UTF-8</gis_file_charset>
+    <accept_stepname/>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>604</xloc>
+      <xloc>629</xloc>
       <yloc>275</yloc>
       <draw>Y</draw>
       </GUI>

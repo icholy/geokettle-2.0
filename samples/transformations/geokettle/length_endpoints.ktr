@@ -45,8 +45,34 @@
     <partitionschemas>
     </partitionschemas>
     <slaveservers>
+         <slaveserver><name>demo</name><hostname>demo.spatialytics.com</hostname><port>54321</port><username>cluster</username><password>Encrypted 2be98afc86aa7f2e4cb1aa265cd86aac8</password><proxy_hostname/><proxy_port/><non_proxy_hosts/><master>Y</master></slaveserver>
+         <slaveserver><name>master</name><hostname>localhost</hostname><port>8080</port><username>cluster</username><password>Encrypted 2be98afc86aa7f2e4cb1aa265cd86aac8</password><proxy_hostname/><proxy_port/><non_proxy_hosts/><master>Y</master></slaveserver>
+         <slaveserver><name>dev</name><hostname>dev.spatialytics.com</hostname><port>54322</port><username>cluster</username><password>Encrypted 2be98afc86aa7f2e4cb1aa265cd86aac8</password><proxy_hostname/><proxy_port/><non_proxy_hosts/><master>N</master></slaveserver>
+         <slaveserver><name>localhost</name><hostname>localhost</hostname><port>54321</port><username>cluster</username><password>Encrypted 2be98afc86aa7f2e4cb1aa265cd86aac8</password><proxy_hostname/><proxy_port/><non_proxy_hosts/><master>N</master></slaveserver>
     </slaveservers>
     <clusterschemas>
+        <clusterschema>
+          <name>local</name>
+          <base_port>40000</base_port>
+          <sockets_buffer_size>2000</sockets_buffer_size>
+          <sockets_flush_interval>5000</sockets_flush_interval>
+          <sockets_compressed>Y</sockets_compressed>
+          <dynamic>Y</dynamic>
+          <slaveservers>
+            <name>master</name>
+          </slaveservers>
+        </clusterschema>
+        <clusterschema>
+          <name>Spatialytics cloud</name>
+          <base_port>54321</base_port>
+          <sockets_buffer_size>2000</sockets_buffer_size>
+          <sockets_flush_interval>5000</sockets_flush_interval>
+          <sockets_compressed>Y</sockets_compressed>
+          <dynamic>Y</dynamic>
+          <slaveservers>
+            <name>demo</name>
+          </slaveservers>
+        </clusterschema>
     </clusterschemas>
   <modified_user>-</modified_user>
   <modified_date>2009&#47;02&#47;03 15:09:02.657</modified_date>
@@ -60,8 +86,8 @@ the reflection mechanisms built in Rhino.
 </note>
       <xloc>49</xloc>
       <yloc>27</yloc>
-      <width>409</width>
-      <heigth>63</heigth>
+      <width>450</width>
+      <heigth>75</heigth>
     </notepad>
   </notepads>
   <connection>
@@ -289,10 +315,15 @@ the reflection mechanisms built in Rhino.
            <method>none</method>
            <schema_name/>
            </partitioning>
-    <file_gis>${Internal.Transformation.Filename.Directory}&#47;files&#47;nrn_quebec_city.shp</file_gis>
+    <filename>${Internal.Transformation.Filename.Directory}&#47;files&#47;nrn_quebec_city.shp</filename>
+    <isfilenameinfield>N</isfilenameinfield>
+    <filenamefield/>
     <limit>0</limit>
     <add_rownr>N</add_rownr>
     <field_rownr/>
+    <gis_file_charset>windows-1252</gis_file_charset>
+    <passing_through_fields>N</passing_through_fields>
+    <accept_stepname/>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
       <xloc>93</xloc>
@@ -391,7 +422,7 @@ else if (getClass(jtsgeom) == Packages.com.vividsolutions.jts.geom.LineString) {
         <replace>N</replace>
       </field>    </fields>     <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>527</xloc>
+      <xloc>560</xloc>
       <yloc>128</yloc>
       <draw>Y</draw>
       </GUI>
@@ -431,8 +462,8 @@ else if (getClass(jtsgeom) == Packages.com.vividsolutions.jts.geom.LineString) {
     </target_srs>
      <cluster_schema/>
  <remotesteps>   <input>   </input>   <output>   </output> </remotesteps>    <GUI>
-      <xloc>310</xloc>
-      <yloc>128</yloc>
+      <xloc>337</xloc>
+      <yloc>129</yloc>
       <draw>Y</draw>
       </GUI>
     </step>
