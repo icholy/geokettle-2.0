@@ -180,7 +180,7 @@ public class OGRFileInput extends BaseStep implements StepInterface{
 		}
 				
 		try {
-			if(meta.isSourceInField()){
+			if(meta.isSourceInField() || meta.isLayerNameInField()){
 				if(inputRows == null){
 					setOutputDone();
 					return false;

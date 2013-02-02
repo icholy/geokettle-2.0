@@ -131,11 +131,12 @@ public class OGRFileOutput extends BaseStep implements StepInterface {
 				}else{
 					if(!compareStrings(data.cnxStrings.get(data.index), data.cnxStrings.get(data.index - 1)))
 						newWriterFlag = true;
-				}					
-			}else{
+				}
+			}
+			//}else{
 				if(!compareStrings(data.layernames.get(data.index), data.layernames.get(data.index - 1)))
 					newWriterFlag = true;				
-			}
+			//}
 									
 		}else
 			newWriterFlag = true;
