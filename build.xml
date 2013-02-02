@@ -1,4 +1,4 @@
-<project name="GeoKettle-2.0" default="default" basedir=".">
+<project name="GeoKettle-2.x" default="default" basedir=".">
 
 	  <description>
 	      GeoKettle build file
