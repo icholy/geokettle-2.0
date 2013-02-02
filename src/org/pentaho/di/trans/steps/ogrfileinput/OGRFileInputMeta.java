@@ -256,7 +256,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface{
 		isLayerNameInField = false;
 	}
 	
-	public RowMetaInterface getOutputFields(FileInputList files, List<String> cnxStrings, String name) throws KettleStepException{
+	public RowMetaInterface getOutputFields(FileInputList files, List<String> cnxStrings, List<String> layernames, String name) throws KettleStepException{
 		RowMetaInterface rowMeta = new RowMeta();		
               
         OGRReader ogrReader = null;
@@ -273,8 +273,7 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface{
 					ogr_path = ogr_path.substring(2);
         	}else
         		ogr_path = cnxStrings.get(0);
-
-        	ogrReader = new OGRReader(ogr_path, layerName, spatialFilter, attributeFilter, skipFailureAdded);
+        	ogrReader = new OGRReader(ogr_path, layernames.get(0), spatialFilter, attributeFilter, skipFailureAdded);
 			ogrReader.open();
 			RowMetaInterface add = ogrReader.getFields();
 			for (int i=0;i<add.size();i++){
@@ -318,8 +317,10 @@ public class OGRFileInputMeta extends BaseStepMeta implements StepMetaInterface{
                     throw new KettleStepException(Messages.getString("OGRFileInputMeta.Exception.NoFilesFoundToProcess")); //$NON-NLS-1$ 
     		}else
     			cnxStrings = Arrays.asList(source);
+    		
+    		List<String> layernames = Arrays.asList(layerName);
             row.clear();
-            row.addRowMeta( getOutputFields(fileList, cnxStrings,  name));
+            row.addRowMeta( getOutputFields(fileList, cnxStrings,  layernames, name));
         }  
 	}
 

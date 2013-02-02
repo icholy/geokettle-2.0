@@ -43,7 +43,7 @@ public class GISFileOutput extends BaseStep implements StepInterface {
 			logError("Cannot get file URL.", e);
 			return false;
 		} catch (KettleException e) {
-			logError("Could not open reader.", e);
+			logError("Could not open writer.", e);
 			return false;
 		}
 		try {

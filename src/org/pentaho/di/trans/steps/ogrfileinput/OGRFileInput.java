@@ -169,7 +169,7 @@ public class OGRFileInput extends BaseStep implements StepInterface{
             		addSource(meta.getSource());	            
             }             
  
-            data.outputRowMeta = meta.getOutputFields(data.files, data.cnxStrings, getStepname());
+            data.outputRowMeta = meta.getOutputFields(data.files, data.cnxStrings, data.layernames, getStepname());
             data.readerRowSize = data.outputRowMeta.size();
             for(int i = data.outputRowMeta.size()-1; i>=0;i--){
             	if(data.outputRowMeta.getFieldNames()[i]!=null)

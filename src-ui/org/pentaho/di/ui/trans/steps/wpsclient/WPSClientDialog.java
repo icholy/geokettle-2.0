@@ -857,8 +857,9 @@ public class WPSClientDialog extends BaseStepDialog implements StepDialogInterfa
 		sb.append(mimetype_obj!=null&&!Const.isEmpty(mimetype_obj.toString())?"MimeType: "+mimetype_obj.toString()+", ":"");
 		sb.append(schema_obj!=null&&!Const.isEmpty(schema_obj.toString())?"Schema: " + schema_obj.toString()+", ":"");
 		sb.append(encoding_obj!=null&&!Const.isEmpty(encoding_obj.toString())?"Encoding: " + encoding_obj.toString():"");
-		if(sb.indexOf(",")==sb.length()-2)
-			sb.delete(sb.length()-2, sb.length());
+		String trimmed = sb.toString().trim();
+		if(trimmed.lastIndexOf(",")==trimmed.length()-1)
+			sb.delete(sb.lastIndexOf(","), sb.length());
 		return sb.toString();
 	}
 	
