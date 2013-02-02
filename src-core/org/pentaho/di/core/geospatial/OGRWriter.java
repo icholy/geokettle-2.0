@@ -338,51 +338,58 @@ public class OGRWriter{
 
 			ValueMetaInterface value = null;
 			Feature ogrFeature = new Feature(ogrLayer.GetLayerDefn());
-			int j=0;
+			//int j=0;
 			for(int i = 0; i < fields.size(); i++)
 			{
 				value = fields.getValueMeta(i);
 				switch(value.getType()) {
 				case ValueMeta.TYPE_NUMBER:
 					debug = "double attribute "+i;
-					ogrFeature.SetField(j, ((Double)r[i]).doubleValue());
-					j++;
+					//ogrFeature.SetField(j, ((Double)r[i]).doubleValue());
+					ogrFeature.SetField(value.getName(), ((Double)r[i]).doubleValue());
+					//j++;
 					break;
 				case ValueMeta.TYPE_STRING:
 					debug = "string attribute "+i;
 					//ogrFeature.SetField(j, encode((String)r[i]));
-					ogrFeature.SetField(j, (String)r[i]);
-					j++;
+					//ogrFeature.SetField(j, (String)r[i]);
+					ogrFeature.SetField(value.getName(), (String)r[i]);
+					//j++;
 					break;
 				case ValueMeta.TYPE_DATE:
 					debug = "date attribute "+i;
 					Calendar cal = Calendar.getInstance();
 					cal.setTime((Date)r[i]);
 					int tzflag = 100+(cal.get(Calendar.ZONE_OFFSET)/1000/3600)*4;
-					ogrFeature.SetField(j, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND), tzflag);
-					j++;
+					//ogrFeature.SetField(j, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND), tzflag);
+					ogrFeature.SetField(value.getName(), cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND), tzflag);
+					//j++;
 					break;
 				case ValueMeta.TYPE_BOOLEAN:
 					debug = "boolean attribute "+i;
-					ogrFeature.SetField(j, (Integer)r[i]);
-					j++;
+					//ogrFeature.SetField(j, (Integer)r[i]);
+					ogrFeature.SetField(value.getName(), (Integer)r[i]);
+					//j++;
 					break;
 				case ValueMeta.TYPE_INTEGER:
 					debug = "integer attribute "+i;
 					if (value.getName().equals(ogrFIDField)) {
 						ogrFeature.SetFID(((Long)r[i]).intValue());
 						if (preserveFIDField) {
-							ogrFeature.SetField(j, (Long)r[i]);
+							//ogrFeature.SetField(j, (Long)r[i]);
+							ogrFeature.SetField(value.getName(), (Long)r[i]);
 						}
 					} else {
-						ogrFeature.SetField(j, (Long)r[i]);
+						//ogrFeature.SetField(j, (Long)r[i]);
+						ogrFeature.SetField(value.getName(), (Long)r[i]);
 					}
-					j++;
+					//j++;
 					break;
 				case ValueMeta.TYPE_BIGNUMBER:
 					debug = "big number attribute "+i;
-					ogrFeature.SetField(j, ((BigDecimal)r[i]).doubleValue());
-					j++;
+					//ogrFeature.SetField(j, ((BigDecimal)r[i]).doubleValue());
+					ogrFeature.SetField(value.getName(), ((BigDecimal)r[i]).doubleValue());
+					//j++;
 					break;
 					// TODO We have to handle here the case where there are more than one geometry fields! 
 				case ValueMeta.TYPE_GEOMETRY:
@@ -403,8 +410,9 @@ public class OGRWriter{
 				default:
 					debug = "default data type attribute "+i;
 					//ogrFeature.SetField(j, encode((String)r[i]));
-					ogrFeature.SetField(j, (String)r[i]);
-					j++;
+					//ogrFeature.SetField(j, (String)r[i]);
+					ogrFeature.SetField(value.getName(), (String)r[i]);
+					//j++;
 					break;
 				}
 			}
