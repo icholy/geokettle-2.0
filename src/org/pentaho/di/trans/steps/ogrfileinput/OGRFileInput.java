@@ -187,21 +187,21 @@ public class OGRFileInput extends BaseStep implements StepInterface{
 				}					
 				for(Object[] r : inputRows){			
 					if(meta.isFileSource()){
-						if(!isFileAlreadyRead(data.files.getFile(data.index))){
+						//if(!isFileAlreadyRead(data.files.getFile(data.index))){
 							boolean ok = process(r);
 							data.files.getFile(data.index).close();
 							if(!ok)
 								return false;
-						}else
-							logBasic(Messages.getString("OGRFileInput.Log.OGRFileAlreadyRead1")+" : ["+data.ogrReader+"]"+Messages.getString("OGRFileInput.Log.OGRFileAlreadyRead2"));												
+						//}else
+							//logBasic(Messages.getString("OGRFileInput.Log.OGRFileAlreadyRead1")+" : ["+data.ogrReader+"]"+Messages.getString("OGRFileInput.Log.OGRFileAlreadyRead2"));												
 					}else{
 						if (data.index >= data.cnxStrings.size()){ // no more input to be expected...
 							setOutputDone();
 							return false;
 						}
-						if(isConnectionAlreadyRead(data.cnxStrings.get(data.index)))
+						/*if(isConnectionAlreadyRead(data.cnxStrings.get(data.index)))
 							logBasic(Messages.getString("OGRFileInput.Log.OGRFileAlreadyRead1")+" : ["+data.ogrReader+"]"+Messages.getString("OGRFileInput.Log.OGRFileAlreadyRead2"));							
-						else if(!process(r))
+						else */if(!process(r))
 							return false;						
 					}	        	
 					data.index++;	
