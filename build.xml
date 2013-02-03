@@ -919,7 +919,7 @@
 		http://informagen.com/JarBundler/	
 	-->
 	
-	<target name="macapplication" depends="distrib" description="Build OS X executable">
+	<target name="macapplication" depends="distrib-plugins" description="Build OS X executable">
 		
 	  	        <delete dir="${macdistrib}/GeoKettle.app"/>
 			  	<delete>
