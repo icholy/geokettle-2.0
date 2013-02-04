@@ -2,7 +2,7 @@
 - Welcome to GeoKettle -
 ------------------------
 
-Release 2.0
+Release 2.5
 
 Open source spatial ETL tool for corporate data integration. 
 
@@ -45,27 +45,32 @@ Business Intelligence) software development.
 About GeoKettle versions numbering:
 -----------------------------------
 
-Even if the previous version of GeoKettle is numbered 3.2.0-20090609, the 
-newest release is 2.0. 
+Since the last 3.2.0 version (aka. 3.2.0-20090609), it has been decided to 
+change the versions numbering of GeoKettle.
 
 3.2.0 was a reference to the version of Kettle on which GeoKettle was based. 
-Current version is an important milestone for the project as it provides an 
+Current versions are important milestones for the project as they provide an 
 important amount of new features, better performance and robustness. The 
 previous numbering system did not allow to translate this matter of fact. That 
 is why it has been decided to change the numbering of the versions and to name 
-the new version as 2.0. It emphasizes more the important work performed to 
-provide this new version.
+the new version as 2.x. It emphasizes more the important work performed to 
+provide these new versions.
 
 However, it is important to note that versions 2.x will be the last versions of 
 GeoKettle based on the Kettle 3.2 code base. Thanks to the tremendous work of 
 the Kettle developers, future version of GeoKettle will be more pluggable with 
 Kettle and will not be anymore a friendly and spatially enabled fork of Kettle. 
 Hence, it will be possible to add spatial extensions provided by GeoKettle to 
-any Kettle/PDI 4.x installation.
+any Kettle/PDI 5.x installation.
 
 
 What's new?
 -----------
+
+Since release 2.0:
+
+  Please see details at:
+  http://docs.spatialytics.com/doku.php?id=en:spatialytics_etl:000_version_history#what_s_new_in_versions_30_of_spatialytics_etl_and_25_of_geokettle
 
 Since release 3.2.0-20090609:
 
