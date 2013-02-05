@@ -70,7 +70,7 @@ What's new?
 Since release 2.0:
 
   Please see details at:
-  http://docs.spatialytics.com/doku.php?id=en:spatialytics_etl:000_version_history#what_s_new_in_versions_30_of_spatialytics_etl_and_25_of_geokettle
+  http://docs.spatialytics.com/doku.php?id=en:spatialytics_etl:000_versionhistory#what_s_new_in_versions_30_of_spatialytics_etl_and_25_of_geokettle
 
 Since release 3.2.0-20090609:
 
