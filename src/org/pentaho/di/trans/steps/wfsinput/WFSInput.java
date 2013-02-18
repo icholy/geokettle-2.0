@@ -62,27 +62,25 @@ public class WFSInput extends BaseStep implements StepInterface {
 			org.pentaho.di.trans.steps.wfsinput.Filter f = filters.get(0);
 			filter = GTUtils.buildFilter(GTUtils.FF.property(sft.getDescriptor(
 					f.getAttribute()).getName()), f.getCondition(), f
-					.getValue());
+					.getValue(), sft.getDescriptor(f.getAttribute()).getType());
 
 			for (int i = 1; i < filters.size(); i++) {
 				f = filters.get(i);
 				String operator = f.getOperator();
-				if (operator
-						.equals(Messages.getString("WFSInputDialog.Operator.And.Label")))
-					filter = GTUtils.FF.and(
-							filter,
-							GTUtils.buildFilter(
-									GTUtils.FF.property(sft.getDescriptor(
-											f.getAttribute()).getName()),
-									f.getCondition(), f.getValue()));
-				else if (operator
-						.equals(Messages.getString("WFSInputDialog.Operator.Or.Label")))
-					filter = GTUtils.FF.or(
-							filter,
-							GTUtils.buildFilter(
-									GTUtils.FF.property(sft.getDescriptor(
-											f.getAttribute()).getName()),
-									f.getCondition(), f.getValue()));
+				if (operator.equals(Messages
+						.getString("WFSInputDialog.Operator.And.Label")))
+					filter = GTUtils.FF.and(filter, GTUtils.buildFilter(
+							GTUtils.FF.property(sft.getDescriptor(
+									f.getAttribute()).getName()),
+							f.getCondition(), f.getValue(),
+							sft.getDescriptor(f.getAttribute()).getType()));
+				else if (operator.equals(Messages
+						.getString("WFSInputDialog.Operator.Or.Label")))
+					filter = GTUtils.FF.or(filter, GTUtils.buildFilter(
+							GTUtils.FF.property(sft.getDescriptor(
+									f.getAttribute()).getName()),
+							f.getCondition(), f.getValue(),
+							sft.getDescriptor(f.getAttribute()).getType()));
 			}
 		}
 		return filter;

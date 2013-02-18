@@ -78,8 +78,27 @@ public class GTUtils {
 		return new SRS(gd.getCoordinateReferenceSystem());
 	}
 
-	private static Literal getLiteral(Object o) {
-		return FF.literal(o);
+	private static Literal getLiteral(Object o, AttributeType type) {
+		Class<?> c = type.getBinding();
+		Literal l = null;
+		String s = o.toString();
+		if (c == java.lang.Double.class)
+			l = FF.literal(Double.parseDouble(s));
+		else if (c == java.lang.Integer.class)
+			l = FF.literal(Integer.parseInt(s));
+		else if (c == java.lang.Long.class)
+			l = FF.literal(Long.parseLong(s));
+		else if (c == java.lang.Character.class)
+			l = FF.literal(s.charAt(0));
+		else if (c == java.lang.Boolean.class)
+			l = FF.literal(Boolean.parseBoolean(s));
+		else if (c == java.lang.Short.class)
+			l = FF.literal(Short.parseShort(s));
+		else if (c == java.lang.String.class)
+			l = FF.literal(s);
+		else
+			l = FF.literal(o);
+		return l;
 	}
 
 	private static Literal getGeometryLiteral(Object o) throws ParseException {
@@ -88,26 +107,26 @@ public class GTUtils {
 	}
 
 	public static Filter buildFilter(Expression e, String condition,
-			Object value) throws Exception {
+			String value, AttributeType type) throws Exception {
 		Filter f;
 		switch (getFunction(condition)) {
 		case FUNC_EQUAL:
-			f = FF.equals(e, getLiteral(value));
+			f = FF.equals(e, getLiteral(value, type));
 			break;
 		case FUNC_NOT_EQUAL:
-			f = FF.notEqual(e, getLiteral(value));
+			f = FF.notEqual(e, getLiteral(value, type));
 			break;
 		case FUNC_SMALLER:
-			f = FF.less(e, getLiteral(value));
+			f = FF.less(e, getLiteral(value, type));
 			break;
 		case FUNC_SMALLER_EQUAL:
-			f = FF.lessOrEqual(e, getLiteral(value));
+			f = FF.lessOrEqual(e, getLiteral(value, type));
 			break;
 		case FUNC_LARGER:
-			f = FF.greater(e, getLiteral(value));
+			f = FF.greater(e, getLiteral(value, type));
 			break;
 		case FUNC_LARGER_EQUAL:
-			f = FF.greaterOrEqual(e, getLiteral(value));
+			f = FF.greaterOrEqual(e, getLiteral(value, type));
 			break;
 		case FUNC_NULL:
 			f = FF.isNull(e);
