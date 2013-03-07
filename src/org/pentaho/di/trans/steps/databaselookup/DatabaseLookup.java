@@ -476,7 +476,7 @@ public class DatabaseLookup extends BaseStep implements StepInterface
             
             // If the user selected to load all data into the cache at startup, that's what we do now...
             //
-            if (meta.isLoadingAllDataInCache()) {
+            if (meta.isCached() && meta.isLoadingAllDataInCache()) {
             	loadAllTableDataIntoTheCache();
             }
             
@@ -545,7 +545,7 @@ public class DatabaseLookup extends BaseStep implements StepInterface
 	    	}
 	    	// The schema/table
 	    	//
-	    	sql+=" FROM "+dbMeta.getQuotedSchemaTableCombination(meta.getSchemaName(), meta.getTablename());
+	    	sql+=" FROM "+dbMeta.getQuotedSchemaTableCombination(environmentSubstitute(meta.getSchemaName()), environmentSubstitute(meta.getTablename()));
 	    	
 	    	// order by?
 			if (meta.getOrderByClause()!=null && meta.getOrderByClause().length()!=0)
